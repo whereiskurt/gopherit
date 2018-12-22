@@ -1,7 +1,7 @@
 <img src="https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/kphgopherit.png" width="350">
 
 # Welcome!
-Do you want to build a modern Go tool with a **C**ommand **L**ine **I**nterface (**CLI**) similar too Docker, Kubernetes, aws-cli, etc.?  ? Start here. :- ) 
+Do you want to build a modern Go tool with a **C**ommand **L**ine **I**nterface (**CLI**) similar to Docker, Kubernetes, aws-cli, etc.?  ? Start here. :- ) 
 
 This project is a starting set of Go files and directories. Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can be up and running. 
 
@@ -24,13 +24,13 @@ A lot has happened in the Go ecosystem in the last year two-years. This project 
   - 'Hermetic build/run/test' with `vendor` folder checked-in 
   - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
 
-The of code includes:
+This code includes:
 - [x] Fundamental Go features like tests, templates, go routines, contexts, channels, HTTP routing
   - The `config\template\*\*.tmpl` contain all templates
   - [Retry](https://github.com/matryer/try) using matryer's idiomatic `try.Do(..)`
 - [x] Built using [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
-  - This code cleanly separates CLI/configruation invocation from client library calls - using `viper.Unmarshal` to transfer from Viper to `pkg.Config` structure.
+  - This code cleanly separates CLI/configuration invocation from client library calls - using `viper.Unmarshal` to transfer from Viper to `pkg.Config` structure.
 - [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
     - Using `NewStructuredLogger` middleware to decorate each route with log output
@@ -40,7 +40,7 @@ The of code includes:
 # The Story of 00-newapp-template
 There is a vendor named ACME who provides API to access to `Gophers` and `Things`. Because I use the ACME API **all the time** to track `Gophers` and their `Things` and I have decided to create a CLI tool to perform the HTTP API calls needed and output a text table or JSON structure. Ideally using a simple command like:
 ```
-  ./gopherit list 
+  ./gophercli list 
 ```
 The client would make all the necessary calls to the HTTP ACME services, convert the JSON responses to Go structures andoutput something like:
 ```
@@ -109,7 +109,7 @@ Our adapter uses services provide by ACME as defined in the `pkg\acme\service.go
 
 Because ACME API charges us per API call, we decided to mock implement our own ACME HTTP API server. Our server will listen for connections on local host and respond just like an ACME server would. All the code to provide a full HTTP API server is in `pkg\acme\server\` and to invoke our ACME server:
 ```
-  ./gopherit server start
+  ./gophercli server start
 ```
 ![Server Startup](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/serverclient.gif)
 
