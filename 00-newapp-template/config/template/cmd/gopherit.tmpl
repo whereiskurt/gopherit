@@ -1,0 +1,33 @@
+{{define "GopheritUsage"}}
+              ,_---~~~~~----._
+        _,,_,*^____      _____''*g*\"*,
+        / __/ /'     ^.  /      \ ^@q   f
+        [  @f | @))    |  | @))   l  0 _/
+        \'/   \~____ / __ \_____/    \
+        |           _l__l_           I
+        }          [______]           I
+        ]            | | |            |
+        ]             ~ ~             |
+        |                            |
+      [@https://gist.github.com/belbomemo]
+
+GopherIT! uses ACME(TM) API to review and modify Gophers and their Things.
+
+Find more information at:
+    https://github.com/whereiskurt/gopherit/00-newapp-template/
+
+Usage:
+    gopherit [COMMAND] [SUBCOMMAND] [OPTIONS]
+
+Global Options:
+    Verbosity:
+      --silent,  -s     Set logging/output level [level1]
+      --quiet,   -q     Set logging/output level [level2]
+      --info,    --v    Set logging/output level [level3-default]
+      --debug,   --vv   Set logging/output level [level4]
+      --trace,   --vvv  Set logging/output level [level5]
+      --level=3         Sets the output verbosity level numerically [default]
+
+Examples:
+    {{ template "ClientList"}} {{ template "ClientUpdate" }} {{ template "ServerStart" }} {{ template "ServerStop" }} {{ template "VersionVersion" }}
+{{end}}

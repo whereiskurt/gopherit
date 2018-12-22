@@ -1,0 +1,21 @@
+{{define "ServerUsage" }}
+    Command:
+      gopherit server [SUBCOMMAND] [OPTIONS]
+
+    Subcommands:
+      start
+      stop
+
+    Options:
+      --p, --port number    Set the port to listen on.
+
+    Examples: {{ template "ServerStart" }} {{ template "ServerStop" }}
+{{end}}
+
+{{define "ServerStart" }}
+      $ gopherit server start
+      $ gopherit server start --port=102102 --docroot=./config/docroot
+{{end}}
+{{define "ServerStop" }}
+      $ gopherit server stop
+{{end}}

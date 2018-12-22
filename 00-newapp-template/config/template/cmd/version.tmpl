@@ -1,0 +1,19 @@
+{{define "VersionUsage" }}
+    Command:
+      gopherit version [OPTIONS]
+
+    {{template "GopheritUsage" }}
+
+    Command:
+      version
+
+    Options:
+      --sc, --showclient=true   Display the client version on output (default:true)
+      --ss, --showserver=true   Display the server version on output (default:true)
+
+    Examples: {{template "VersionVersion"}}
+{{end}}
+
+{{define "VersionVersion"}}
+      $ gopherit version
+{{end}}

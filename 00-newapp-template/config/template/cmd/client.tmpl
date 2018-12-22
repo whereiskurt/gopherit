@@ -1,0 +1,43 @@
+{{define "ClientUsage" }}
+Command:
+    gopherit client [SUBCOMMAND] [OPTIONS]
+
+    gopherit [SUBCOMMAND] [OPTIONS]
+    (The default command is 'client' and can be omitted.)
+
+Subcommands:
+    list
+    update
+    delete
+
+Options:
+     -m,  --m, --mode string     Set to table,csv,json,xml [default:table]
+     -g,  --g, --gopher string   Set the GopherID (optional.)
+     -t,  --t, --thing string    Set the ThingID (optional.)
+         --gn, --gname string    Set Gopher name value for adding, updating, searching
+         --gd, --gdesc string    Set Gopher description for adding, updating, searching
+         --tn, --tname string    Set Thing name value for adding, updating, searching
+         --td, --tdesc string    Set Thing description for adding, updating, searching
+
+    Examples:{{template "ClientList"}} {{template "ClientUpdate"}} {{template "ClientDelete"}}
+{{end}}
+
+{{define "ClientList" }}
+      ## The default command is 'client' and is optional before subcommands.
+      $ gopherit client list
+
+      $ gopherit list
+      $ gopherit list --gopher=1,2
+      $ gopherit list --thing=2
+      $ gopherit list -g1 -t2,3
+      $ gopherit list --gn=gopher1 --tn=feet
+{{end}}
+
+{{define "ClientUpdate" }}
+      $ gopherit update --gopher=1 --gname="Bobby Smith" --gdesc="Furry."
+      $ gopherit update --thing=2 --tname "Money Wallet" --tdesc="Where the money is."
+{{end}}
+
+{{define "ClientDelete" }}
+      $ gopherit delete --gopher=1
+{{end}}
