@@ -27,13 +27,14 @@ A lot has happened in the Go ecosystem in the last year two-years. This project 
 The of code includes:
 - [x] Fundamental Go features like tests, templates, go routines, contexts, channels, HTTP routing
   - The `config\template\*\*.tmpl` contain all templates
+  - [Retry](https://github.com/matryer/try) using matryer's idiomatic `try.Do(..)`
 - [x] Built using [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
   - This code cleanly separates CLI/configruation invocation from client library calls - using `viper.Unmarshal` to transfer from Viper to `pkg.Config` structure.
 - [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
-    - Demonstrate the `NewStructuredLogger` middleware, decorating each route
-    - Custom middleware handlers to create various Contexts
+    - Using `NewStructuredLogger` middleware to decorate each route with log output
+    - Custom middleware (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
 - [x] An example Dockerfile for a docker workflow
 
 # The Story of 00-newapp-template
