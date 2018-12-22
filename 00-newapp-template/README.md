@@ -127,7 +127,7 @@ This video shows download Go version 1.11.4 and checking out from scratch:
 
 ## How-to Run:
 ```
- $ go run cmd/gopherit.go 
+ $ go run cmd/gophercli.go 
 
               ,_---~~~~~----._
         _,,_,*^____      _____''*g*\"*,
@@ -147,7 +147,7 @@ Find more information at:
     https://github.com/whereiskurt/gopherit/00-newapp-template/
 
 Usage:
-    gopherit [COMMAND] [SUBCOMMAND] [OPTIONS]
+    gophercli [COMMAND] [SUBCOMMAND] [OPTIONS]
 
 Global Options:
     Verbosity:
@@ -161,17 +161,17 @@ Global Options:
 Examples:
     
       ## The default command is 'client' and is optional before subcommands.
-      $ gopherit client list
+      $ gophercli client list
 
-      $ gopherit list
-      $ gopherit list -g1 -t2,3
+      $ gophercli list
+      $ gophercli list -g1 -t2,3
  
-      $ gopherit server start
-      $ gopherit server start --port=102102 --docroot=./config/docroot
+      $ gophercli server start
+      $ gophercli server start --port=102102 --docroot=./config/docroot
  
-      $ gopherit server stop
+      $ gophercli server stop
  
-      $ gopherit version
+      $ gophercli version
 
 ```
 

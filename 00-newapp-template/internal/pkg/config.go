@@ -12,10 +12,10 @@ import (
 )
 
 const defaultConfigType = "yaml"
-const defaultConfigFilename = "default.gopherit"
+const defaultConfigFilename = "default.gophercli"
 const defaultConfigFolder = "./config/"
 const defaultTemplateFolder = "./config/template/"
-const defaultHomeFilename = ".gopherit"
+const defaultHomeFilename = ".gophercli"
 const defaultVerboseLevel = "3"
 const defaultClientOutputMode = "table"
 const defaultServerListenPort = "10101"

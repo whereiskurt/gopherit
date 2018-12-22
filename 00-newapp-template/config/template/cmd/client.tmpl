@@ -1,8 +1,8 @@
 {{define "ClientUsage" }}
 Command:
-    gopherit client [SUBCOMMAND] [OPTIONS]
+    gophercli client [SUBCOMMAND] [OPTIONS]
 
-    gopherit [SUBCOMMAND] [OPTIONS]
+    gophercli [SUBCOMMAND] [OPTIONS]
     (The default command is 'client' and can be omitted.)
 
 Subcommands:
@@ -24,20 +24,20 @@ Options:
 
 {{define "ClientList" }}
       ## The default command is 'client' and is optional before subcommands.
-      $ gopherit client list
+      $ gophercli client list
 
-      $ gopherit list
-      $ gopherit list --gopher=1,2
-      $ gopherit list --thing=2
-      $ gopherit list -g1 -t2,3
-      $ gopherit list --gn=gopher1 --tn=feet
+      $ gophercli list
+      $ gophercli list --gopher=1,2
+      $ gophercli list --thing=2
+      $ gophercli list -g1 -t2,3
+      $ gophercli list --gn=gopher1 --tn=feet
 {{end}}
 
 {{define "ClientUpdate" }}
-      $ gopherit update --gopher=1 --gname="Bobby Smith" --gdesc="Furry."
-      $ gopherit update --thing=2 --tname "Money Wallet" --tdesc="Where the money is."
+      $ gophercli update --gopher=1 --gname="Bobby Smith" --gdesc="Furry."
+      $ gophercli update --thing=2 --tname "Money Wallet" --tdesc="Where the money is."
 {{end}}
 
 {{define "ClientDelete" }}
-      $ gopherit delete --gopher=1
+      $ gophercli delete --gopher=1
 {{end}}
