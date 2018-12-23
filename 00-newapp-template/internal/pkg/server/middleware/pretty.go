@@ -15,21 +15,9 @@ func PrettyCtx(next http.Handler) http.Handler {
 	})
 }
 
-type PrettyPrintJSON struct {
-	w http.ResponseWriter
-	jq string
-}
-
-func (r *PrettyPrintJSON) Header() http.Header {
-	return r.w.Header()
-}
-
-func (r *PrettyPrintJSON) WriteHeader(statusCode int) {
-	r.w.WriteHeader(statusCode)
-}
-
-func NewPrettyPrint(w http.ResponseWriter) (p *PrettyPrintJSON) {
-	p = new(PrettyPrintJSON)
+// NewPrettyPrint checks for jq
+func NewPrettyPrint(w http.ResponseWriter) (p *prettyPrintJSON) {
+	p = new(prettyPrintJSON)
 	p.w = w
 
 	jq, err := exec.LookPath("jq")
@@ -40,7 +28,14 @@ func NewPrettyPrint(w http.ResponseWriter) (p *PrettyPrintJSON) {
 	return
 }
 
-func (r *PrettyPrintJSON) Write(bb []byte) (int, error) {
+// prettyPrintJSON holds a reference to the ResponseWrite and where 'jq' exec is
+type prettyPrintJSON struct {
+	w http.ResponseWriter
+	jq string
+}
+
+// Write is called, and we rewrite if jq is installed in exec path
+func (r *prettyPrintJSON) Write(bb []byte) (int, error) {
 	if r.jq == "" {
 		return r.w.Write(bb)
 	}
@@ -56,4 +51,14 @@ func (r *PrettyPrintJSON) Write(bb []byte) (int, error) {
 	}
 
 	return r.w.Write(bb)
+}
+
+// Header overrides Header from ResponseWriter
+func (r *prettyPrintJSON) Header() http.Header {
+	return r.w.Header()
+}
+
+// WriteHeader overrides ResponseWriter
+func (r *prettyPrintJSON) WriteHeader(statusCode int) {
+	r.w.WriteHeader(statusCode)
 }
