@@ -161,7 +161,6 @@ func (t *Transport) delete(url string) (body []byte, err error) {
 		return
 	}
 
-
 	body, err = ioutil.ReadAll(resp.Body)
 	if err == nil {
 		err = resp.Body.Close()

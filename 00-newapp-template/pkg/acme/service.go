@@ -13,29 +13,29 @@ var serviceMap = map[string]ServiceTransport{
 		URL: "{{.BaseURL}}/gophers",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET": {},
+			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 	"Gopher": {
 		URL: "{{.BaseURL}}/gopher/{{.GopherID}}",
 		MethodTemplate: map[string]MethodTemplate{
-			"GET":    {""},
-			"DELETE": {""},
-			"PUT":    {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			"GET":    {},
+			"DELETE": {},
 			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 	"Things": {
 		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/things",
 		MethodTemplate: map[string]MethodTemplate{
-			"GET": {""},
+			"GET": {},
+			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 	"Thing": {
 		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		MethodTemplate: map[string]MethodTemplate{
-			"GET":    {""},
-			"DELETE": {""},
-			"PUT":    {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			"GET":    {},
+			"DELETE": {},
 			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
@@ -43,7 +43,6 @@ var serviceMap = map[string]ServiceTransport{
 
 // DefaultRetryIntervals values in here we control the re-try of the Service
 var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000, 1000, 3000}
-
 
 // Service exposes ACME services by converting the JSON results to to Go []structures
 type Service struct {

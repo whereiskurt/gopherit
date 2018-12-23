@@ -37,10 +37,12 @@ func NewSimpleDB() (s SimpleDB) {
 	}
 	return
 }
+
 // Gophers returns array of acme.Gophers
 func (s *SimpleDB) Gophers() []acme.Gopher {
 	return s.gg
 }
+
 // GopherThings returns array of acme.Things for a given Gopher ID
 func (s *SimpleDB) GopherThings(gopherID string) (things []acme.Thing) {
 	for _, v := range s.tt {
@@ -72,6 +74,7 @@ func (s *SimpleDB) DeleteGopher(gopherID string) {
 	}
 	s.tt = things
 }
+
 // DeleteThing deletes Thing that matches ID and Gopher ID
 func (s *SimpleDB) DeleteThing(gopherID string, thingID string) {
 	var things []acme.Thing

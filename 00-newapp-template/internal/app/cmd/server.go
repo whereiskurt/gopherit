@@ -24,7 +24,7 @@ func NewServer(config *pkg.Config) (c Server) {
 
 // Server with no params will show the help
 func (c *Server) Server(cmd *cobra.Command, args []string) {
-	 _ = cmd.Help()
+	_ = cmd.Help()
 	return
 }
 

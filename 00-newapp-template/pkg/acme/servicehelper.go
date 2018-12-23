@@ -90,7 +90,7 @@ func (s *Service) toJSON(name string, method string, p map[string]string) (url s
 	}
 
 	mMap, hasTemplate := sMap.MethodTemplate[method]
-	if !hasTemplate  {
+	if !hasTemplate {
 		return "", fmt.Errorf("invalid template for method '%s' for name '%s'", method, name)
 	}
 
