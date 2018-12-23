@@ -7,7 +7,7 @@ This project is a starting set of Go files and directories. Simply 'Copy & Paste
 
 This package has four major parts to it:
   1) CLI invocation and configuration framework laid out with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) 
-  2) A service library for making HTTP ACME API service calls - `pkg.acme.Service`, `pkg.acme.Gopher`, `pkg.acme.Thing` 
+  2) A service library for making HTTP ACME API service calls - `pkg.acme.Service`, returning `pkg.acme.Gopher[]`, `pkg.acme.Thing[]` 
   3) A client library (`internal.pkg.adapter.Adapter`) using the service library (`pkg.acme.Service`) and converting ACME API results to our Go structures (e.g. `internal.pkg.adapter.Gopher`, `internal.pkg.adapter.Thing`) 
   4) An HTTP server built using [`go-chi`](https://github.com/go-chi/chi) to provide an ACME HTTP API server- `interal.pkg.server.Server`
 
