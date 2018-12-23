@@ -41,7 +41,7 @@ func (server *Server) gopher(w http.ResponseWriter, r *http.Request) {
 		if string(gopher.ID) == gopherID {
 			b, err := json.Marshal(gopher)
 			if err != nil {
-				server.Log.Errorf("error marshing gopher: %+v", err)
+				server.Log.Errorf("error marshaling gopher: %+v", err)
 				return
 			}
 			w.Write(b)
@@ -57,7 +57,7 @@ func (server *Server) things(w http.ResponseWriter, r *http.Request) {
 	things := server.DB.GopherThings(gopherID)
 	b, err := json.Marshal(things)
 	if err != nil {
-		server.Log.Errorf("error marshing things: %+v", err)
+		server.Log.Errorf("error marshaling things: %+v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
