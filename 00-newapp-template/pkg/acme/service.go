@@ -8,27 +8,42 @@ import (
 	"sync"
 )
 
+var serviceMap = map[string]ServiceTransport{
+	"Gophers": {
+		URL: "{{.BaseURL}}/gophers",
+		MethodTemplate: map[string]MethodTemplate{
+			"GET": {},
+		},
+	},
+	"Gopher": {
+		URL: "{{.BaseURL}}/gopher/{{.GopherID}}",
+		MethodTemplate: map[string]MethodTemplate{
+			"GET":    {""},
+			"DELETE": {""},
+			"PUT":    {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		},
+	},
+	"Things": {
+		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/things",
+		MethodTemplate: map[string]MethodTemplate{
+			"GET": {""},
+		},
+	},
+	"Thing": {
+		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
+		MethodTemplate: map[string]MethodTemplate{
+			"GET":    {""},
+			"DELETE": {""},
+			"PUT":    {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		},
+	},
+}
+
 // DefaultRetryIntervals values in here we control the re-try of the Service
 var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000, 1000, 3000}
 
-// urlServiceTmpl describes all of ACME end-points that can be called.
-var urlServiceTmpl = map[string]string{
-	"GetGophers":   "{{.BaseURL}}/gophers",
-	"deleteGopher": "{{.BaseURL}}/gopher/{{.GopherID}}",
-	"GetThings":    "{{.BaseURL}}/gopher/{{.GopherID}}/things",
-	"AddThing":     "{{.BaseURL}}/gopher/{{.GopherID}}/things",
-	"GetThing":     "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
-	"UpdateThing":  "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
-	"DeleteThing":  "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
-}
-
-// jsonBodyTmpl contain custom JSON bodies for ACME Services
-var jsonBodyTmpl = map[string]string{
-	"AddGopher":    `{ "name": "{{.Name}}", "description":"{{.Description}}" }`,
-	"UpdateGopher": `{ "name": "{{.Name}}", "description":"{{.Description}}" }`,
-	"AddThing":     `{ "name": "{{.Name}}", "description":"{{.Description}}" }`,
-	"UpdateThing":  `{ "name": "{{.Name}}", "description":"{{.Description}}" }`,
-}
 
 // Service exposes ACME services by converting the JSON results to to Go []structures
 type Service struct {
@@ -54,7 +69,7 @@ func NewService(base string, secret string, access string) (s Service) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetGophers() (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get("GetGophers", nil)
+		body, err := s.get("Gophers", nil)
 		if err != nil {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
@@ -66,6 +81,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 			return
 		}
 
+		// TODO: Write to cache!
 		return
 	})
 	if tErr != nil {
@@ -79,7 +95,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get("GetThings", map[string]string{"GopherID": gopherID})
+		body, err := s.get("Things", map[string]string{"GopherID": gopherID})
 		if err != nil {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
@@ -103,7 +119,7 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete("deleteGopher", map[string]string{"GopherID": gopherID})
+		body, err := s.delete("Gopher", map[string]string{"GopherID": gopherID})
 		if err != nil {
 			log.Printf("failed to DELETE Gopher: %+v", err)
 		}
@@ -126,7 +142,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	p := make(map[string]string)
 	p["ThingID"] = thingID
 	p["GopherID"] = gopherID
-	body, err := s.delete("DeleteThing", p)
+	body, err := s.delete("Thing", p)
 	if err != nil {
 		log.Printf("failed to DELETE thing: %+v", err)
 	}
