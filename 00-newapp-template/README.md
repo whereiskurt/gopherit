@@ -7,7 +7,7 @@ This project is a starting set of Go files and directories. Simply 'Copy & Paste
 
 This package has four major parts to it:
   1) CLI invocation and configuration ([`cobra`](https://github.com/spf13/cobra) / [`viper`](https://github.com/spf13/viper) ) 
-  2) A service library for making HTTP ACME API service calls - `pkg.acme.Service` that return JSON arrays of  and `pkg.acme.Thing` 
+  2) A service library for making HTTP ACME API service calls - `pkg.acme.Service`, `pkg.acme.Gopher`, `pkg.acme.Thing` 
   3) A client library (`internal.pkg.adapter.Adapter`) using the service library to convert ACME API results (`pkg.acme.Gopher`) to our Go structures (`internal.pkg.adapter.Gopher`) 
   4) An HTTP server (using [`go-chi`](https://github.com/go-chi/chi)) to provide an ACME HTTP API server- `interal.pkg.server.Server`
 
@@ -16,13 +16,14 @@ I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAz
 [![Go Report Card](https://goreportcard.com/badge/github.com/whereiskurt/gopherit)](https://goreportcard.com/report/github.com/whereiskurt/gopherit)
 
 # Go version 1.11 or greater required!
-
-A lot has happened in the Go ecosystem in the last year two-years. This project is:
+A lot has happened in the Go ecosystem in the last year two-years. As a result this project is:
 - Using go modules proper (ie. `go.mod`, `go.sum`, `vendor` folder) 
   - Works outside of `$GOPATH`
-  - `go test -v ./...` to server start server and test client
+  - `GOFLAGS="-mod=vendor" go test -v ./...` to server start server and test client
+  - `GOFLAGS="-mod=vendor" go build cmd\gophercli.go` to build an executable
   - 'Hermetic build/run/test' with `vendor` folder checked-in 
   - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
+
 
 This code includes:
 - [x] Fundamental Go features like tests, templates, go routines, contexts, channels, HTTP routing
