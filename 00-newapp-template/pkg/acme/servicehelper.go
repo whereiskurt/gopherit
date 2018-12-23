@@ -39,6 +39,21 @@ func (s *Service) get(name string, p map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// If we have a DiskCache it means we will write out responses to disk.
+	if s.DiskCache != nil {
+		// We have initialized a cache then write to it.
+		filename, err := s.toCacheFilename(name, p)
+		if err != nil {
+			return nil, err
+		}
+		filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder , filename)
+		err = s.DiskCache.Store(filename, body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return body, err
 }
 func (s *Service) delete(name string, p map[string]string) ([]byte, error) {
@@ -73,17 +88,32 @@ func (s *Service) update(name string, p map[string]string) ([]byte, error) {
 	return body, err
 }
 
-func (s *Service) toURL(name string, p map[string]string) (url string, err error) {
+func (s *Service) toURL(name string, p map[string]string) (string, error) {
+	sMap, hasMethod := serviceMap[name]
+	if !hasMethod {
+		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
+	}
+
 	if p == nil {
 		p = make(map[string]string)
 	}
 	p["BaseURL"] = s.BaseURL
 
-	return s.toTemplate(name, p, serviceMap[name].URL)
+	// Append the BaseURL to the URL
+	url := fmt.Sprintf("%s%s", s.BaseURL, sMap.URL)
 
+	return s.toTemplate(name, p, url)
 }
-func (s *Service) toJSON(name string, method string, p map[string]string) (url string, err error) {
 
+func (s *Service) toCacheFilename(name string, p map[string]string) (string, error) {
+	sMap, hasMethod := serviceMap[name]
+	if !hasMethod {
+		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
+	}
+	return s.toTemplate(name, p, sMap.CacheFilename)
+}
+
+func (s *Service) toJSON(name string, method string, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
@@ -98,19 +128,19 @@ func (s *Service) toJSON(name string, method string, p map[string]string) (url s
 	return s.toTemplate(name, p, tmpl)
 }
 
-func (s *Service) toTemplate(name string, data map[string]string, tmpl string) (url string, err error) {
+func (s *Service) toTemplate(name string, data map[string]string, tmpl string) (string, error) {
 	var rawURL bytes.Buffer
 	t, terr := template.New(name).Parse(tmpl)
 	if terr != nil {
-		err = fmt.Errorf("error: failed to parse template for %s: %v", name, err)
-		return
+		err := fmt.Errorf("error: failed to parse template for %s: %v", name, terr)
+		return "", err
 	}
-	err = t.Execute(&rawURL, data)
+	err := t.Execute(&rawURL, data)
 	if err != nil {
-		return
+		return "", err
 	}
 
-	url = rawURL.String()
+	url := rawURL.String()
 
-	return
+	return url, nil
 }

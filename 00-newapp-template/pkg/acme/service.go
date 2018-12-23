@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"00-newapp-template/pkg/acme/cache"
 	"encoding/json"
 	"gopkg.in/matryer/try.v1"
 	"log"
@@ -10,14 +11,16 @@ import (
 
 var serviceMap = map[string]ServiceTransport{
 	"Gophers": {
-		URL: "{{.BaseURL}}/gophers",
+		URL:           "/gophers",
+		CacheFilename: "gophers.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET": {},
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 	"Gopher": {
-		URL: "{{.BaseURL}}/gopher/{{.GopherID}}",
+		URL:           "/gopher/{{.GopherID}}",
+		CacheFilename: "gopher/{{.GopherID}}/gopher.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET":    {},
 			"DELETE": {},
@@ -25,14 +28,16 @@ var serviceMap = map[string]ServiceTransport{
 		},
 	},
 	"Things": {
-		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/things",
+		URL:           "/gopher/{{.GopherID}}/things",
+		CacheFilename: "gopher/{{.GopherID}}/things.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET": {},
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 	"Thing": {
-		URL: "{{.BaseURL}}/gopher/{{.GopherID}}/thing/{{.ThingID}}",
+		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
+		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/thing.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET":    {},
 			"DELETE": {},
@@ -46,10 +51,11 @@ var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000,
 
 // Service exposes ACME services by converting the JSON results to to Go []structures
 type Service struct {
-	BaseURL        string          // Put in front of every
-	SecretKey      string          // ACME Secret Keys for API Access (provided by ACME)
-	AccessKey      string          //             Access Key for API access (provided by ACME)
-	RetryIntervals []int           // When a call to a transport fails, this will control the retrying.
+	BaseURL        string // Put in front of every
+	SecretKey      string // ACME Secret Keys for API Access (provided by ACME)
+	AccessKey      string //             Access Key for API access (provided by ACME)
+	RetryIntervals []int  // When a call to a transport fails, this will control the retrying.
+	DiskCache      *cache.Disk
 	Worker         *sync.WaitGroup // Used by Go routines to control workers (TODO)
 }
 
@@ -61,6 +67,16 @@ func NewService(base string, secret string, access string) (s Service) {
 	s.AccessKey = access
 	s.RetryIntervals = DefaultRetryIntervals
 	s.Worker = new(sync.WaitGroup)
+	return
+}
+
+// EnableCache will create a new Disk Cache for all request.
+func (s *Service) EnableCache(cacheFolder string, cryptoKey string) {
+	var useCrypto = false
+	if cryptoKey != "" {
+		useCrypto = true
+	}
+	s.DiskCache = cache.NewDisk(cacheFolder, cryptoKey, useCrypto)
 	return
 }
 
@@ -80,7 +96,6 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 			return
 		}
 
-		// TODO: Write to cache!
 		return
 	})
 	if tErr != nil {

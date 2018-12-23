@@ -19,6 +19,8 @@ const defaultHomeFilename = ".gophercli"
 const defaultVerboseLevel = "3"
 const defaultClientOutputMode = "table"
 const defaultServerListenPort = "10101"
+const defaultCacheFolder = "./.cache/"
+const defaultCacheResponse = true
 
 // Config holds all parameters for the application and is structured based on the command hierarchy
 type Config struct {
@@ -47,6 +49,9 @@ type ClientConfig struct {
 	BaseURL           string
 	AccessKey         string
 	SecretKey         string
+	CacheKey          string
+	CacheFolder       string
+	CacheResponse     bool
 	OutputMode        string
 	GopherID          string
 	GopherName        string
@@ -130,13 +135,14 @@ func (c *Config) viper() {
 	return
 }
 func (c *Config) useDefaultValues() {
+	c.Client.CacheFolder = defaultCacheFolder
+	c.Client.CacheResponse = defaultCacheResponse
 	c.Client.OutputMode = defaultClientOutputMode
 	c.Server.ListenPort = defaultServerListenPort
 	c.VerboseLevel = defaultVerboseLevel
 	c.ConfigFolder = defaultConfigFolder
 	c.ConfigFilename = defaultConfigFilename
 	c.TemplateFolder = defaultTemplateFolder
-
 	// Find the User's homefolder
 	hdir, hErr := home.Dir()
 	if hErr != nil {

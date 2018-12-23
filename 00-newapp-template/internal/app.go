@@ -59,6 +59,10 @@ func NewApp() (a App) {
 	makeString("Client.BaseURL", &a.Config.Client.BaseURL, []string{"u", "url"}, ccmd)
 	makeString("Client.AccessKey", &a.Config.Client.AccessKey, nil, ccmd)
 	makeString("Client.SecretKey", &a.Config.Client.SecretKey, nil, ccmd)
+	makeString("Client.CacheKey", &a.Config.Client.CacheKey, nil, ccmd)
+	makeString("Client.CacheFolder", &a.Config.Client.CacheFolder, []string{"cf", "cfolder", "cacheFolder"}, ccmd)
+	makeBool("Client.CacheResponse", &a.Config.Client.CacheResponse, []string{"c", "cr", "cache", "cacheResponse"}, ccmd)
+
 	makeString("Client.OutputMode", &a.Config.Client.OutputMode, []string{"m", "mode"}, ccmd)
 	makeString("Client.GopherID", &a.Config.Client.GopherID, []string{"g", "gid", "gopher", "gopherID"}, ccmd)
 	makeString("Client.ThingID", &a.Config.Client.ThingID, []string{"t", "tid", "thing", "thingID"}, ccmd)

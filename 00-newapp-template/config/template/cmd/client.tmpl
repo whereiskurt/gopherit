@@ -3,7 +3,7 @@ Command:
     gophercli client [SUBCOMMAND] [OPTIONS]
 
     gophercli [SUBCOMMAND] [OPTIONS]
-    (The default command is 'client' and can be omitted.)
+    (The default command 'client' can be omitted.)
 
 Subcommands:
     list
@@ -11,15 +11,17 @@ Subcommands:
     delete
 
 Options:
-     -m,  --m, --mode string     Set to table,csv,json,xml [default:table]
-     -g,  --g, --gopher string   Set the GopherID (optional.)
-     -t,  --t, --thing string    Set the ThingID (optional.)
-         --gn, --gname string    Set Gopher name value for adding, updating, searching
-         --gd, --gdesc string    Set Gopher description for adding, updating, searching
-         --tn, --tname string    Set Thing name value for adding, updating, searching
-         --td, --tdesc string    Set Thing description for adding, updating, searching
+     -m,  --m, --mode     string      Set to table,csv,json,xml [default:table]
+     -g,  --g, --gopher   string      Set the GopherID (optional.)
+     -t,  --t, --thing    string      Set the ThingID (optional.)
+         --gn, --gname    string      Set Gopher name value for adding, updating, searching
+         --gd, --gdesc    string      Set Gopher description for adding, updating, searching
+         --tn, --tname    string      Set Thing name value for adding, updating, searching
+         --td, --tdesc    string      Set Thing description for adding, updating, searching
+    -c,  --cache          true/false  Request caching of the body (HTTP GETs only)
+          -cf, --cfolder  string      Cache folder name (default: './.cache/')
 
-    Examples:{{template "ClientList"}} {{template "ClientUpdate"}} {{template "ClientDelete"}}
+Examples:{{template "ClientList"}} {{template "ClientUpdate"}} {{template "ClientDelete"}}
 {{end}}
 
 {{define "ClientList" }}

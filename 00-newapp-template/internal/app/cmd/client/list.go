@@ -15,7 +15,7 @@ func List(adapter *adapter.Adapter, cli ui.CLI) (gophers map[string]adapter.Goph
 
 	gophers = adapter.GopherThings()
 
-	log.Debugf("Gropher Map retrieved: %+v", gophers)
+	log.Debugf("Gopher Map retrieved: %+v", gophers)
 
 	var output string
 	switch strings.ToLower(adapter.Config.Client.OutputMode) {
