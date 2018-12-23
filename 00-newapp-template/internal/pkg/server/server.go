@@ -36,7 +36,7 @@ func (server *Server) ListenAndServe() (err error) {
 	server.hookShutdownSignal()
 
 	go func() {
-		server.Log.Infof("server starting")
+		server.Log.Infof("server started")
 		err = server.HTTP.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			server.Log.Errorf("error serving: %+v", err)
