@@ -9,7 +9,7 @@ import (
 )
 
 // DefaultRetryIntervals values in here we control the re-try of the Service
-var DefaultRetryIntervals = []int{0, 500, 5000, 15000}
+var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000, 1000, 3000}
 
 // urlServiceTmpl describes all of ACME end-points that can be called.
 var urlServiceTmpl = map[string]string{
