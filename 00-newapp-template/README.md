@@ -6,10 +6,10 @@ Do you want to build a modern Go tool with a **C**ommand **L**ine **I**nterface 
 This project is a starting set of Go files and directories. Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can be up and running. 
 
 This package has four major parts to it:
-  1) CLI invocation and configuration ([`cobra`](https://github.com/spf13/cobra) / [`viper`](https://github.com/spf13/viper) ) 
+  1) CLI invocation and configuration framework laid out with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) 
   2) A service library for making HTTP ACME API service calls - `pkg.acme.Service`, `pkg.acme.Gopher`, `pkg.acme.Thing` 
-  3) A client library (`internal.pkg.adapter.Adapter`) using the service library to convert ACME API results (`pkg.acme.Gopher`) to our Go structures (`internal.pkg.adapter.Gopher`) 
-  4) An HTTP server (using [`go-chi`](https://github.com/go-chi/chi)) to provide an ACME HTTP API server- `interal.pkg.server.Server`
+  3) A client library (`internal.pkg.adapter.Adapter`) using the service library (`pkg.acme.Service`) and converting ACME API results to our Go structures (e.g. `internal.pkg.adapter.Gopher`, `internal.pkg.adapter.Thing`) 
+  4) An HTTP server built using [`go-chi`](https://github.com/go-chi/chi) to provide an ACME HTTP API server- `interal.pkg.server.Server`
 
 I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAzg1FHthbIaRRbLyA4sNE4PmLmn6) of videos which help explain how I ended up with this structure and 'why things are the way they are.' I've leveraged 'best practices' I've seen and that have been explicted called out by others. Of course **THERE ARE SOME WRINKLES** and few **PURELY DEMONSTRATION** portions of code. I hope to be able to keep improving on this.
 
@@ -19,8 +19,8 @@ I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAz
 A lot has happened in the Go ecosystem in the last year two-years. As a result this project is:
 - Using go modules proper (ie. `go.mod`, `go.sum`, `vendor` folder) 
   - Works outside of `$GOPATH`
-  - `GOFLAGS="-mod=vendor" go test -v ./...` to server start server and test client
-  - `GOFLAGS="-mod=vendor" go build cmd\gophercli.go` to build an executable
+  - `go test -v ./...` to server start server and test client
+  - `go build cmd\gophercli.go` to build an executable
   - 'Hermetic build/run/test' with `vendor` folder checked-in 
   - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
 
@@ -119,9 +119,13 @@ Because ACME API charges us per API call, we decided to mock implement our own A
 This video shows download Go version 1.11.4 and checking out from scratch:
 
 ![Download Go v1.11.4](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgo.gif)
+[(Download MP4 of Go v1.11.4)](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgo.gif)
+
 ![git clone gopherit repo](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgopherit.gif)
+[(Download MP4 of git clone gopherit repo)](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgopherit.gif)
+
 ![docker build/run](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/dockerworkflow.gif)
-[docker build/run](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/dockerworkflow.mp4)
+[(Download MP4 of docker build/run)](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/dockerworkflow.mp4)
 
 ## How-to Run:
 ```
