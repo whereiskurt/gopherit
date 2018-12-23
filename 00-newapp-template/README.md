@@ -113,7 +113,8 @@ Because ACME API charges us per API call, we decided to mock implement our own A
 ```
   ./gophercli server start
 ```
-![Server Startup](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/serverclient.gif)
+![Server Startup](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/serverstart.gif)
+[(Download MP4 of Server Startup)](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/serverstart.mp4)
 
 # Complete Process - Looping GIF Video
 This video shows download Go version 1.11.4 and checking out from scratch:
