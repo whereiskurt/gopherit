@@ -1,6 +1,6 @@
 FROM golang
 
-## NOTE:GOFLAGS won't be needed in go1.12
+## NOTE: GOFLAGS won't be needed in go1.12
 ARG goflags="-mod=vendor"
 ENV GOFLAGS=$goflags
 

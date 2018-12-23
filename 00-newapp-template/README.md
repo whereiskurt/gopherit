@@ -24,7 +24,6 @@ A lot has happened in the Go ecosystem in the last year two-years. As a result t
   - 'Hermetic build/run/test' with `vendor` folder checked-in 
   - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
 
-
 This code includes:
 - [x] Fundamental Go features like tests, templates, go routines, contexts, channels, HTTP routing
   - The `config\template\*\*.tmpl` contain all templates
@@ -37,6 +36,8 @@ This code includes:
     - Using `NewStructuredLogger` middleware to decorate each route with log output
     - Custom middleware (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
 - [x] An example Dockerfile for a docker workflow
+
+
 
 # The Story of 00-newapp-template
 There is a vendor named ACME who provides API to access to `Gophers` and `Things`. Because I use the ACME API **all the time** to track `Gophers` and their `Things` and I have decided to create a CLI tool to perform the HTTP API calls needed and output a text table or JSON structure. Ideally using a simple command like:
@@ -117,15 +118,10 @@ Because ACME API charges us per API call, we decided to mock implement our own A
 # Complete Process - Looping GIF Video
 This video shows download Go version 1.11.4 and checking out from scratch:
 
-![Quick overview](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/demo.gif)
-
-# MP4 videos demos
-- [Download and install Go](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-00-52.mp4)
-- [Clone Gihub Repository](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-01-56.mp4)
-- [Review go.mod Dependencies](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-03-05.mp4)
-- [go test](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-04-22.mp4)
-- [Dockerfile and Docker workflow](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-05-58.mp4)
-- [Hermetic Build](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/vokoscreen-2018-12-20_19-07-32.mp4)
+![Download Go v1.11.4](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgo.gif)
+![git clone gopherit repo](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/getgopherit.gif)
+![docker build/run](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/dockerworkflow.gif)
+[docker build/run](https://github.com/whereiskurt/gopherit/blob/master/00-newapp-template/docs/videos/dockerworkflow.mp4)
 
 ## How-to Run:
 ```
