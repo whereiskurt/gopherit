@@ -70,6 +70,7 @@ func InitialCtx(next http.Handler) http.Handler {
 			}
 		}
 		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
+		w = NewPrettyPrint(w)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

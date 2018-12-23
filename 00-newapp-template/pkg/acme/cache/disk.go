@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,12 +8,14 @@ import (
 	"strings"
 )
 
+// Disk is a simple disk cache for responses that supports a crypto key and folder parameter
 type Disk struct {
 	UseCrypto   bool
 	CacheKey    []byte
 	CacheFolder string
 }
 
+// NewDisk creates an Disk for storing responses
 func NewDisk(folder string, key string, crypto bool) (d *Disk) {
 	d = new(Disk)
 	d.UseCrypto = crypto
@@ -23,6 +24,7 @@ func NewDisk(folder string, key string, crypto bool) (d *Disk) {
 	return
 }
 
+// Fetch looks for the stored file and returns it.
 func (d *Disk) Fetch(filename string) (bb []byte, err error) {
 	if _, stat := os.Stat(filename); os.IsNotExist(stat) {
 		// File doesn't exist return no error
@@ -41,24 +43,14 @@ func (d *Disk) Fetch(filename string) (bb []byte, err error) {
 			// Successfully decrypted!
 			bb = dd
 		} else {
-			err = errors.New(fmt.Sprintf("cache failed to decrypt file '%s' : %s", filename, err))
+			err = fmt.Errorf("cache failed to decrypt file '%s' : %s", filename, err)
 		}
 	}
 	return
 }
+// Store will create a cache file with the bb bytes
 func (d *Disk) Store(filename string, bb []byte) (err error) {
 
-	// if d.jqpath != "" {
-	// 	var pretty bytes.Buffer
-	// 	raw := bb
-	// 	cmd := exec.Command(d.jqpath, ".")
-	// 	cmd.Stdin = strings.NewReader(string(raw))
-	// 	cmd.Stdout = &pretty
-	// 	err = cmd.Run()
-	// 	if err == nil {
-	// 		bb = []byte(pretty.String())
-	// 	}
-	// }
 
 	if d.UseCrypto && len(d.CacheKey) > 0 {
 		bb, err = Encrypt(bb, d.CacheKey)
@@ -76,6 +68,7 @@ func (d *Disk) Store(filename string, bb []byte) (err error) {
 
 	return
 }
+// Clear will delete the cache file.
 func (d *Disk) Clear(filename string) {
 	os.Remove(filename) // delete the cache file.
 }

@@ -27,7 +27,7 @@ func (server *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	gophers := server.DB.Gophers()
 	b, err := json.Marshal(gophers)
 	if err != nil {
-		server.Log.Errorf("error marshing gophers: %+v", err)
+		server.Log.Errorf("error marshaling gophers: %+v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

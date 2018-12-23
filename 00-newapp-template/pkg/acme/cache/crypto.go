@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+// Encrypt wraps for AES
 func Encrypt(plaintext []byte, key []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
@@ -27,6 +28,7 @@ func Encrypt(plaintext []byte, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
+// Decrypt is a wrapper for AES
 func Decrypt(crypt []byte, key []byte) (out []byte, err error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {

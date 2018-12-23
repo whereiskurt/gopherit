@@ -14,10 +14,20 @@ func TestUnAuthenticatedClient(t *testing.T) {
 	serverConfig := pkg.NewConfig()
 	SetupConfig(serverConfig)
 
-	// We our own server ports and configs.
 	t.Parallel()
 
 	StartServerRunTests(t, ClientTests)
+}
+
+func SetupConfig(c *pkg.Config) {
+	c.Server.ListenPort = "10201"
+	// Use a different port than the DEFAULT, then we can parallel tests
+	c.Client.BaseURL = "http://localhost:10201"
+	// Test cases are run from the package folder containing the source file.
+	c.TemplateFolder = "./../../../config/template/"
+	c.Client.CacheFolder = "./../../../.cache/"
+	c.VerboseLevel5 = true
+	c.VerboseLevel = "5"
 }
 
 func StartServerRunTests(t *testing.T, f func(*testing.T)) {
@@ -81,13 +91,3 @@ func ClientTests(t *testing.T) {
 	})
 }
 
-func SetupConfig(c *pkg.Config) {
-	c.Server.ListenPort = "10201"
-	// Use a different port than the DEFAULT, then we can parallel tests
-	c.Client.BaseURL = "http://localhost:10201"
-	// Test cases are run from the package folder containing the source file.
-	c.TemplateFolder = "./../../../config/template/"
-
-	c.VerboseLevel5 = true
-	c.VerboseLevel = "5"
-}

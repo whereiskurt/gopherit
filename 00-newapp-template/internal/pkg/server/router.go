@@ -14,6 +14,7 @@ func (server *Server) NewRouter() {
 
 	server.Router.Route("/", func(r chi.Router) {
 		r.Use(middleware.InitialCtx)
+		r.Use(middleware.PrettyCtx)
 
 		r.Get("/shutdown", server.shutdown) // Anyone can shutdown server - try it by visiting http://localhost:10201/shutdown
 		r.Get("/gophers", server.gophers)   // Anyone can get all gophers

@@ -23,9 +23,9 @@ type App struct {
 // CommandList entry[0] becomes default when a 'command' is omitted
 var CommandList = []string{"client", "server", "version"}
 
-// NewApp contructs the command line and configuration
-func NewApp() (a App) {
-	a.Config = pkg.NewConfig()
+// NewApp constructs the command line and configuration
+func NewApp(config * pkg.Config) (a App) {
+	a.Config = config
 	a.RootCmd = new(cobra.Command)
 
 	// Ensure before any command is run we Unmarshal and Validate the Config values.
@@ -38,7 +38,7 @@ func NewApp() (a App) {
 		}
 	}
 
-	a.RootCmd.SetUsageTemplate(UsageTemplate("GopheritUsage", nil))
+	a.RootCmd.SetUsageTemplate(a.usageTemplate("GopherCLIUsage", nil))
 	makeBool("VerboseLevel1", &a.Config.VerboseLevel1, []string{"s", "silent"}, a.RootCmd)
 	makeBool("VerboseLevel2", &a.Config.VerboseLevel2, []string{"q", "quiet"}, a.RootCmd)
 	makeBool("VerboseLevel3", &a.Config.VerboseLevel3, []string{"v", "info"}, a.RootCmd)
@@ -48,7 +48,7 @@ func NewApp() (a App) {
 
 	ver := cmd.NewVersion(a.Config)
 	vcmd := makeCommand("version", ver.Version, a.RootCmd)
-	vcmd.SetUsageTemplate(UsageTemplate("VersionUsage", nil))
+	vcmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, vcmd)
 	makeBool("Version.ShowServer", &a.Config.Version.ShowServer, []string{"ss", "showserver"}, vcmd)
 	makeBool("Version.ShowClient", &a.Config.Version.ShowClient, []string{"sc", "showclient"}, vcmd)
@@ -71,7 +71,7 @@ func NewApp() (a App) {
 	makeString("Client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, ccmd)
 	makeString("Client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, ccmd)
 
-	ccmd.SetUsageTemplate(UsageTemplate("ClientUsage", nil))
+	ccmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, ccmd)
 	_ = makeCommand("list", client.List, ccmd)
 	_ = makeCommand("update", client.Update, ccmd)
@@ -84,7 +84,7 @@ func NewApp() (a App) {
 	makeString("Server.RootFolder", &a.Config.Server.RootFolder, []string{"r", "docroot", "root"}, scmd)
 	makeString("Server.ListenPort", &a.Config.Server.ListenPort, []string{"p", "port"}, scmd)
 
-	scmd.SetUsageTemplate(UsageTemplate("ServerUsage", nil))
+	scmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, scmd)
 	_ = makeCommand("start", server.Start, scmd)
 	_ = makeCommand("stop", server.Stop, scmd)
@@ -92,8 +92,8 @@ func NewApp() (a App) {
 	return
 }
 
-// Main pases control over to the root cobra command.
-func (a *App) Main() {
+// InvokeCLI passes control over to the root cobra command.
+func (a *App) InvokeCLI() {
 	// Check if first param & last param if the user wants the Help/Usage
 	// NOTE: the "&&" is short-circuited
 
@@ -101,7 +101,7 @@ func (a *App) Main() {
 	wantsHelp := arglen > 1 && ((os.Args[1] == "--help") || (os.Args[1] == "--h") || (os.Args[1] == "help"))
 
 	if arglen == 1 || wantsHelp {
-		usage := UsageTemplate("GopheritUsage", nil)
+		usage := a.usageTemplate("GopherCLIUsage", nil)
 		_, _ = fmt.Fprintf(os.Stderr, usage)
 		return
 	}
@@ -120,17 +120,19 @@ func (a *App) Main() {
 	return
 }
 
-// UsageTemplate renders the usage/help/man pages for a cmd
-func UsageTemplate(name string, data interface{}) (usage string) {
+// usageTemplate renders the usage/help/man pages for a cmd
+func (a *App) usageTemplate(name string, data interface{}) (usage string) {
 	var raw bytes.Buffer
 	var err error
+
+	tf := fmt.Sprintf("%scmd/*.tmpl", a.Config.TemplateFolder)
 
 	t := template.New("")
 	t, err = t.Funcs(
 		template.FuncMap{
 			"Gopher": ui.Gopher,
 		},
-	).ParseGlob("config/template/cmd/*.tmpl")
+	).ParseGlob(tf)
 
 	if err != nil {
 		log.Fatalf("couldn't Template: %v", err)
@@ -144,7 +146,6 @@ func UsageTemplate(name string, data interface{}) (usage string) {
 	usage = raw.String()
 	return
 }
-
 func setDefaultRootCmd() {
 	// Check if the first arg is a root command
 	arg := strings.ToLower(os.Args[1])
