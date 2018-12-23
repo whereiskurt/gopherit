@@ -1,9 +1,15 @@
 FROM golang
 
-RUN mkdir /gopherit
-
-ADD . /gopherit/
-WORKDIR /gopherit
-
 ## NOTE:GOFLAGS won't be needed in go1.12
-RUN GOFLAGS="-mod=vendor" go test -v ./...
+ARG goflags="-mod=vendor"
+ENV GOFLAGS=$goflags
+
+RUN mkdir /gophercli
+
+ADD . /gophercli/
+WORKDIR /gophercli
+
+RUN go test -v ./...
+RUN GOOS=windows go build cmd/gophercli.go
+RUN GOOS=linux go build cmd/gophercli.go
+RUN GOOS=darwin go build -o gophercli.darwin cmd/gophercli.go
