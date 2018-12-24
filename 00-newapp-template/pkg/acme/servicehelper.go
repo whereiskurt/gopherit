@@ -30,7 +30,7 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 }
 
 func (s *Service) get(name string, p map[string]string) ([]byte, error) {
-	url, err := s.toURL(name, p)
+	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
 	}
@@ -43,11 +43,11 @@ func (s *Service) get(name string, p map[string]string) ([]byte, error) {
 	// If we have a DiskCache it means we will write out responses to disk.
 	if s.DiskCache != nil {
 		// We have initialized a cache then write to it.
-		filename, err := s.toCacheFilename(name, p)
+		filename, err := ToCacheFilename(name, p)
 		if err != nil {
 			return nil, err
 		}
-		filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder , filename)
+		filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
 		err = s.DiskCache.Store(filename, body)
 		if err != nil {
 			return nil, err
@@ -57,7 +57,7 @@ func (s *Service) get(name string, p map[string]string) ([]byte, error) {
 	return body, err
 }
 func (s *Service) delete(name string, p map[string]string) ([]byte, error) {
-	url, err := s.toURL(name, p)
+	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +70,11 @@ func (s *Service) delete(name string, p map[string]string) ([]byte, error) {
 	return body, err
 }
 func (s *Service) update(name string, p map[string]string) ([]byte, error) {
-	url, err := s.toURL(name, p)
+	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
 	}
-	json, err := s.toJSON(name, "POST", p)
+	json, err := ToJSON(name, "POST", p)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (s *Service) update(name string, p map[string]string) ([]byte, error) {
 	return body, err
 }
 
-func (s *Service) toURL(name string, p map[string]string) (string, error) {
+func ToURL(baseURL string, name string, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
@@ -97,23 +97,23 @@ func (s *Service) toURL(name string, p map[string]string) (string, error) {
 	if p == nil {
 		p = make(map[string]string)
 	}
-	p["BaseURL"] = s.BaseURL
+	p["BaseURL"] = baseURL
 
 	// Append the BaseURL to the URL
-	url := fmt.Sprintf("%s%s", s.BaseURL, sMap.URL)
+	url := fmt.Sprintf("%s%s", baseURL, sMap.URL)
 
-	return s.toTemplate(name, p, url)
+	return ToTemplate(name, p, url)
 }
 
-func (s *Service) toCacheFilename(name string, p map[string]string) (string, error) {
+func ToCacheFilename(name string, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
 	}
-	return s.toTemplate(name, p, sMap.CacheFilename)
+	return ToTemplate(name, p, sMap.CacheFilename)
 }
 
-func (s *Service) toJSON(name string, method string, p map[string]string) (string, error) {
+func ToJSON(name string, method string, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
@@ -125,10 +125,10 @@ func (s *Service) toJSON(name string, method string, p map[string]string) (strin
 	}
 
 	tmpl := mMap.Template
-	return s.toTemplate(name, p, tmpl)
+	return ToTemplate(name, p, tmpl)
 }
 
-func (s *Service) toTemplate(name string, data map[string]string, tmpl string) (string, error) {
+func ToTemplate(name string, data map[string]string, tmpl string) (string, error) {
 	var rawURL bytes.Buffer
 	t, terr := template.New(name).Parse(tmpl)
 	if terr != nil {

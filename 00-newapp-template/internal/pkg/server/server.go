@@ -2,6 +2,7 @@ package server
 
 import (
 	"00-newapp-template/internal/pkg/server/db"
+	"00-newapp-template/pkg/acme/cache"
 	"context"
 	"github.com/go-chi/chi"
 	log "github.com/sirupsen/logrus"
@@ -13,12 +14,13 @@ import (
 
 // Server is built on go-chi
 type Server struct {
-	Context  context.Context
-	Router   chi.Router
-	HTTP     *http.Server
-	Log      *log.Logger
-	Finished context.CancelFunc
-	DB       db.SimpleDB
+	Context   context.Context
+	Router    chi.Router
+	HTTP      *http.Server
+	Log       *log.Logger
+	Finished  context.CancelFunc
+	DB        db.SimpleDB
+	DiskCache *cache.Disk
 }
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
@@ -31,37 +33,47 @@ func NewServer(context context.Context, listenPort string, log *log.Logger) (ser
 	return
 }
 
+// EnableCache will create a new Disk Cache for all request.
+func (s *Server) EnableCache(cacheFolder string, cryptoKey string) {
+	var useCrypto = false
+	if cryptoKey != "" {
+		useCrypto = true
+	}
+	s.DiskCache = cache.NewDisk(cacheFolder, cryptoKey, useCrypto)
+	return
+}
+
 // ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth shutdown.
-func (server *Server) ListenAndServe() (err error) {
-	server.hookShutdownSignal()
+func (s *Server) ListenAndServe() (err error) {
+	s.hookShutdownSignal()
 
 	go func() {
-		server.Log.Infof("server started")
-		err = server.HTTP.ListenAndServe()
+		s.Log.Infof("s started")
+		err = s.HTTP.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			server.Log.Errorf("error serving: %+v", err)
+			s.Log.Errorf("error serving: %+v", err)
 		}
-		server.Finished()
+		s.Finished()
 	}()
 
 	select {
-	case <-server.Context.Done():
-		server.Log.Infof("server stopped")
+	case <-s.Context.Done():
+		s.Log.Infof("s stopped")
 	}
 
 	return
 }
-func (server *Server) hookShutdownSignal() {
+func (s *Server) hookShutdownSignal() {
 	stop := make(chan os.Signal)
 
 	signal.Notify(stop, syscall.SIGTERM)
 	signal.Notify(stop, syscall.SIGINT)
 
-	server.Context, server.Finished = context.WithCancel(server.Context)
+	s.Context, s.Finished = context.WithCancel(s.Context)
 	go func() {
 		sig := <-stop
-		server.Log.Infof("server termination signal '%s' received", sig)
-		server.Finished()
+		s.Log.Infof("s termination signal '%s' received", sig)
+		s.Finished()
 	}()
 
 	return

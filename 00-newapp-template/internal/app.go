@@ -24,7 +24,7 @@ type App struct {
 var CommandList = []string{"client", "server", "version"}
 
 // NewApp constructs the command line and configuration
-func NewApp(config * pkg.Config) (a App) {
+func NewApp(config *pkg.Config) (a App) {
 	a.Config = config
 	a.RootCmd = new(cobra.Command)
 

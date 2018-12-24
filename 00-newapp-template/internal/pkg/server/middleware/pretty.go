@@ -30,7 +30,7 @@ func NewPrettyPrint(w http.ResponseWriter) (p *prettyPrintJSON) {
 
 // prettyPrintJSON holds a reference to the ResponseWrite and where 'jq' exec is
 type prettyPrintJSON struct {
-	w http.ResponseWriter
+	w  http.ResponseWriter
 	jq string
 }
 

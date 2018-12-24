@@ -34,6 +34,7 @@ This code includes:
 - [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
     - Using `NewStructuredLogger` middleware to decorate each route with log output
+    - ResponseHandler to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)
     - Custom middleware (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
 - [x] An example Dockerfile for a docker workflow
 

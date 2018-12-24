@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"00-newapp-template/pkg/acme"
 	"context"
 	"github.com/go-chi/chi"
 	"net/http"
@@ -75,7 +76,7 @@ func InitialCtx(next http.Handler) http.Handler {
 	})
 }
 
-// GopherCtx enforces non-authenicated read-only (GET/HEAD) requests and sets:
+// GopherCtx enforces non-authenticated read-only (GET/HEAD) requests and sets:
 func GopherCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !IsAuthenticated(r) {
@@ -93,6 +94,18 @@ func GopherCtx(next http.Handler) http.Handler {
 		ctxMap["GopherID"] = chi.URLParam(r, "GopherID")
 		ctxMap["GopherName"] = r.FormValue("GopherName")
 		ctxMap["GopherDescription"] = r.FormValue("GopherDescription")
+
+		ctxMap["CacheFilename"], _ = acme.ToCacheFilename("Gopher", ctxMap)
+		// if s.DiskCache != nil {
+		// 	filename, _ := acme.ToCacheFilename("Thing", middleware.ContextMap(r))
+		// 	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+		// 	b, err := s.DiskCache.Fetch(filename)
+		// 	if err != nil {
+		// 		w.Write(b)
+		// 		return
+		// 	}
+		// }
+
 		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -111,6 +124,9 @@ func ThingCtx(next http.Handler) http.Handler {
 		ctxMap["ThingID"] = chi.URLParam(r, "ThingID")
 		ctxMap["ThingName"] = r.FormValue("ThingName")
 		ctxMap["ThingDescription"] = r.FormValue("ThingDescription")
+
+		ctxMap["CacheFilename"], _ = acme.ToCacheFilename("Thing", ctxMap)
+
 		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

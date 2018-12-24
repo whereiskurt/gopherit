@@ -48,9 +48,9 @@ func (d *Disk) Fetch(filename string) (bb []byte, err error) {
 	}
 	return
 }
+
 // Store will create a cache file with the bb bytes
 func (d *Disk) Store(filename string, bb []byte) (err error) {
-
 
 	if d.UseCrypto && len(d.CacheKey) > 0 {
 		bb, err = Encrypt(bb, d.CacheKey)
@@ -68,6 +68,7 @@ func (d *Disk) Store(filename string, bb []byte) (err error) {
 
 	return
 }
+
 // Clear will delete the cache file.
 func (d *Disk) Clear(filename string) {
 	os.Remove(filename) // delete the cache file.
