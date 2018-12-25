@@ -25,7 +25,7 @@ func SetupConfig(c *pkg.Config) {
 	c.Client.BaseURL = "http://localhost:10201"
 	// Test cases are run from the package folder containing the source file.
 	c.TemplateFolder = "./../../../config/template/"
-	c.Client.CacheFolder = "./../../../.cache/"
+	c.Client.CacheFolder = "./../../../" + pkg.DefaultClientCacheFolder
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 }
@@ -34,7 +34,7 @@ func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 	// We our own server ports and configs.
 	config := pkg.NewConfig()
 	SetupConfig(config)
-	s := server.NewServer(config.Context, config.Server.ListenPort, config.Log)
+	s := server.NewServer(config)
 	s.NewRouter()
 	var err error
 	go func() {

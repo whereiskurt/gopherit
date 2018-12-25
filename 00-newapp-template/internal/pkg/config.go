@@ -11,16 +11,26 @@ import (
 	"strings"
 )
 
+// These defaults are needed to configure Viper/Cobra
 const defaultConfigType = "yaml"
 const defaultConfigFilename = "default.gophercli"
 const defaultConfigFolder = "./config/"
 const defaultTemplateFolder = "./config/template/"
 const defaultHomeFilename = ".gophercli"
+
+// Sensible defaults even with out a configuration file present
 const defaultVerboseLevel = "3"
 const defaultClientOutputMode = "table"
 const defaultServerListenPort = "10101"
-const defaultCacheFolder = "./.cache/"
-const defaultCacheResponse = true
+
+// Used by the *_test to the set defaults
+// DefaultClientCacheFolder stores default client cache file location
+const DefaultClientCacheFolder = "./.cache/client/"
+const defaultClientCacheResponse = true
+
+// DefaultServerCacheFolder  stores default server cache file location
+const DefaultServerCacheFolder = "./.cache/server/"
+const defaultServerCacheResponse = true
 
 // Config holds all parameters for the application and is structured based on the command hierarchy
 type Config struct {
@@ -63,10 +73,13 @@ type ClientConfig struct {
 
 // ServerConfig are all of the params for the Client Command
 type ServerConfig struct {
-	ListenPort string
-	AccessKey  string // CSV of allowed AccessKeys
-	SecretKey  string // CSV of allowed SecretKeys
-	RootFolder string // Server's document root folder
+	ListenPort    string
+	AccessKey     string // CSV of allowed AccessKeys
+	SecretKey     string // CSV of allowed SecretKeys
+	RootFolder    string // Server's document root folder
+	CacheKey      string
+	CacheFolder   string
+	CacheResponse bool
 }
 
 // VersionConfig are all of the params for the Client Command
@@ -83,9 +96,7 @@ func NewConfig() (config *Config) {
 	cobra.OnInitialize(func() {
 		config.viper()
 	})
-
 	config.Context = context.Background()
-
 	return
 }
 
@@ -135,20 +146,24 @@ func (c *Config) viper() {
 	return
 }
 func (c *Config) useDefaultValues() {
-	c.Client.CacheFolder = defaultCacheFolder
-	c.Client.CacheResponse = defaultCacheResponse
+	c.Client.CacheFolder = DefaultClientCacheFolder
+	c.Client.CacheResponse = defaultClientCacheResponse
+	c.Server.CacheFolder = DefaultServerCacheFolder
+	c.Server.CacheResponse = defaultServerCacheResponse
+
 	c.Client.OutputMode = defaultClientOutputMode
 	c.Server.ListenPort = defaultServerListenPort
 	c.VerboseLevel = defaultVerboseLevel
 	c.ConfigFolder = defaultConfigFolder
 	c.ConfigFilename = defaultConfigFilename
 	c.TemplateFolder = defaultTemplateFolder
-	// Find the User's homefolder
-	hdir, hErr := home.Dir()
-	if hErr != nil {
-		log.Fatal(fmt.Sprintf("failed to detect home directory: %v", hErr))
+
+	// Find the User's home folder
+	folder, err := home.Dir()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to detect home directory: %v", err))
 	} else {
-		c.HomeFolder = hdir
+		c.HomeFolder = folder
 	}
 	c.HomeFilename = defaultHomeFilename
 }

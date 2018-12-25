@@ -19,7 +19,7 @@ func TestGopherCLI(t *testing.T) {
 func SetupConfig(c *pkg.Config) {
 	// Test cases are run from the package folder containing the source file.
 	c.TemplateFolder = "./../config/template/"
-	c.Client.CacheFolder = "./../.cache/"
+	c.Client.CacheFolder = "./.." + pkg.DefaultClientCacheFolder
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 }

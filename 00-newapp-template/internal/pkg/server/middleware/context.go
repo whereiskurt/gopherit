@@ -3,6 +3,7 @@ package middleware
 import (
 	"00-newapp-template/pkg/acme"
 	"context"
+	"fmt"
 	"github.com/go-chi/chi"
 	"net/http"
 	"strings"
@@ -15,13 +16,12 @@ func (c contextMapKey) String() string {
 	return "pkg.server.context" + string(c)
 }
 
-var (
-	ctxMapKey = contextMapKey("ctxMap")
-)
+// ContextMapKey is the key to the request context
+var ContextMapKey = contextMapKey("ctxMap")
 
 // ContextMap extract from request and type asserts it (helper function.)
 func ContextMap(r *http.Request) map[string]string {
-	return (r.Context().Value(ctxMapKey)).(map[string]string)
+	return (r.Context().Value(ContextMapKey)).(map[string]string)
 }
 
 // GopherID extracts from request context
@@ -70,8 +70,10 @@ func InitialCtx(next http.Handler) http.Handler {
 				ctxMap["SecretKey"] = keys[1]
 			}
 		}
-		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
-		w = NewPrettyPrint(w)
+		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
+
+		// w = NewPrettyPrint(w)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -90,25 +92,24 @@ func GopherCtx(next http.Handler) http.Handler {
 			}
 		}
 
-		ctxMap := r.Context().Value(ctxMapKey).(map[string]string)
+		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["GopherID"] = chi.URLParam(r, "GopherID")
 		ctxMap["GopherName"] = r.FormValue("GopherName")
 		ctxMap["GopherDescription"] = r.FormValue("GopherDescription")
 
-		ctxMap["CacheFilename"], _ = acme.ToCacheFilename("Gopher", ctxMap)
-		// if s.DiskCache != nil {
-		// 	filename, _ := acme.ToCacheFilename("Thing", middleware.ContextMap(r))
-		// 	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
-		// 	b, err := s.DiskCache.Fetch(filename)
-		// 	if err != nil {
-		// 		w.Write(b)
-		// 		return
-		// 	}
-		// }
+		CacheCtx(ctxMap, r ,"Gopher")
 
-		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
+		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func CacheCtx(ctxMap map[string]string, r *http.Request, name string) {
+	if ctxMap["CacheFolder"] != "" {
+		filename, _ := acme.ToCacheFilename(name, ContextMap(r))
+		filename = fmt.Sprintf("%s/%s", ctxMap["CacheFolder"], filename)
+		ctxMap["CacheFilename"], _ = acme.ToCacheFilename(name, ctxMap)
+	}
 }
 
 // ThingCtx requires IsAuthenticated() for ALL HTTP methods
@@ -120,14 +121,14 @@ func ThingCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctxMap := r.Context().Value(ctxMapKey).(map[string]string)
+		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["ThingID"] = chi.URLParam(r, "ThingID")
 		ctxMap["ThingName"] = r.FormValue("ThingName")
 		ctxMap["ThingDescription"] = r.FormValue("ThingDescription")
 
-		ctxMap["CacheFilename"], _ = acme.ToCacheFilename("Thing", ctxMap)
+		CacheCtx(ctxMap, r ,"Gopher")
 
-		ctx := context.WithValue(r.Context(), ctxMapKey, ctxMap)
+		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

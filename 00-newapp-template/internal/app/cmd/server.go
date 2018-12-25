@@ -33,12 +33,13 @@ func (c *Server) Start(cmd *cobra.Command, args []string) {
 
 	l := c.Config.Log.WithFields(log.Fields{
 		"docroot": c.Config.Server.RootFolder,
+		"cache":   c.Config.Server.CacheFolder,
 		"port":    c.Config.Server.ListenPort,
 	})
 
 	l.Info("starting server")
 
-	server.Start(c.Config.Context, c.Config.Server.ListenPort, c.Config.Log)
+	server.Start(c.Config)
 
 	l.Info("server finished")
 

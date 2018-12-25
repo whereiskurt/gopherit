@@ -1,6 +1,7 @@
 package server
 
 import (
+	"00-newapp-template/internal/pkg"
 	"00-newapp-template/internal/pkg/server/db"
 	"00-newapp-template/pkg/acme/cache"
 	"context"
@@ -17,18 +18,24 @@ type Server struct {
 	Context   context.Context
 	Router    chi.Router
 	HTTP      *http.Server
-	Log       *log.Logger
 	Finished  context.CancelFunc
 	DB        db.SimpleDB
 	DiskCache *cache.Disk
+
+	Log         *log.Logger
+	CacheFolder string
+	ListenPort  string
 }
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
-func NewServer(context context.Context, listenPort string, log *log.Logger) (server Server) {
-	server.Context = context
+func NewServer(config *pkg.Config) (server Server) {
+	server.Log = config.Log
+	server.ListenPort = config.Server.ListenPort
+	server.CacheFolder = config.Server.CacheFolder
+
+	server.Context = config.Context
 	server.Router = chi.NewRouter()
-	server.HTTP = &http.Server{Addr: ":" + listenPort, Handler: server.Router}
-	server.Log = log
+	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Router}
 	server.DB = db.NewSimpleDB()
 	return
 }

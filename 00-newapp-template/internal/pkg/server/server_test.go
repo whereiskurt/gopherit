@@ -9,12 +9,12 @@ import (
 
 func TestServerStart(t *testing.T) {
 
-	c := pkg.NewConfig()
-	c.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
+	config := pkg.NewConfig()
+	config.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
 	t.Parallel()
 
-	s := server.NewServer(c.Context, c.Server.ListenPort, c.Log)
+	s := server.NewServer(config)
 
 	go func() {
 		err := s.ListenAndServe() // BLOCKS
@@ -22,8 +22,9 @@ func TestServerStart(t *testing.T) {
 			t.Fail()
 		}
 	}()
+
 	select {
-	case <-time.After(5 * time.Second):
+	case <-time.After(3 * time.Second):
 		s.Finished()
 	}
 

@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// PrettyCtx runs for every route, sets the response to JSON for all responses and unpacks AccessKey&SecretKey
-func PrettyCtx(next http.Handler) http.Handler {
+// PrettyResponseCtx runs for every route, sets the response to JSON for all responses and unpacks AccessKey&SecretKey
+func PrettyResponseCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w = NewPrettyPrint(w)
 		next.ServeHTTP(w, r)
