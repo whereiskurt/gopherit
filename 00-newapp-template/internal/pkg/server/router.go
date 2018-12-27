@@ -4,11 +4,9 @@ import (
 	"00-newapp-template/internal/pkg/server/middleware"
 	"github.com/go-chi/chi"
 	chimiddleware "github.com/go-chi/chi/middleware"
-	"golang.org/x/net/context"
-	"net/http"
 )
 
-// NewRouter defines routes with middlewares for request tracking, logging, param contexts
+// NewRouter defines routes with middleware for request tracking, logging, param contexts
 func (s *Server) NewRouter() {
 
 	s.Router.Use(chimiddleware.RequestID)
@@ -16,17 +14,8 @@ func (s *Server) NewRouter() {
 	s.Router.Use(chimiddleware.Recoverer)
 
 	s.Router.Route("/", func(r chi.Router) {
+
 		r.Use(middleware.InitialCtx)
-
-		r.Use(func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctxMap := r.Context().Value(middleware.ContextMapKey).(map[string]string)
-				ctxMap["CacheFolder"] = s.CacheFolder
-				ctx := context.WithValue(r.Context(), middleware.ContextMapKey, ctxMap)
-				next.ServeHTTP(w, r.WithContext(ctx))
-			})
-		})
-
 		r.Use(middleware.PrettyResponseCtx)
 
 		r.Get("/shutdown", s.shutdown) // Anyone can shutdown s - try it by visiting http://localhost:10201/shutdown

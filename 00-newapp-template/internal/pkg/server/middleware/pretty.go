@@ -35,14 +35,15 @@ type prettyPrintJSON struct {
 }
 
 // Write is called, and we rewrite if jq is installed in exec path
-func (r *prettyPrintJSON) Write(bb []byte) (int, error) {
-	if r.jq == "" {
-		return r.w.Write(bb)
+func (j *prettyPrintJSON) Write(bb []byte) (int, error) {
+
+	if j.jq == "" {
+		return j.w.Write(bb)
 	}
 
 	var pretty bytes.Buffer
 	raw := bb
-	cmd := exec.Command(r.jq, ".")
+	cmd := exec.Command(j.jq, ".")
 	cmd.Stdin = strings.NewReader(string(raw))
 	cmd.Stdout = &pretty
 	err := cmd.Run()
@@ -50,15 +51,15 @@ func (r *prettyPrintJSON) Write(bb []byte) (int, error) {
 		bb = []byte(pretty.String())
 	}
 
-	return r.w.Write(bb)
+	return j.w.Write(bb)
 }
 
 // Header overrides Header from ResponseWriter
-func (r *prettyPrintJSON) Header() http.Header {
-	return r.w.Header()
+func (j *prettyPrintJSON) Header() http.Header {
+	return j.w.Header()
 }
 
 // WriteHeader overrides ResponseWriter
-func (r *prettyPrintJSON) WriteHeader(statusCode int) {
-	r.w.WriteHeader(statusCode)
+func (j *prettyPrintJSON) WriteHeader(statusCode int) {
+	j.w.WriteHeader(statusCode)
 }

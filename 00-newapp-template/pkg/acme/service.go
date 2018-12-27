@@ -9,8 +9,14 @@ import (
 	"sync"
 )
 
-var serviceMap = map[string]ServiceTransport{
-	"Gophers": {
+type ServiceEndPoint string
+
+func (c ServiceEndPoint) String() string {
+	return "service.EndPoint." + string(c)
+}
+
+var serviceMap = map[ServiceEndPoint]ServiceTransport{
+	ServiceEndPoint("Gophers"): {
 		URL:           "/gophers",
 		CacheFilename: "gophers.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -18,7 +24,7 @@ var serviceMap = map[string]ServiceTransport{
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	"Gopher": {
+	ServiceEndPoint("Gopher"): {
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/gopher.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -27,7 +33,7 @@ var serviceMap = map[string]ServiceTransport{
 			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	"Things": {
+	ServiceEndPoint("Things"): {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/things.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -35,7 +41,7 @@ var serviceMap = map[string]ServiceTransport{
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	"Thing": {
+	ServiceEndPoint("Thing"): {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/thing.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -86,6 +92,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, err := s.get("Gophers", nil)
 		if err != nil {
+			log.Printf("failed getting gophers: error:%s", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
 		}

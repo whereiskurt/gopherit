@@ -32,7 +32,9 @@ func NewServer(config *pkg.Config) (server Server) {
 	server.Log = config.Log
 	server.ListenPort = config.Server.ListenPort
 	server.CacheFolder = config.Server.CacheFolder
-
+	if config.Server.CacheResponse {
+		server.EnableCache(config.Server.CacheFolder, config.Server.CacheKey)
+	}
 	server.Context = config.Context
 	server.Router = chi.NewRouter()
 	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Router}

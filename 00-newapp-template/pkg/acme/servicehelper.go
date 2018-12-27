@@ -29,7 +29,7 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 	return
 }
 
-func (s *Service) get(name string, p map[string]string) ([]byte, error) {
+func (s *Service) get(name ServiceEndPoint, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (s *Service) get(name string, p map[string]string) ([]byte, error) {
 
 	return body, err
 }
-func (s *Service) delete(name string, p map[string]string) ([]byte, error) {
+func (s *Service) delete(name ServiceEndPoint, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (s *Service) delete(name string, p map[string]string) ([]byte, error) {
 
 	return body, err
 }
-func (s *Service) update(name string, p map[string]string) ([]byte, error) {
+func (s *Service) update(name ServiceEndPoint, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, name, p)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (s *Service) update(name string, p map[string]string) ([]byte, error) {
 	return body, err
 }
 
-func ToURL(baseURL string, name string, p map[string]string) (string, error) {
+func ToURL(baseURL string, name ServiceEndPoint, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
@@ -105,7 +105,7 @@ func ToURL(baseURL string, name string, p map[string]string) (string, error) {
 	return ToTemplate(name, p, url)
 }
 
-func ToCacheFilename(name string, p map[string]string) (string, error) {
+func ToCacheFilename(name ServiceEndPoint, p map[string]string) (string, error) {
 	sMap, hasMethod := serviceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
@@ -113,8 +113,8 @@ func ToCacheFilename(name string, p map[string]string) (string, error) {
 	return ToTemplate(name, p, sMap.CacheFilename)
 }
 
-func ToJSON(name string, method string, p map[string]string) (string, error) {
-	sMap, hasMethod := serviceMap[name]
+func ToJSON(name ServiceEndPoint, method string, p map[string]string) (string, error) {
+	sMap, hasMethod := serviceMap[ServiceEndPoint(name)]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
 	}
@@ -128,9 +128,9 @@ func ToJSON(name string, method string, p map[string]string) (string, error) {
 	return ToTemplate(name, p, tmpl)
 }
 
-func ToTemplate(name string, data map[string]string, tmpl string) (string, error) {
+func ToTemplate(name ServiceEndPoint, data map[string]string, tmpl string) (string, error) {
 	var rawURL bytes.Buffer
-	t, terr := template.New(name).Parse(tmpl)
+	t, terr := template.New(fmt.Sprintf("%s", name)).Parse(tmpl)
 	if terr != nil {
 		err := fmt.Errorf("error: failed to parse template for %s: %v", name, terr)
 		return "", err
