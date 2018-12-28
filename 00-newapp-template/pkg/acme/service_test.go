@@ -4,12 +4,14 @@ import (
 	"00-newapp-template/internal/pkg"
 	"00-newapp-template/internal/pkg/server"
 	"00-newapp-template/pkg/acme"
+	"os"
 	"testing"
 	"time"
 )
 
 func SetupConfig(c *pkg.Config) {
 	c.Server.ListenPort = "10301"
+	// c.Server.CacheFolder = "../../" + pkg.DefaultServerCacheFolder
 	c.Client.BaseURL = "http://localhost:10301"
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
@@ -47,6 +49,9 @@ func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 func ServiceTests(t *testing.T) {
 	config := pkg.NewConfig()
 	SetupConfig(config)
+
+	os.RemoveAll(config.Server.CacheFolder)
+	os.RemoveAll(config.Client.CacheFolder)
 
 	t.Run("Service.DELETE.Gopher.NOAUTH", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "", "")

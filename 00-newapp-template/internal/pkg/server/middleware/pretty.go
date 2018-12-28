@@ -41,6 +41,12 @@ func (j *prettyPrintJSON) Write(bb []byte) (int, error) {
 		return j.w.Write(bb)
 	}
 
+	bb = j.Prettify(bb)
+
+	return j.w.Write(bb)
+}
+
+func (j *prettyPrintJSON) Prettify(bb []byte) []byte {
 	var pretty bytes.Buffer
 	raw := bb
 	cmd := exec.Command(j.jq, ".")
@@ -50,8 +56,7 @@ func (j *prettyPrintJSON) Write(bb []byte) (int, error) {
 	if err == nil {
 		bb = []byte(pretty.String())
 	}
-
-	return j.w.Write(bb)
+	return bb
 }
 
 // Header overrides Header from ResponseWriter
