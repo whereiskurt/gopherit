@@ -48,9 +48,8 @@ func (j *prettyPrintJSON) Write(bb []byte) (int, error) {
 
 func (j *prettyPrintJSON) Prettify(bb []byte) []byte {
 	var pretty bytes.Buffer
-	raw := bb
 	cmd := exec.Command(j.jq, ".")
-	cmd.Stdin = strings.NewReader(string(raw))
+	cmd.Stdin = strings.NewReader(string(bb))
 	cmd.Stdout = &pretty
 	err := cmd.Run()
 	if err == nil {

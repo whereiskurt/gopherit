@@ -3,6 +3,7 @@ package adapter
 import (
 	"00-newapp-template/internal/pkg"
 	"00-newapp-template/pkg/acme"
+	"fmt"
 )
 
 // Unmarshal holds the config - needed for Service.... TODO: Remove config and take Service
@@ -19,7 +20,8 @@ func NewUnmarshal(config *pkg.Config) (u Unmarshal) {
 func (u *Unmarshal) service() (s acme.Service) {
 	s = acme.NewService(u.Config.Client.BaseURL, u.Config.Client.SecretKey, u.Config.Client.AccessKey)
 	if u.Config.Client.CacheResponse {
-		s.EnableCache(u.Config.Client.CacheFolder, u.Config.Client.CacheKey)
+		serviceCacheFolder := fmt.Sprintf("%s%s", u.Config.Client.CacheFolder, "service/")
+		s.EnableCache(serviceCacheFolder, u.Config.Client.CacheKey)
 	}
 	return
 }

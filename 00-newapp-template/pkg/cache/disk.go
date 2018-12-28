@@ -51,7 +51,7 @@ func (d *Disk) Fetch(filename string) (bb []byte, err error) {
 
 // Store will create a cache file with the bb bytes
 func (d *Disk) Store(filename string, bb []byte) (err error) {
-
+	filename = fmt.Sprintf("%s/%s", d.CacheFolder, filename)
 	if d.UseCrypto && len(d.CacheKey) > 0 {
 		bb, err = Encrypt(bb, d.CacheKey)
 		if err != nil {

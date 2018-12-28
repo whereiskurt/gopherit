@@ -2,16 +2,29 @@ package adapter
 
 import (
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/pkg/cache"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"os/exec"
+	"strings"
 	"sync"
 )
 
-// Adapter is used to call ACME services and conver them to Gopher/Things in Go structures we like.
+// CacheLabel is the type for where to store the response
+type CacheLabel string
+func (c CacheLabel) String() string {
+	return "adapter/" + string(c)
+}
+
+// Adapter is used to call ACME services and convert them to Gopher/Things in Go structures we like.
 type Adapter struct {
 	Config    *pkg.Config
 	Unmarshal Unmarshal
 	Filter    *Filter
 	Convert   Convert
 	Worker    *sync.WaitGroup
+	DiskCache *cache.Disk
 }
 
 // NewAdapter manages calls the remote services, converts the results and manages a memory/disk cache.
@@ -22,38 +35,44 @@ func NewAdapter(config *pkg.Config) (a *Adapter) {
 	a.Unmarshal = NewUnmarshal(config)
 	a.Filter = NewFilter(config)
 	a.Convert = NewConvert()
+	if a.Config.Client.CacheResponse {
+		a.DiskCache = cache.NewDisk(a.Config.Client.CacheFolder, a.Config.Client.CacheKey, a.Config.Client.CacheKey != "")
+	}
 
 	return
 }
 
-// Gopher will return a gopher which matches the gopherID
-func (a *Adapter) Gopher(gopherID string) (gopher Gopher) { return }
-
 // Things will return all things for a gopherID
-func (a *Adapter) Things(gopherID string) (things map[string]Thing) {
+func (a *Adapter) Things(gopherID string) map[string]Thing {
 	rawThings := a.Unmarshal.things(gopherID)
 	filtered := a.Filter.things(rawThings)
-	things = a.Convert.things(filtered)
-	return
+	things := a.Convert.things(filtered)
+
+	label := CacheLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
+	a.CacheStore(label, &things )
+
+	return things
 }
 
 // Gophers returns all gophers with 'things' == nil
-func (a *Adapter) Gophers() (gophers map[string]Gopher) {
+func (a *Adapter) Gophers() map[string]Gopher {
 	rawGophers := a.Unmarshal.gophers()
 	filtered := a.Filter.gophers(rawGophers)
-	gophers = a.Convert.gophers(filtered)
-	return
+	gophers := a.Convert.gophers(filtered)
+
+	a.CacheStore(CacheLabel("Gophers"), &gophers )
+
+	return gophers
 }
 
 // GopherThings populates each gopher with their things
-func (a *Adapter) GopherThings() (gophers map[string]Gopher) {
-	gophers = make(map[string]Gopher)
-
+func (a *Adapter) GopherThings() map[string]Gopher {
 	var matchOnThings = false
-
 	if a.Config.Client.ThingID != "" || a.Config.Client.ThingName != "" || a.Config.Client.ThingDescription != "" {
 		matchOnThings = true
 	}
+
+	gopherThings := make(map[string]Gopher)
 
 	gg := a.Gophers()
 	for _, g := range gg {
@@ -64,28 +83,30 @@ func (a *Adapter) GopherThings() (gophers map[string]Gopher) {
 		if len(things) == 0 && matchOnThings {
 			continue
 		}
-		gophers[g.ID] = Gopher{
+		gopherThings[g.ID] = Gopher{
 			ID:          g.ID,
 			Name:        g.Name,
 			Description: g.Description,
 			Things:      things,
 		}
 	}
-	return
+
+	a.CacheStore(CacheLabel("GopherThings"), &gopherThings)
+	return gopherThings
 }
 
 // DeleteGopher will delete the matching gopherID
-func (a *Adapter) DeleteGopher(gopherID string) (gophers map[string]Gopher) {
+func (a *Adapter) DeleteGopher(gopherID string) map[string]Gopher {
 	rawGophers := a.Unmarshal.deleteGopher(gopherID)
-	gophers = a.Convert.gophers(rawGophers)
-	return
+	gophers := a.Convert.gophers(rawGophers)
+	return gophers
 }
 
 // DeleteThing will delete the Thing matching gopherID and thingID - could use FindGopherByThing instead of taking thingID
-func (a *Adapter) DeleteThing(gopherID string, thingID string) (things map[string]Thing) {
+func (a *Adapter) DeleteThing(gopherID string, thingID string) map[string]Thing {
 	rawThings := a.Unmarshal.deleteThing(gopherID, thingID)
-	things = a.Convert.things(rawThings)
-	return
+	things := a.Convert.things(rawThings)
+	return things
 }
 
 // FindGopherByThing returns the Gopher ID to the associated Thing by ID.
@@ -107,3 +128,25 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) { return }
 
 // UpdateThing is not implemented yet!
 func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) { return }
+
+func (a *Adapter) CacheStore(name CacheLabel, obj interface{}) {
+	json, err := json.Marshal(obj)
+	if err == nil {
+		a.DiskCache.Store(fmt.Sprintf("%s.json", name), Prettify(json))
+	}
+}
+
+func Prettify(json []byte) []byte {
+	jq, err := exec.LookPath("jq")
+	if err == nil {
+		var pretty bytes.Buffer
+		cmd := exec.Command(jq, ".")
+		cmd.Stdin = strings.NewReader(string(json))
+		cmd.Stdout = &pretty
+		err := cmd.Run()
+		if err == nil {
+			json = []byte(pretty.String())
+		}
+	}
+	return json
+}

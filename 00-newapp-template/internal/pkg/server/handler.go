@@ -185,7 +185,7 @@ func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endpoint acm
 	}
 
 	filename, _ := acme.ToCacheFilename(endpoint, middleware.ContextMap(r))
-	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+	// filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
 	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
 	s.DiskCache.Store(filename, prettyCache)
 

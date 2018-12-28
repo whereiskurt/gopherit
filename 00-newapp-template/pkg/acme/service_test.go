@@ -61,7 +61,7 @@ func ServiceTests(t *testing.T) {
 			t.Fail()
 		}
 	})
-	t.Run("Service.DELETE.Gopher.AUTHROIZED", func(t *testing.T) {
+	t.Run("Service.DELETE.Gopher.AUTHORIZED", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "notempty", "notempty")
 		gophers := ss.DeleteGopher("1")
 		if len(gophers) > 3 {

@@ -6,6 +6,11 @@ import (
 	"text/template"
 	"time"
 )
+type ServiceEndPoint string
+
+func (c ServiceEndPoint) String() string {
+	return "service.EndPoint." + string(c)
+}
 
 // ServiceTransport describes a URL endpoint that can be called ACME. Depending on the HTTP method (GET/POST/DELETE)
 // we will render the appropriate MethodTemplate
@@ -47,7 +52,7 @@ func (s *Service) get(name ServiceEndPoint, p map[string]string) ([]byte, error)
 		if err != nil {
 			return nil, err
 		}
-		filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+		// filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
 		err = s.DiskCache.Store(filename, body)
 		if err != nil {
 			return nil, err

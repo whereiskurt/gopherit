@@ -3,7 +3,7 @@ package server
 import (
 	"00-newapp-template/internal/pkg"
 	"00-newapp-template/internal/pkg/server/db"
-	"00-newapp-template/pkg/acme/cache"
+	"00-newapp-template/pkg/cache"
 	"context"
 	"github.com/go-chi/chi"
 	log "github.com/sirupsen/logrus"

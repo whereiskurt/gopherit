@@ -1,7 +1,7 @@
 package acme
 
 import (
-	"00-newapp-template/pkg/acme/cache"
+	"00-newapp-template/pkg/cache"
 	"encoding/json"
 	"gopkg.in/matryer/try.v1"
 	"log"
@@ -9,16 +9,12 @@ import (
 	"sync"
 )
 
-type ServiceEndPoint string
 
-func (c ServiceEndPoint) String() string {
-	return "service.EndPoint." + string(c)
-}
 
 var serviceMap = map[ServiceEndPoint]ServiceTransport{
 	ServiceEndPoint("Gophers"): {
 		URL:           "/gophers",
-		CacheFilename: "gophers.json",
+		CacheFilename: "Gophers.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET": {},
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
@@ -26,7 +22,7 @@ var serviceMap = map[ServiceEndPoint]ServiceTransport{
 	},
 	ServiceEndPoint("Gopher"): {
 		URL:           "/gopher/{{.GopherID}}",
-		CacheFilename: "gopher/{{.GopherID}}/gopher.json",
+		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET":    {},
 			"DELETE": {},
@@ -35,7 +31,7 @@ var serviceMap = map[ServiceEndPoint]ServiceTransport{
 	},
 	ServiceEndPoint("Things"): {
 		URL:           "/gopher/{{.GopherID}}/things",
-		CacheFilename: "gopher/{{.GopherID}}/things.json",
+		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET": {},
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
@@ -43,7 +39,7 @@ var serviceMap = map[ServiceEndPoint]ServiceTransport{
 	},
 	ServiceEndPoint("Thing"): {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
-		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/thing.json",
+		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[string]MethodTemplate{
 			"GET":    {},
 			"DELETE": {},
@@ -57,7 +53,7 @@ var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000,
 
 // Service exposes ACME services by converting the JSON results to to Go []structures
 type Service struct {
-	BaseURL        string // Put in front of every
+	BaseURL        string // Put in front of every transport call
 	SecretKey      string // ACME Secret Keys for API Access (provided by ACME)
 	AccessKey      string //             Access Key for API access (provided by ACME)
 	RetryIntervals []int  // When a call to a transport fails, this will control the retrying.
