@@ -9,8 +9,6 @@ import (
 	"sync"
 )
 
-
-
 var serviceMap = map[ServiceEndPoint]ServiceTransport{
 	ServiceEndPoint("Gophers"): {
 		URL:           "/gophers",

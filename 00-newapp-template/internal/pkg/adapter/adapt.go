@@ -42,29 +42,6 @@ func NewAdapter(config *pkg.Config) (a *Adapter) {
 	return
 }
 
-// Things will return all things for a gopherID
-func (a *Adapter) Things(gopherID string) map[string]Thing {
-	rawThings := a.Unmarshal.things(gopherID)
-	filtered := a.Filter.things(rawThings)
-	things := a.Convert.things(filtered)
-
-	label := CacheLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
-	a.CacheStore(label, &things )
-
-	return things
-}
-
-// Gophers returns all gophers with 'things' == nil
-func (a *Adapter) Gophers() map[string]Gopher {
-	rawGophers := a.Unmarshal.gophers()
-	filtered := a.Filter.gophers(rawGophers)
-	gophers := a.Convert.gophers(filtered)
-
-	a.CacheStore(CacheLabel("Gophers"), &gophers )
-
-	return gophers
-}
-
 // GopherThings populates each gopher with their things
 func (a *Adapter) GopherThings() map[string]Gopher {
 	var matchOnThings = false
@@ -93,6 +70,29 @@ func (a *Adapter) GopherThings() map[string]Gopher {
 
 	a.CacheStore(CacheLabel("GopherThings"), &gopherThings)
 	return gopherThings
+}
+
+// Gophers returns all gophers with 'things' == nil
+func (a *Adapter) Gophers() map[string]Gopher {
+	rawGophers := a.Unmarshal.gophers()
+	filtered := a.Filter.gophers(rawGophers)
+	gophers := a.Convert.gophers(filtered)
+
+	a.CacheStore(CacheLabel("Gophers"), &gophers )
+
+	return gophers
+}
+
+// Things will return all things for a gopherID
+func (a *Adapter) Things(gopherID string) map[string]Thing {
+	rawThings := a.Unmarshal.things(gopherID)
+	filtered := a.Filter.things(rawThings)
+	things := a.Convert.things(filtered)
+
+	label := CacheLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
+	a.CacheStore(label, &things )
+
+	return things
 }
 
 // DeleteGopher will delete the matching gopherID
