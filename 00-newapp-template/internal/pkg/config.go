@@ -23,6 +23,8 @@ const defaultVerboseLevel = "3"
 const defaultClientOutputMode = "table"
 const defaultServerListenPort = "10101"
 
+const defaultMetricsListenPort = "22222"
+
 // Used by the *_test to the set defaults
 // DefaultClientCacheFolder stores default client cache file location
 const DefaultClientCacheFolder = "./.cache/client/"
@@ -40,7 +42,8 @@ type Config struct {
 	ConfigFolder   string
 	ConfigFilename string
 	TemplateFolder string
-	Log            *log.Logger
+
+	Log *log.Logger
 
 	VerboseLevel  string
 	VerboseLevel1 bool
@@ -52,6 +55,10 @@ type Config struct {
 	Client  ClientConfig
 	Server  ServerConfig
 	Version VersionConfig
+	Metrics MetricsConfig
+}
+type MetricsConfig struct {
+	ListenPort string
 }
 
 // ClientConfig are all of the params for the Client Command
@@ -97,6 +104,7 @@ func NewConfig() (config *Config) {
 		config.viper()
 	})
 	config.Context = context.Background()
+
 	return
 }
 
@@ -150,6 +158,8 @@ func (c *Config) useDefaultValues() {
 	c.Client.CacheResponse = defaultClientCacheResponse
 	c.Server.CacheFolder = DefaultServerCacheFolder
 	c.Server.CacheResponse = defaultServerCacheResponse
+
+	c.Metrics.ListenPort = defaultMetricsListenPort
 
 	c.Client.OutputMode = defaultClientOutputMode
 	c.Server.ListenPort = defaultServerListenPort

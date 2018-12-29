@@ -11,14 +11,16 @@ import (
 
 // Server holds the config and CLI references.
 type Server struct {
-	Config *pkg.Config
-	CLI    ui.CLI
+	Metrics *pkg.Metrics
+	Config  *pkg.Config
+	CLI     ui.CLI
 }
 
 // NewServer holds a configuration and command line interface reference (for log out, etc.)
-func NewServer(config *pkg.Config) (c Server) {
+func NewServer(config *pkg.Config, metrics *pkg.Metrics) (c Server) {
 	c.Config = config
 	c.CLI = ui.NewCLI(config)
+	c.Metrics = metrics
 	return
 }
 
@@ -39,14 +41,14 @@ func (c *Server) Start(cmd *cobra.Command, args []string) {
 
 	l.Info("starting server")
 
-	server.Start(c.Config)
+	server.Start(c.Config, c.Metrics)
 
 	l.Info("server finished")
 
 	return
 }
 
-// Stop will signla the server to stop.
+// Stop will signal the server to stop.
 func (c *Server) Stop(cmd *cobra.Command, args []string) {
 	fmt.Printf("Stop Command\n")
 	return

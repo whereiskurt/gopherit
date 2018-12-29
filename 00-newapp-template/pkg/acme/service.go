@@ -9,7 +9,8 @@ import (
 	"sync"
 )
 
-var serviceMap = map[ServiceEndPoint]ServiceTransport{
+// ServiceMap defines all the endpoints provided by the ACME service
+var ServiceMap = map[ServiceEndPoint]ServiceTransport{
 	ServiceEndPoint("Gophers"): {
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
@@ -84,7 +85,7 @@ func (s *Service) EnableCache(cacheFolder string, cryptoKey string) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetGophers() (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get("Gophers", nil)
+		body, err := s.get(ServiceEndPoint("Gophers"), nil)
 		if err != nil {
 			log.Printf("failed getting gophers: error:%s", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -110,7 +111,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get("Things", map[string]string{"GopherID": gopherID})
+		body, err := s.get(ServiceEndPoint("Things"), map[string]string{"GopherID": gopherID})
 		if err != nil {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
@@ -134,7 +135,7 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete("Gopher", map[string]string{"GopherID": gopherID})
+		body, err := s.delete(ServiceEndPoint("Gopher"), map[string]string{"GopherID": gopherID})
 		if err != nil {
 			log.Printf("failed to DELETE Gopher: %+v", err)
 		}
@@ -157,7 +158,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	p := make(map[string]string)
 	p["ThingID"] = thingID
 	p["GopherID"] = gopherID
-	body, err := s.delete("Thing", p)
+	body, err := s.delete(ServiceEndPoint("Thing"), p)
 	if err != nil {
 		log.Printf("failed to DELETE thing: %+v", err)
 	}

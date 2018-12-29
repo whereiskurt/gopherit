@@ -17,15 +17,17 @@ import (
 // App is created from package main. App handles the configuration and cobra/viper.
 type App struct {
 	Config  *pkg.Config
+	Metrics *pkg.Metrics
 	RootCmd *cobra.Command
 }
 
 // CommandList entry[0] becomes default when a 'command' is omitted
-var CommandList = []string{"client", "server", "version"}
+var CommandList = []string{"client", "server", "version", "metrics"}
 
 // NewApp constructs the command line and configuration
 func NewApp(config *pkg.Config) (a App) {
 	a.Config = config
+	a.Metrics = pkg.NewMetrics(config.Metrics)
 	a.RootCmd = new(cobra.Command)
 
 	// Ensure before any command is run we Unmarshal and Validate the Config values.
@@ -46,48 +48,49 @@ func NewApp(config *pkg.Config) (a App) {
 	makeBool("VerboseLevel5", &a.Config.VerboseLevel5, []string{"vvv", "trace"}, a.RootCmd)
 	makeString("VerboseLevel", &a.Config.VerboseLevel, []string{"level"}, a.RootCmd)
 
+	metrics := cmd.NewMetrics(a.Config, a.Metrics)
+	metricsCmd := makeCommand("metrics", metrics.Metrics, a.RootCmd)
+	metricsCmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
+	makeString("Metrics.ListenPort", &a.Config.Metrics.ListenPort, []string{"mp", "mport", "metricsport", "metricsPort"}, metricsCmd)
+
 	ver := cmd.NewVersion(a.Config)
-	vcmd := makeCommand("version", ver.Version, a.RootCmd)
-	vcmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
-	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, vcmd)
-	makeBool("Version.ShowServer", &a.Config.Version.ShowServer, []string{"ss", "showserver"}, vcmd)
-	makeBool("Version.ShowClient", &a.Config.Version.ShowClient, []string{"sc", "showclient"}, vcmd)
+	versionCmd := makeCommand("version", ver.Version, a.RootCmd)
+	versionCmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
+	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, versionCmd)
+	makeBool("Version.ShowServer", &a.Config.Version.ShowServer, []string{"ss", "showserver"}, versionCmd)
+	makeBool("Version.ShowClient", &a.Config.Version.ShowClient, []string{"sc", "showclient"}, versionCmd)
 
 	client := cmd.NewClient(a.Config)
-	ccmd := makeCommand("client", client.Client, a.RootCmd)
+	clientCmd := makeCommand("client", client.Client, a.RootCmd)
+	makeString("Client.BaseURL", &a.Config.Client.BaseURL, []string{"u", "url"}, clientCmd)
+	makeString("Client.AccessKey", &a.Config.Client.AccessKey, nil, clientCmd)
+	makeString("Client.SecretKey", &a.Config.Client.SecretKey, nil, clientCmd)
+	makeString("Client.CacheKey", &a.Config.Client.CacheKey, nil, clientCmd)
+	makeString("Client.CacheFolder", &a.Config.Client.CacheFolder, []string{"cf", "cfolder", "cacheFolder"}, clientCmd)
+	makeBool("Client.CacheResponse", &a.Config.Client.CacheResponse, []string{"c", "cr", "cache", "cacheResponse"}, clientCmd)
+	makeString("Client.OutputMode", &a.Config.Client.OutputMode, []string{"m", "mode"}, clientCmd)
+	makeString("Client.GopherID", &a.Config.Client.GopherID, []string{"g", "gid", "gopher", "gopherID"}, clientCmd)
+	makeString("Client.ThingID", &a.Config.Client.ThingID, []string{"t", "tid", "thing", "thingID"}, clientCmd)
+	makeString("Client.GopherName", &a.Config.Client.GopherName, []string{"gn", "gname"}, clientCmd)
+	makeString("Client.GopherDescription", &a.Config.Client.GopherDescription, []string{"gd", "gdesc", "gdescription"}, clientCmd)
+	makeString("Client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, clientCmd)
+	makeString("Client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, clientCmd)
+	clientCmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
+	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, clientCmd)
+	_ = makeCommand("list", client.List, clientCmd)
+	_ = makeCommand("update", client.Update, clientCmd)
+	_ = makeCommand("delete", client.Delete, clientCmd)
 
-	makeString("Client.BaseURL", &a.Config.Client.BaseURL, []string{"u", "url"}, ccmd)
-	makeString("Client.AccessKey", &a.Config.Client.AccessKey, nil, ccmd)
-	makeString("Client.SecretKey", &a.Config.Client.SecretKey, nil, ccmd)
-	makeString("Client.CacheKey", &a.Config.Client.CacheKey, nil, ccmd)
-	makeString("Client.CacheFolder", &a.Config.Client.CacheFolder, []string{"cf", "cfolder", "cacheFolder"}, ccmd)
-	makeBool("Client.CacheResponse", &a.Config.Client.CacheResponse, []string{"c", "cr", "cache", "cacheResponse"}, ccmd)
-
-	makeString("Client.OutputMode", &a.Config.Client.OutputMode, []string{"m", "mode"}, ccmd)
-	makeString("Client.GopherID", &a.Config.Client.GopherID, []string{"g", "gid", "gopher", "gopherID"}, ccmd)
-	makeString("Client.ThingID", &a.Config.Client.ThingID, []string{"t", "tid", "thing", "thingID"}, ccmd)
-	makeString("Client.GopherName", &a.Config.Client.GopherName, []string{"gn", "gname"}, ccmd)
-	makeString("Client.GopherDescription", &a.Config.Client.GopherDescription, []string{"gd", "gdesc", "gdescription"}, ccmd)
-	makeString("Client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, ccmd)
-	makeString("Client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, ccmd)
-
-	ccmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
-	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, ccmd)
-	_ = makeCommand("list", client.List, ccmd)
-	_ = makeCommand("update", client.Update, ccmd)
-	_ = makeCommand("delete", client.Delete, ccmd)
-
-	server := cmd.NewServer(a.Config)
-	scmd := makeCommand("server", server.Server, a.RootCmd)
-	makeString("Server.AccessKey", &a.Config.Server.AccessKey, nil, scmd)
-	makeString("Server.SecretKey", &a.Config.Server.SecretKey, nil, scmd)
-	makeString("Server.RootFolder", &a.Config.Server.RootFolder, []string{"r", "docroot", "root"}, scmd)
-	makeString("Server.ListenPort", &a.Config.Server.ListenPort, []string{"p", "port"}, scmd)
-
-	scmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
-	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, scmd)
-	_ = makeCommand("start", server.Start, scmd)
-	_ = makeCommand("stop", server.Stop, scmd)
+	server := cmd.NewServer(a.Config, a.Metrics)
+	serverCmd := makeCommand("server", server.Server, a.RootCmd)
+	makeString("Server.AccessKey", &a.Config.Server.AccessKey, nil, serverCmd)
+	makeString("Server.SecretKey", &a.Config.Server.SecretKey, nil, serverCmd)
+	makeString("Server.RootFolder", &a.Config.Server.RootFolder, []string{"r", "docroot", "root"}, serverCmd)
+	makeString("Server.ListenPort", &a.Config.Server.ListenPort, []string{"p", "port", "sport"}, serverCmd)
+	serverCmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
+	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, serverCmd)
+	_ = makeCommand("start", server.Start, serverCmd)
+	_ = makeCommand("stop", server.Stop, serverCmd)
 
 	return
 }

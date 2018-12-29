@@ -13,6 +13,7 @@ import (
 
 // CacheLabel is the type for where to store the response
 type CacheLabel string
+
 func (c CacheLabel) String() string {
 	return "adapter/" + string(c)
 }
@@ -42,6 +43,29 @@ func NewAdapter(config *pkg.Config) (a *Adapter) {
 	return
 }
 
+func (a *Adapter) cacheStore(label CacheLabel, obj interface{}) {
+	json, err := json.Marshal(obj)
+	if err == nil {
+		a.DiskCache.Store(fmt.Sprintf("%s.json", label), prettify(json))
+	}
+}
+
+// prettify will look for 'jq' to pretty the json input
+func prettify(json []byte) []byte {
+	jq, err := exec.LookPath("jq")
+	if err == nil {
+		var pretty bytes.Buffer
+		cmd := exec.Command(jq, ".")
+		cmd.Stdin = strings.NewReader(string(json))
+		cmd.Stdout = &pretty
+		err := cmd.Run()
+		if err == nil {
+			json = []byte(pretty.String())
+		}
+	}
+	return json
+}
+
 // GopherThings populates each gopher with their things
 func (a *Adapter) GopherThings() map[string]Gopher {
 	var matchOnThings = false
@@ -68,7 +92,7 @@ func (a *Adapter) GopherThings() map[string]Gopher {
 		}
 	}
 
-	a.CacheStore(CacheLabel("GopherThings"), &gopherThings)
+	a.cacheStore(CacheLabel("GopherThings"), &gopherThings)
 	return gopherThings
 }
 
@@ -78,7 +102,7 @@ func (a *Adapter) Gophers() map[string]Gopher {
 	filtered := a.Filter.gophers(rawGophers)
 	gophers := a.Convert.gophers(filtered)
 
-	a.CacheStore(CacheLabel("Gophers"), &gophers )
+	a.cacheStore(CacheLabel("Gophers"), &gophers)
 
 	return gophers
 }
@@ -90,7 +114,7 @@ func (a *Adapter) Things(gopherID string) map[string]Thing {
 	things := a.Convert.things(filtered)
 
 	label := CacheLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
-	a.CacheStore(label, &things )
+	a.cacheStore(label, &things)
 
 	return things
 }
@@ -128,25 +152,3 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) { return }
 
 // UpdateThing is not implemented yet!
 func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) { return }
-
-func (a *Adapter) CacheStore(name CacheLabel, obj interface{}) {
-	json, err := json.Marshal(obj)
-	if err == nil {
-		a.DiskCache.Store(fmt.Sprintf("%s.json", name), Prettify(json))
-	}
-}
-
-func Prettify(json []byte) []byte {
-	jq, err := exec.LookPath("jq")
-	if err == nil {
-		var pretty bytes.Buffer
-		cmd := exec.Command(jq, ".")
-		cmd.Stdin = strings.NewReader(string(json))
-		cmd.Stdout = &pretty
-		err := cmd.Run()
-		if err == nil {
-			json = []byte(pretty.String())
-		}
-	}
-	return json
-}

@@ -27,8 +27,10 @@ func TestService(t *testing.T) {
 func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 	// We our own server ports and configs.
 	config := pkg.NewConfig()
+	metrics := pkg.NewMetrics(config.Metrics)
+
 	SetupConfig(config)
-	s := server.NewServer(config)
+	s := server.NewServer(config, metrics)
 	s.NewRouter()
 	var err error
 	go func() {

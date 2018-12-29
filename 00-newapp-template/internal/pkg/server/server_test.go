@@ -11,6 +11,8 @@ import (
 func TestServerStart(t *testing.T) {
 
 	config := pkg.NewConfig()
+	metrics := pkg.NewMetrics(config.Metrics)
+
 	config.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
 	os.RemoveAll(config.Server.CacheFolder)
@@ -18,7 +20,7 @@ func TestServerStart(t *testing.T) {
 
 	t.Parallel()
 
-	s := server.NewServer(config)
+	s := server.NewServer(config, metrics)
 
 	go func() {
 		err := s.ListenAndServe() // BLOCKS

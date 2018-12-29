@@ -6,10 +6,11 @@ import (
 	"text/template"
 	"time"
 )
+
 type ServiceEndPoint string
 
 func (c ServiceEndPoint) String() string {
-	return "service.EndPoint." + string(c)
+	return "Service.EndPoint." + string(c)
 }
 
 // ServiceTransport describes a URL endpoint that can be called ACME. Depending on the HTTP method (GET/POST/DELETE)
@@ -52,7 +53,7 @@ func (s *Service) get(name ServiceEndPoint, p map[string]string) ([]byte, error)
 		if err != nil {
 			return nil, err
 		}
-		// filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+
 		err = s.DiskCache.Store(filename, body)
 		if err != nil {
 			return nil, err
@@ -94,7 +95,7 @@ func (s *Service) update(name ServiceEndPoint, p map[string]string) ([]byte, err
 }
 
 func ToURL(baseURL string, name ServiceEndPoint, p map[string]string) (string, error) {
-	sMap, hasMethod := serviceMap[name]
+	sMap, hasMethod := ServiceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
 	}
@@ -111,7 +112,7 @@ func ToURL(baseURL string, name ServiceEndPoint, p map[string]string) (string, e
 }
 
 func ToCacheFilename(name ServiceEndPoint, p map[string]string) (string, error) {
-	sMap, hasMethod := serviceMap[name]
+	sMap, hasMethod := ServiceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
 	}
@@ -119,7 +120,7 @@ func ToCacheFilename(name ServiceEndPoint, p map[string]string) (string, error) 
 }
 
 func ToJSON(name ServiceEndPoint, method string, p map[string]string) (string, error) {
-	sMap, hasMethod := serviceMap[ServiceEndPoint(name)]
+	sMap, hasMethod := ServiceMap[ServiceEndPoint(name)]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
 	}

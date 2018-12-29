@@ -15,20 +15,20 @@ import (
 
 // Server is built on go-chi
 type Server struct {
-	Context   context.Context
-	Router    chi.Router
-	HTTP      *http.Server
-	Finished  context.CancelFunc
-	DB        db.SimpleDB
-	DiskCache *cache.Disk
-
+	Context     context.Context
+	Router      chi.Router
+	HTTP        *http.Server
+	Finished    context.CancelFunc
+	DB          db.SimpleDB
+	DiskCache   *cache.Disk
 	Log         *log.Logger
 	CacheFolder string
 	ListenPort  string
+	Metrics     *pkg.Metrics
 }
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
-func NewServer(config *pkg.Config) (server Server) {
+func NewServer(config *pkg.Config, metrics *pkg.Metrics) (server Server) {
 	server.Log = config.Log
 	server.ListenPort = config.Server.ListenPort
 	server.CacheFolder = config.Server.CacheFolder
@@ -41,6 +41,7 @@ func NewServer(config *pkg.Config) (server Server) {
 	server.Router = chi.NewRouter()
 	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Router}
 	server.DB = db.NewSimpleDB()
+	server.Metrics = metrics
 	return
 }
 
