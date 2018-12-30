@@ -39,12 +39,12 @@ func NewTransport(s *Service) (p Transport) {
 // headerCallCount is thread-safely incremented allowing multiple-requests from multiple-credentials (access/secret keys.)
 var headerCallCount int
 
-func (t *Transport) header() (header string) {
+func (t *Transport) header() string {
 	akeys := strings.Split(t.AccessKey, ",")
 	skeys := strings.Split(t.SecretKey, ",")
 
 	if len(akeys) != len(skeys) {
-		return
+		return ""
 	}
 
 	// Ensure incremental non-overalapping count
@@ -53,8 +53,7 @@ func (t *Transport) header() (header string) {
 	mod := headerCallCount % len(akeys)
 	t.ThreadSafe.Unlock()
 
-	header = fmt.Sprintf("AccessKey=%s;SecretKey=%s", akeys[mod], skeys[mod])
-	return
+	return fmt.Sprintf("AccessKey=%s;SecretKey=%s", akeys[mod], skeys[mod])
 }
 
 func (t *Transport) get(url string) (body []byte, err error) {
