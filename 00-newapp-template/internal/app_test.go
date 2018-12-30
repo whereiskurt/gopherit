@@ -12,8 +12,9 @@ func TestGopherCLI(t *testing.T) {
 	t.Parallel()
 
 	config := pkg.NewConfig()
+	metrics := pkg.NewMetrics(config.Metrics)
 	SetupConfig(config)
-	internal.NewApp(config)
+	internal.NewApp(config, metrics)
 }
 
 func SetupConfig(c *pkg.Config) {

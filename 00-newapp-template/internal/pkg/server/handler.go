@@ -26,7 +26,7 @@ func (s *Server) shutdown(w http.ResponseWriter, r *http.Request) {
 func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gophers")
 
-	s.Metrics.EndPointInc(endPoint,"get")
+	s.Metrics.EndPointInc(endPoint, "get")
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -36,7 +36,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gophers := s.DB.Gophers()
-	s.Metrics.DBInc(endPoint,"read")
+	s.Metrics.DBInc(endPoint, "read")
 
 	b, err := json.Marshal(gophers)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint,"get")
+	s.Metrics.EndPointInc(endPoint, "get")
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -80,7 +80,7 @@ func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Things")
-	s.Metrics.EndPointInc(endPoint,"get")
+	s.Metrics.EndPointInc(endPoint, "get")
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -103,7 +103,7 @@ func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(endPoint,"get")
+	s.Metrics.EndPointInc(endPoint, "get")
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -133,7 +133,7 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint,"post")
+	s.Metrics.EndPointInc(endPoint, "post")
 
 	gopher := acme.Gopher{
 		ID:          json.Number(middleware.GopherID(r)),
@@ -150,7 +150,7 @@ func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint,"delete")
+	s.Metrics.EndPointInc(endPoint, "delete")
 
 	epGophers := acme.ServiceEndPoint("Gophers")
 	s.cacheClear(r, endPoint)
@@ -165,20 +165,19 @@ func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(endPoint,"post")
+	s.Metrics.EndPointInc(endPoint, "post")
 
 	s.cacheClear(r, endPoint)
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
 	epThing := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(epThing,"delete")
+	s.Metrics.EndPointInc(epThing, "delete")
 
 	s.cacheClear(r, epThing)
 
 	gopherID := middleware.GopherID(r)
 	thingID := middleware.ThingID(r)
 	s.DB.DeleteThing(gopherID, thingID)
-
 
 	s.things(w, r)
 }
@@ -187,7 +186,7 @@ func (s *Server) cacheClear(r *http.Request, endPoint acme.ServiceEndPoint) {
 	if s.DiskCache == nil {
 		return
 	}
-	s.Metrics.CacheInc(endPoint,"invalidate")
+	s.Metrics.CacheInc(endPoint, "invalidate")
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
 	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
@@ -197,7 +196,7 @@ func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acm
 	if s.DiskCache == nil {
 		return
 	}
-	s.Metrics.CacheInc(endPoint,"store")
+	s.Metrics.CacheInc(endPoint, "store")
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
 	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
@@ -213,9 +212,9 @@ func (s *Server) cacheFetch(r *http.Request, endPoint acme.ServiceEndPoint) (bb 
 	bb, err = s.DiskCache.Fetch(filename)
 
 	if err == nil && len(bb) > 0 {
-		s.Metrics.CacheInc(endPoint,"hit")
+		s.Metrics.CacheInc(endPoint, "hit")
 	} else {
-		s.Metrics.CacheInc(endPoint,"miss")
+		s.Metrics.CacheInc(endPoint, "miss")
 	}
 
 	return

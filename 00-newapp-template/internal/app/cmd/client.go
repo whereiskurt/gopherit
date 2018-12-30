@@ -12,15 +12,17 @@ import (
 // Client is the dispactcher from Cobra to Config
 type Client struct {
 	Config  *pkg.Config
+	Metrics *pkg.Metrics
 	Adapter *adapter.Adapter
 	CLI     ui.CLI
 }
 
 // NewClient dispatches from cobra commands
-func NewClient(config *pkg.Config) (c Client) {
+func NewClient(config *pkg.Config, metrics *pkg.Metrics) (c Client) {
 	c.Config = config
+	c.Metrics = metrics
 	c.CLI = ui.NewCLI(config)
-	c.Adapter = adapter.NewAdapter(c.Config)
+	c.Adapter = adapter.NewAdapter(c.Config, c.Metrics)
 	return
 }
 

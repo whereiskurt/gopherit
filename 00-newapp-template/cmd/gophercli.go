@@ -7,7 +7,9 @@ import (
 
 func main() {
 	config := pkg.NewConfig()
-	a := internal.NewApp(config)
+	metrics := pkg.NewMetrics(config.Metrics)
+
+	a := internal.NewApp(config, metrics)
 
 	a.InvokeCLI()
 	return

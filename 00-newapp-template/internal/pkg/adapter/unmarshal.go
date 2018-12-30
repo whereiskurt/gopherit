@@ -23,6 +23,7 @@ func (u *Unmarshal) service() (s acme.Service) {
 		serviceCacheFolder := fmt.Sprintf("%s%s", u.Config.Client.CacheFolder, "service/")
 		s.EnableCache(serviceCacheFolder, u.Config.Client.CacheKey)
 	}
+
 	return
 }
 

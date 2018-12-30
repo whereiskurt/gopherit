@@ -32,6 +32,7 @@ This code includes:
   - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
   - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
 - [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
+- [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
     - Using `NewStructuredLogger` middleware to decorate each route with log output
     - ResponseHandler to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)

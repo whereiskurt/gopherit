@@ -17,6 +17,7 @@ type Metrics struct {
 
 // NewMetrics holds a configuration and command line interface reference (for log out, etc.)
 func NewMetrics(config *pkg.Config, metrics *pkg.Metrics) (m Metrics) {
+
 	m.Config = config
 	m.MMetrics = metrics
 	m.CLI = ui.NewCLI(config)

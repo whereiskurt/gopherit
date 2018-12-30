@@ -21,6 +21,7 @@ func (c CacheLabel) String() string {
 // Adapter is used to call ACME services and convert them to Gopher/Things in Go structures we like.
 type Adapter struct {
 	Config    *pkg.Config
+	Metrics   *pkg.Metrics
 	Unmarshal Unmarshal
 	Filter    *Filter
 	Convert   Convert
@@ -29,9 +30,10 @@ type Adapter struct {
 }
 
 // NewAdapter manages calls the remote services, converts the results and manages a memory/disk cache.
-func NewAdapter(config *pkg.Config) (a *Adapter) {
+func NewAdapter(config *pkg.Config, metrics *pkg.Metrics) (a *Adapter) {
 	a = new(Adapter)
 	a.Config = config
+	a.Metrics = metrics
 	a.Worker = new(sync.WaitGroup)
 	a.Unmarshal = NewUnmarshal(config)
 	a.Filter = NewFilter(config)

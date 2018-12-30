@@ -25,9 +25,9 @@ type App struct {
 var CommandList = []string{"client", "server", "version", "metrics"}
 
 // NewApp constructs the command line and configuration
-func NewApp(config *pkg.Config) (a App) {
+func NewApp(config *pkg.Config, mmetrics *pkg.Metrics) (a App) {
 	a.Config = config
-	a.Metrics = pkg.NewMetrics(config.Metrics)
+	a.Metrics = mmetrics
 	a.RootCmd = new(cobra.Command)
 
 	// Ensure before any command is run we Unmarshal and Validate the Config values.
@@ -60,21 +60,21 @@ func NewApp(config *pkg.Config) (a App) {
 	makeBool("Version.ShowServer", &a.Config.Version.ShowServer, []string{"ss", "showserver"}, versionCmd)
 	makeBool("Version.ShowClient", &a.Config.Version.ShowClient, []string{"sc", "showclient"}, versionCmd)
 
-	client := cmd.NewClient(a.Config)
+	client := cmd.NewClient(a.Config, a.Metrics)
 	clientCmd := makeCommand("client", client.Client, a.RootCmd)
-	makeString("Client.BaseURL", &a.Config.Client.BaseURL, []string{"u", "url"}, clientCmd)
-	makeString("Client.AccessKey", &a.Config.Client.AccessKey, nil, clientCmd)
-	makeString("Client.SecretKey", &a.Config.Client.SecretKey, nil, clientCmd)
-	makeString("Client.CacheKey", &a.Config.Client.CacheKey, nil, clientCmd)
-	makeString("Client.CacheFolder", &a.Config.Client.CacheFolder, []string{"cf", "cfolder", "cacheFolder"}, clientCmd)
-	makeBool("Client.CacheResponse", &a.Config.Client.CacheResponse, []string{"c", "cr", "cache", "cacheResponse"}, clientCmd)
-	makeString("Client.OutputMode", &a.Config.Client.OutputMode, []string{"m", "mode"}, clientCmd)
-	makeString("Client.GopherID", &a.Config.Client.GopherID, []string{"g", "gid", "gopher", "gopherID"}, clientCmd)
-	makeString("Client.ThingID", &a.Config.Client.ThingID, []string{"t", "tid", "thing", "thingID"}, clientCmd)
-	makeString("Client.GopherName", &a.Config.Client.GopherName, []string{"gn", "gname"}, clientCmd)
-	makeString("Client.GopherDescription", &a.Config.Client.GopherDescription, []string{"gd", "gdesc", "gdescription"}, clientCmd)
-	makeString("Client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, clientCmd)
-	makeString("Client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, clientCmd)
+	makeString("client.BaseURL", &a.Config.Client.BaseURL, []string{"u", "url"}, clientCmd)
+	makeString("client.AccessKey", &a.Config.Client.AccessKey, nil, clientCmd)
+	makeString("client.SecretKey", &a.Config.Client.SecretKey, nil, clientCmd)
+	makeString("client.CacheKey", &a.Config.Client.CacheKey, nil, clientCmd)
+	makeString("client.CacheFolder", &a.Config.Client.CacheFolder, []string{"cf", "cfolder", "cacheFolder"}, clientCmd)
+	makeBool("client.CacheResponse", &a.Config.Client.CacheResponse, []string{"c", "cr", "cache", "cacheResponse"}, clientCmd)
+	makeString("client.OutputMode", &a.Config.Client.OutputMode, []string{"m", "mode"}, clientCmd)
+	makeString("client.GopherID", &a.Config.Client.GopherID, []string{"g", "gid", "gopher", "gopherID"}, clientCmd)
+	makeString("client.ThingID", &a.Config.Client.ThingID, []string{"t", "tid", "thing", "thingID"}, clientCmd)
+	makeString("client.GopherName", &a.Config.Client.GopherName, []string{"gn", "gname"}, clientCmd)
+	makeString("client.GopherDescription", &a.Config.Client.GopherDescription, []string{"gd", "gdesc", "gdescription"}, clientCmd)
+	makeString("client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, clientCmd)
+	makeString("client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, clientCmd)
 	clientCmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, clientCmd)
 	_ = makeCommand("list", client.List, clientCmd)

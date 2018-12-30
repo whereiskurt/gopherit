@@ -10,9 +10,9 @@ import (
 type Metrics struct {
 	Config MetricsConfig
 
-	Server  ServerMetric
-	Client  ClientMetric
-	Service ServiceMetric
+	server  ServerMetric
+	client  ClientMetric
+	service ServiceMetric
 }
 
 type ServerMetric struct {
@@ -32,26 +32,26 @@ type ServiceMetric struct {
 func NewMetrics(config MetricsConfig) (m *Metrics) {
 	m = new(Metrics)
 
-	m.InitServerMetric()
-	m.InitServiceMetric()
+	m.initServerMetric()
+	m.initServiceMetric()
 
 	return m
 }
 
-func (m *Metrics) InitServerMetric() {
-	m.Server.EndPoint = promauto.NewCounterVec(
+func (m *Metrics) initServerMetric() {
+	m.server.EndPoint = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_endpoint_total`,
 			Help: "How many service calls",
 		}, []string{"method", "endpoint"},
 	)
-	m.Server.Cache = promauto.NewCounterVec(
+	m.server.Cache = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_cache_total`,
 			Help: "How many cache calls",
 		}, []string{"method", "endpoint"},
 	)
-	m.Server.DB = promauto.NewCounterVec(
+	m.server.DB = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_db_total`,
 			Help: "How many DB calls",
@@ -59,8 +59,8 @@ func (m *Metrics) InitServerMetric() {
 	)
 }
 
-func (m *Metrics) InitServiceMetric() {
-	m.Service.Transport = promauto.NewCounterVec(
+func (m *Metrics) initServiceMetric() {
+	m.service.Transport = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_service_transport_total`,
 			Help: "How many services calls",
@@ -68,15 +68,19 @@ func (m *Metrics) InitServiceMetric() {
 	)
 }
 
+func (m *Metrics) TransportInc(endPoint acme.ServiceEndPoint, method string) {
+	labels := prometheus.Labels{"endpoint": fmt.Sprintf("%s", endPoint), "method": method}
+	m.service.Transport.With(labels).Inc()
+}
 func (m *Metrics) EndPointInc(endPoint acme.ServiceEndPoint, method string) {
 	labels := prometheus.Labels{"endpoint": fmt.Sprintf("%s", endPoint), "method": method}
-	m.Server.EndPoint.With(labels).Inc()
+	m.server.EndPoint.With(labels).Inc()
 }
-func (m *Metrics)  DBInc(endPoint acme.ServiceEndPoint, method string) {
+func (m *Metrics) CacheInc(endPoint acme.ServiceEndPoint, method string) {
 	labels := prometheus.Labels{"endpoint": fmt.Sprintf("%s", endPoint), "method": method}
-	m.Server.DB.With(labels).Inc()
+	m.server.Cache.With(labels).Inc()
 }
-func (m *Metrics)  CacheInc(endPoint acme.ServiceEndPoint, method string) {
+func (m *Metrics) DBInc(endPoint acme.ServiceEndPoint, method string) {
 	labels := prometheus.Labels{"endpoint": fmt.Sprintf("%s", endPoint), "method": method}
-	m.Server.Cache.With(labels).Inc()
+	m.server.DB.With(labels).Inc()
 }

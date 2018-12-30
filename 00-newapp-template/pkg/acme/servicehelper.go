@@ -35,8 +35,9 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 	return
 }
 
-func (s *Service) get(name ServiceEndPoint, p map[string]string) ([]byte, error) {
-	url, err := ToURL(s.BaseURL, name, p)
+func (s *Service) get(endPoint ServiceEndPoint, p map[string]string) ([]byte, error) {
+
+	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func (s *Service) get(name ServiceEndPoint, p map[string]string) ([]byte, error)
 	// If we have a DiskCache it means we will write out responses to disk.
 	if s.DiskCache != nil {
 		// We have initialized a cache then write to it.
-		filename, err := ToCacheFilename(name, p)
+		filename, err := ToCacheFilename(endPoint, p)
 		if err != nil {
 			return nil, err
 		}

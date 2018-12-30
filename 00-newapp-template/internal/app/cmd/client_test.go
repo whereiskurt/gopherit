@@ -66,7 +66,7 @@ func ClientTests(t *testing.T) {
 		c.Client.ThingID = ""
 		c.Client.SecretKey = ""
 		c.Client.AccessKey = ""
-		gophers := client.List(adapter.NewAdapter(c), ui.NewCLI(c))
+		gophers := client.List(adapter.NewAdapter(c, nil), ui.NewCLI(c))
 		if len(gophers) != 4 {
 			t.Errorf("Unexpected count of gophers: %d", len(gophers))
 			t.Fail()
@@ -76,7 +76,7 @@ func ClientTests(t *testing.T) {
 		c := pkg.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
-		gophers := client.Delete(adapter.NewAdapter(c), ui.NewCLI(c))
+		gophers := client.Delete(adapter.NewAdapter(c, nil), ui.NewCLI(c))
 		if len(gophers) != 1 { // DELETE returns the matching undelete item.
 			t.Errorf("Unexpected count of gophers return on UNAUTHORIZED delete: %d - %+v", len(gophers), gophers)
 			t.Fail()
@@ -88,7 +88,7 @@ func ClientTests(t *testing.T) {
 		c.Client.GopherID = "1"
 		c.Client.SecretKey = "notempty"
 		c.Client.AccessKey = "notempty"
-		gophers := client.Delete(adapter.NewAdapter(c), ui.NewCLI(c))
+		gophers := client.Delete(adapter.NewAdapter(c, nil), ui.NewCLI(c))
 		if len(gophers) != 0 { // DELETE should return empty after successful delete.
 			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))
 			t.Fail()
