@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/pkg/cache"
 	"bytes"
 	"encoding/json"
@@ -21,7 +22,7 @@ func (c CacheLabel) String() string {
 // Adapter is used to call ACME services and convert them to Gopher/Things in Go structures we like.
 type Adapter struct {
 	Config    *pkg.Config
-	Metrics   *pkg.Metrics
+	Metrics   *metrics.Metrics
 	Unmarshal Unmarshal
 	Filter    *Filter
 	Convert   Convert
@@ -30,7 +31,7 @@ type Adapter struct {
 }
 
 // NewAdapter manages calls the remote services, converts the results and manages a memory/disk cache.
-func NewAdapter(config *pkg.Config, metrics *pkg.Metrics) (a *Adapter) {
+func NewAdapter(config *pkg.Config, metrics *metrics.Metrics) (a *Adapter) {
 	a = new(Adapter)
 	a.Config = config
 	a.Metrics = metrics

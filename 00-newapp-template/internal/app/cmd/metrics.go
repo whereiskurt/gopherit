@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/ui"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
@@ -11,12 +12,12 @@ import (
 // Metrics holds the config and CLI references.
 type Metrics struct {
 	Config   *pkg.Config
-	MMetrics *pkg.Metrics
+	MMetrics *metrics.Metrics
 	CLI      ui.CLI
 }
 
 // NewMetrics holds a configuration and command line interface reference (for log out, etc.)
-func NewMetrics(config *pkg.Config, metrics *pkg.Metrics) (m Metrics) {
+func NewMetrics(config *pkg.Config, metrics *metrics.Metrics) (m Metrics) {
 
 	m.Config = config
 	m.MMetrics = metrics

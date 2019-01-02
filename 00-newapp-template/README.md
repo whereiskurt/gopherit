@@ -31,8 +31,9 @@ This code includes:
 - [x] Built using [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
   - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
-- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
+  - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
+- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
     - Using `NewStructuredLogger` middleware to decorate each route with log output
     - ResponseHandler to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)

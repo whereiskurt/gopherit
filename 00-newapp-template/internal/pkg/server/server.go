@@ -2,10 +2,12 @@ package server
 
 import (
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/server/db"
 	"00-newapp-template/pkg/cache"
 	"context"
 	"github.com/go-chi/chi"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -15,23 +17,25 @@ import (
 
 // Server is built on go-chi
 type Server struct {
-	Context     context.Context
-	Router      chi.Router
-	HTTP        *http.Server
-	Finished    context.CancelFunc
-	DB          db.SimpleDB
-	DiskCache   *cache.Disk
-	Log         *log.Logger
-	CacheFolder string
-	ListenPort  string
-	Metrics     *pkg.Metrics
+	Context           context.Context
+	Router            chi.Router
+	HTTP              *http.Server
+	Finished          context.CancelFunc
+	DB                db.SimpleDB
+	DiskCache         *cache.Disk
+	Log               *log.Logger
+	CacheFolder       string
+	ListenPort        string
+	Metrics           *metrics.Metrics
+	MetricsListenPort string
 }
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
-func NewServer(config *pkg.Config, metrics *pkg.Metrics) (server Server) {
+func NewServer(config *pkg.Config, metrics *metrics.Metrics) (server Server) {
 	server.Log = config.Log
 	server.ListenPort = config.Server.ListenPort
 	server.CacheFolder = config.Server.CacheFolder
+	server.MetricsListenPort = config.Server.MetricsListenPort
 
 	if config.Server.CacheResponse {
 		server.EnableCache(config.Server.CacheFolder, config.Server.CacheKey)
@@ -59,8 +63,15 @@ func (s *Server) EnableCache(cacheFolder string, cryptoKey string) {
 func (s *Server) ListenAndServe() (err error) {
 	s.hookShutdownSignal()
 
+	// Start the /metrics server
 	go func() {
-		s.Log.Infof("s started")
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":"+s.MetricsListenPort, nil)
+	}()
+
+	// Start the HTTP server
+	go func() {
+		s.Log.Infof("server started")
 		err = s.HTTP.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			s.Log.Errorf("error serving: %+v", err)
@@ -70,7 +81,7 @@ func (s *Server) ListenAndServe() (err error) {
 
 	select {
 	case <-s.Context.Done():
-		s.Log.Infof("s stopped")
+		s.Log.Infof("server stopped")
 	}
 
 	return

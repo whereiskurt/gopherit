@@ -4,6 +4,7 @@ import (
 	"00-newapp-template/internal/app/cmd/client"
 	"00-newapp-template/internal/pkg"
 	"00-newapp-template/internal/pkg/adapter"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/ui"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -12,13 +13,13 @@ import (
 // Client is the dispactcher from Cobra to Config
 type Client struct {
 	Config  *pkg.Config
-	Metrics *pkg.Metrics
+	Metrics *metrics.Metrics
 	Adapter *adapter.Adapter
 	CLI     ui.CLI
 }
 
 // NewClient dispatches from cobra commands
-func NewClient(config *pkg.Config, metrics *pkg.Metrics) (c Client) {
+func NewClient(config *pkg.Config, metrics *metrics.Metrics) (c Client) {
 	c.Config = config
 	c.Metrics = metrics
 	c.CLI = ui.NewCLI(config)

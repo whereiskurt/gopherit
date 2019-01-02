@@ -80,13 +80,14 @@ type ClientConfig struct {
 
 // ServerConfig are all of the params for the Client Command
 type ServerConfig struct {
-	ListenPort    string
-	AccessKey     string // CSV of allowed AccessKeys
-	SecretKey     string // CSV of allowed SecretKeys
-	RootFolder    string // Server's document root folder
-	CacheKey      string
-	CacheFolder   string
-	CacheResponse bool
+	ListenPort        string
+	AccessKey         string // CSV of allowed AccessKeys
+	SecretKey         string // CSV of allowed SecretKeys
+	RootFolder        string // Server's document root folder
+	CacheKey          string
+	CacheFolder       string
+	CacheResponse     bool
+	MetricsListenPort string
 }
 
 // VersionConfig are all of the params for the Client Command
@@ -101,7 +102,7 @@ func NewConfig() (config *Config) {
 	config.useDefaultValues()
 	config.Log = log.New()
 	cobra.OnInitialize(func() {
-		config.viper()
+		config.readWithViper()
 	})
 	config.Context = context.Background()
 
@@ -130,7 +131,7 @@ func (c *Config) Validate() (err error) {
 	return
 }
 
-func (c *Config) viper() {
+func (c *Config) readWithViper() {
 	var err error
 
 	viper.SetConfigType(defaultConfigType)
@@ -159,8 +160,7 @@ func (c *Config) useDefaultValues() {
 	c.Server.CacheFolder = DefaultServerCacheFolder
 	c.Server.CacheResponse = defaultServerCacheResponse
 
-	c.Metrics.ListenPort = defaultMetricsListenPort
-
+	c.Server.MetricsListenPort = defaultMetricsListenPort
 	c.Client.OutputMode = defaultClientOutputMode
 	c.Server.ListenPort = defaultServerListenPort
 	c.VerboseLevel = defaultVerboseLevel

@@ -3,6 +3,7 @@ package internal
 import (
 	"00-newapp-template/internal/app/cmd"
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/ui"
 	"bytes"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 // App is created from package main. App handles the configuration and cobra/viper.
 type App struct {
 	Config  *pkg.Config
-	Metrics *pkg.Metrics
+	Metrics *metrics.Metrics
 	RootCmd *cobra.Command
 }
 
@@ -25,7 +26,7 @@ type App struct {
 var CommandList = []string{"client", "server", "version", "metrics"}
 
 // NewApp constructs the command line and configuration
-func NewApp(config *pkg.Config, mmetrics *pkg.Metrics) (a App) {
+func NewApp(config *pkg.Config, mmetrics *metrics.Metrics) (a App) {
 	a.Config = config
 	a.Metrics = mmetrics
 	a.RootCmd = new(cobra.Command)
@@ -87,6 +88,8 @@ func NewApp(config *pkg.Config, mmetrics *pkg.Metrics) (a App) {
 	makeString("Server.SecretKey", &a.Config.Server.SecretKey, nil, serverCmd)
 	makeString("Server.RootFolder", &a.Config.Server.RootFolder, []string{"r", "docroot", "root"}, serverCmd)
 	makeString("Server.ListenPort", &a.Config.Server.ListenPort, []string{"p", "port", "sport"}, serverCmd)
+	makeString("Server.MetricsListenPort", &a.Config.Server.MetricsListenPort, []string{"mp", "mport", "metricsport", "metricsPort"}, serverCmd)
+
 	serverCmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, serverCmd)
 	_ = makeCommand("start", server.Start, serverCmd)

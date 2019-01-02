@@ -9,9 +9,27 @@ import (
 	"sync"
 )
 
+var EndPoints = endpoints{
+	Gophers: ServiceEndPoint("Gophers"),
+	Gopher:  ServiceEndPoint("Gopher"),
+	Things:  ServiceEndPoint("Things"),
+	Thing:   ServiceEndPoint("Thing"),
+}
+type ServiceEndPoint string
+
+type endpoints struct {
+	Gophers ServiceEndPoint
+	Gopher  ServiceEndPoint
+	Things  ServiceEndPoint
+	Thing   ServiceEndPoint
+}
+func (c ServiceEndPoint) String() string {
+	return "pkg.acme.endpoint." + string(c)
+}
+
 // ServiceMap defines all the endpoints provided by the ACME service
 var ServiceMap = map[ServiceEndPoint]ServiceTransport{
-	ServiceEndPoint("Gophers"): {
+	EndPoints.Gophers: {
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -19,7 +37,7 @@ var ServiceMap = map[ServiceEndPoint]ServiceTransport{
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	ServiceEndPoint("Gopher"): {
+	EndPoints.Gopher: {
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -28,7 +46,7 @@ var ServiceMap = map[ServiceEndPoint]ServiceTransport{
 			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	ServiceEndPoint("Things"): {
+	EndPoints.Things: {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -36,7 +54,7 @@ var ServiceMap = map[ServiceEndPoint]ServiceTransport{
 			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	ServiceEndPoint("Thing"): {
+	EndPoints.Thing: {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[string]MethodTemplate{
@@ -85,7 +103,7 @@ func (s *Service) EnableCache(cacheFolder string, cryptoKey string) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetGophers() (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get(ServiceEndPoint("Gophers"), nil)
+		body, err := s.get(EndPoints.Gophers, nil)
 		if err != nil {
 			log.Printf("failed getting gophers: error:%s", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -111,7 +129,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get(ServiceEndPoint("Things"), map[string]string{"GopherID": gopherID})
+		body, err := s.get(EndPoints.Things, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
@@ -135,7 +153,7 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete(ServiceEndPoint("Gopher"), map[string]string{"GopherID": gopherID})
+		body, err := s.delete(EndPoints.Gopher, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			log.Printf("failed to DELETE Gopher: %+v", err)
 		}
@@ -158,7 +176,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	p := make(map[string]string)
 	p["ThingID"] = thingID
 	p["GopherID"] = gopherID
-	body, err := s.delete(ServiceEndPoint("Thing"), p)
+	body, err := s.delete(EndPoints.Thing, p)
 	if err != nil {
 		log.Printf("failed to DELETE thing: %+v", err)
 	}

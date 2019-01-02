@@ -89,6 +89,7 @@ func GopherCtx(next http.Handler) http.Handler {
 
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["GopherID"] = chi.URLParam(r, "GopherID")
+		//TODO: Replace this with unpacking the JSON
 		ctxMap["GopherName"] = r.FormValue("GopherName")
 		ctxMap["GopherDescription"] = r.FormValue("GopherDescription")
 
@@ -108,6 +109,7 @@ func ThingCtx(next http.Handler) http.Handler {
 
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["ThingID"] = chi.URLParam(r, "ThingID")
+		//TODO: Replace this with unpacking the JSON
 		ctxMap["ThingName"] = r.FormValue("ThingName")
 		ctxMap["ThingDescription"] = r.FormValue("ThingDescription")
 

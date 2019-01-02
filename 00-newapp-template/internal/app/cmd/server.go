@@ -3,6 +3,7 @@ package cmd
 import (
 	"00-newapp-template/internal/app/cmd/server"
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/ui"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -11,13 +12,13 @@ import (
 
 // Server holds the config and CLI references.
 type Server struct {
-	Metrics *pkg.Metrics
+	Metrics *metrics.Metrics
 	Config  *pkg.Config
 	CLI     ui.CLI
 }
 
 // NewServer holds a configuration and command line interface reference (for log out, etc.)
-func NewServer(config *pkg.Config, metrics *pkg.Metrics) (c Server) {
+func NewServer(config *pkg.Config, metrics *metrics.Metrics) (c Server) {
 	c.Config = config
 	c.CLI = ui.NewCLI(config)
 	c.Metrics = metrics

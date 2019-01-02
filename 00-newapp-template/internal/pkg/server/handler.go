@@ -1,6 +1,7 @@
 package server
 
 import (
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/server/middleware"
 	"00-newapp-template/pkg/acme"
 	"context"
@@ -26,7 +27,7 @@ func (s *Server) shutdown(w http.ResponseWriter, r *http.Request) {
 func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gophers")
 
-	s.Metrics.EndPointInc(endPoint, "get")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -36,7 +37,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gophers := s.DB.Gophers()
-	s.Metrics.DBInc(endPoint, "read")
+	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Read)
 
 	b, err := json.Marshal(gophers)
 	if err != nil {
@@ -50,7 +51,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint, "get")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -61,6 +62,7 @@ func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 
 	gopherID := middleware.GopherID(r)
 	gophers := s.DB.Gophers()
+	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Read)
 	for _, gopher := range gophers {
 		if string(gopher.ID) == gopherID {
 			b, err := json.Marshal(gopher)
@@ -77,10 +79,44 @@ func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
+func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
+	endPoint := acme.ServiceEndPoint("Gopher")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Get)
+
+	gopher := acme.Gopher{
+		ID:          json.Number(middleware.GopherID(r)),
+		Name:        middleware.GopherName(r),
+		Description: middleware.GopherDescription(r),
+	}
+
+	s.DB.UpdateGopher(gopher)
+	s.Metrics.DBInc(endPoint, "update")
+	s.cacheClear(r, endPoint)
+
+	s.gopher(w, r)
+
+	return
+}
+func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
+	endPoint := acme.ServiceEndPoint("Gopher")
+	s.Metrics.ServiceInc(endPoint,metrics.Methods.Service.Delete)
+
+	// Deleting a Gopher impacts Gophers cached response, so clear cache for things too!
+	s.cacheClear(r, endPoint)
+	s.cacheClear(r, acme.ServiceEndPoint("Gophers"))
+
+	gopherID := middleware.GopherID(r)
+
+	s.DB.DeleteGopher(gopherID)
+	s.Metrics.DBInc(endPoint,metrics.Methods.DB.Delete)
+
+	s.gophers(w, r)
+	return
+}
 
 func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Things")
-	s.Metrics.EndPointInc(endPoint, "get")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -91,6 +127,7 @@ func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 
 	gopherID := middleware.GopherID(r)
 	things := s.DB.GopherThings(gopherID)
+	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Read)
 	bb, err = json.Marshal(things)
 	if err != nil {
 		s.Log.Errorf("error marshaling things: %+v", err)
@@ -103,7 +140,7 @@ func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(endPoint, "get")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
 	bb, err := s.cacheFetch(r, endPoint)
@@ -116,6 +153,8 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	gopherID := middleware.GopherID(r)
 
 	things := s.DB.GopherThings(gopherID)
+	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Read)
+
 	for _, thing := range things {
 		if string(thing.ID) == thingID {
 			bb, err := json.Marshal(thing)
@@ -130,54 +169,25 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
-
-func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint, "post")
-
-	gopher := acme.Gopher{
-		ID:          json.Number(middleware.GopherID(r)),
-		Name:        middleware.GopherName(r),
-		Description: middleware.GopherDescription(r),
-	}
-
-	s.DB.UpdateGopher(gopher)
-	s.cacheClear(r, endPoint)
-
-	s.gopher(w, r)
-
-	return
-}
-func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.ServiceEndPoint("Gopher")
-	s.Metrics.EndPointInc(endPoint, "delete")
-
-	epGophers := acme.ServiceEndPoint("Gophers")
-	s.cacheClear(r, endPoint)
-	s.cacheClear(r, epGophers)
-
-	gopherID := middleware.GopherID(r)
-
-	s.DB.DeleteGopher(gopherID)
-	s.gophers(w, r)
-	return
-}
-
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(endPoint, "post")
-
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Update)
+	// TODO: Write and implement s.DB.UpdateThing(thing)
+	s.Metrics.DBInc(endPoint,metrics.Methods.DB.Update)
 	s.cacheClear(r, endPoint)
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
-	epThing := acme.ServiceEndPoint("Thing")
-	s.Metrics.EndPointInc(epThing, "delete")
+	endPoint := acme.ServiceEndPoint("Thing")
+	s.Metrics.ServiceInc(endPoint, metrics.Methods.Service.Delete)
 
-	s.cacheClear(r, epThing)
+	s.cacheClear(r, endPoint)
+	s.cacheClear(r, acme.ServiceEndPoint("Things"))
 
 	gopherID := middleware.GopherID(r)
 	thingID := middleware.ThingID(r)
+
 	s.DB.DeleteThing(gopherID, thingID)
+	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Delete)
 
 	s.things(w, r)
 }
@@ -186,7 +196,7 @@ func (s *Server) cacheClear(r *http.Request, endPoint acme.ServiceEndPoint) {
 	if s.DiskCache == nil {
 		return
 	}
-	s.Metrics.CacheInc(endPoint, "invalidate")
+	s.Metrics.CacheInc(endPoint, metrics.Methods.Cache.Invalidate)
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
 	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
@@ -196,7 +206,7 @@ func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acm
 	if s.DiskCache == nil {
 		return
 	}
-	s.Metrics.CacheInc(endPoint, "store")
+	s.Metrics.CacheInc(endPoint, metrics.Methods.Cache.Store)
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
 	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
@@ -212,9 +222,9 @@ func (s *Server) cacheFetch(r *http.Request, endPoint acme.ServiceEndPoint) (bb 
 	bb, err = s.DiskCache.Fetch(filename)
 
 	if err == nil && len(bb) > 0 {
-		s.Metrics.CacheInc(endPoint, "hit")
+		s.Metrics.CacheInc(endPoint, metrics.Methods.Cache.Hit)
 	} else {
-		s.Metrics.CacheInc(endPoint, "miss")
+		s.Metrics.CacheInc(endPoint, metrics.Methods.Cache.Miss)
 	}
 
 	return

@@ -6,12 +6,12 @@ import (
 	"text/template"
 	"time"
 )
-
-type ServiceEndPoint string
-
-func (c ServiceEndPoint) String() string {
-	return "Service.EndPoint." + string(c)
-}
+//
+// type ServiceEndPoint string
+//
+// func (c ServiceEndPoint) String() string {
+// 	return "Service.EndPoint." + string(c)
+// }
 
 // ServiceTransport describes a URL endpoint that can be called ACME. Depending on the HTTP method (GET/POST/DELETE)
 // we will render the appropriate MethodTemplate
@@ -121,7 +121,7 @@ func ToCacheFilename(name ServiceEndPoint, p map[string]string) (string, error) 
 }
 
 func ToJSON(name ServiceEndPoint, method string, p map[string]string) (string, error) {
-	sMap, hasMethod := ServiceMap[ServiceEndPoint(name)]
+	sMap, hasMethod := ServiceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
 	}
