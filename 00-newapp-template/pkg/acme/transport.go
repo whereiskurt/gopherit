@@ -118,13 +118,13 @@ func (t *Transport) post(url string, data string, datatype string) (body []byte,
 	}
 	return
 }
-func (t *Transport) put(url string) (body []byte, err error) {
+func (t *Transport) put(url string, data string, datatype string) (body []byte, err error) {
 	var req *http.Request
 	var resp *http.Response
 
 	client := &http.Client{Transport: tr}
 
-	req, err = http.NewRequest("put", url, nil)
+	req, err = http.NewRequest("PUT", url, bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		return
 	}
@@ -165,4 +165,25 @@ func (t *Transport) delete(url string) (body []byte, err error) {
 		err = resp.Body.Close()
 	}
 	return
+}
+
+var HTTP = httpMethodTypes{
+	Get:    httpMethodType("Get"),
+	Delete: httpMethodType("Delete"),
+	Head:   httpMethodType("Head"),
+	Post:   httpMethodType("Post"),
+	Put:    httpMethodType("Put"),
+}
+
+type httpMethodType string
+type httpMethodTypes struct {
+	Get    httpMethodType
+	Put    httpMethodType
+	Post   httpMethodType
+	Delete httpMethodType
+	Head   httpMethodType
+}
+
+func (c httpMethodType) String() string {
+	return "pkg.acme.transport." + string(c)
 }

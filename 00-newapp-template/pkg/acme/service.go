@@ -2,67 +2,66 @@ package acme
 
 import (
 	"00-newapp-template/pkg/cache"
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/matryer/try.v1"
 	"log"
 	"strings"
 	"sync"
+	"text/template"
 )
 
-var EndPoints = endpoints{
-	Gophers: ServiceEndPoint("Gophers"),
-	Gopher:  ServiceEndPoint("Gopher"),
-	Things:  ServiceEndPoint("Things"),
-	Thing:   ServiceEndPoint("Thing"),
-}
-type ServiceEndPoint string
-
-type endpoints struct {
-	Gophers ServiceEndPoint
-	Gopher  ServiceEndPoint
-	Things  ServiceEndPoint
-	Thing   ServiceEndPoint
-}
-func (c ServiceEndPoint) String() string {
-	return "pkg.acme.endpoint." + string(c)
-}
-
 // ServiceMap defines all the endpoints provided by the ACME service
-var ServiceMap = map[ServiceEndPoint]ServiceTransport{
-	EndPoints.Gophers: {
+var ServiceMap = map[EndPoint]ServiceTransport{
+	EndPointServices.Gophers: {
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
-		MethodTemplate: map[string]MethodTemplate{
-			"GET": {},
-			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		MethodTemplate: map[httpMethodType]MethodTemplate{
+			HTTP.Get: {},
+			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	EndPoints.Gopher: {
+	EndPointServices.Gopher: {
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
-		MethodTemplate: map[string]MethodTemplate{
-			"GET":    {},
-			"DELETE": {},
-			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		MethodTemplate: map[httpMethodType]MethodTemplate{
+			HTTP.Get:    {},
+			HTTP.Delete: {},
+			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	EndPoints.Things: {
+	EndPointServices.Things: {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
-		MethodTemplate: map[string]MethodTemplate{
-			"GET": {},
-			"PUT": {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		MethodTemplate: map[httpMethodType]MethodTemplate{
+			HTTP.Get: {},
+			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	EndPoints.Thing: {
+	EndPointServices.Thing: {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
-		MethodTemplate: map[string]MethodTemplate{
-			"GET":    {},
-			"DELETE": {},
-			"POST":   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+		MethodTemplate: map[httpMethodType]MethodTemplate{
+			HTTP.Get:    {},
+			HTTP.Delete: {},
+			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
+}
+
+// ServiceTransport describes a URL endpoint that can be called ACME. Depending on the HTTP method (GET/POST/DELETE)
+// we will render the appropriate MethodTemplate
+type ServiceTransport struct {
+	URL            string
+	CacheFilename  string
+	MethodTemplate map[httpMethodType]MethodTemplate
+}
+
+// MethodTemplate for each GET/PUT/POST/DELETE that is called this template is rendered
+// For POST it is put in the BODY, for GET it is added after "?" on the URL, f
+type MethodTemplate struct {
+	Template string
 }
 
 // DefaultRetryIntervals values in here we control the re-try of the Service
@@ -103,7 +102,7 @@ func (s *Service) EnableCache(cacheFolder string, cryptoKey string) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetGophers() (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get(EndPoints.Gophers, nil)
+		body, err := s.get(EndPointServices.Gophers, nil)
 		if err != nil {
 			log.Printf("failed getting gophers: error:%s", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -129,7 +128,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.get(EndPoints.Things, map[string]string{"GopherID": gopherID})
+		body, err := s.get(EndPointServices.Things, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
@@ -153,7 +152,7 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete(EndPoints.Gopher, map[string]string{"GopherID": gopherID})
+		body, err := s.delete(EndPointServices.Gopher, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			log.Printf("failed to DELETE Gopher: %+v", err)
 		}
@@ -176,7 +175,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	p := make(map[string]string)
 	p["ThingID"] = thingID
 	p["GopherID"] = gopherID
-	body, err := s.delete(EndPoints.Thing, p)
+	body, err := s.delete(EndPointServices.Thing, p)
 	if err != nil {
 		log.Printf("failed to DELETE thing: %+v", err)
 	}
@@ -186,4 +185,61 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	}
 
 	return
+}
+
+func ToURL(baseURL string, name EndPoint, p map[string]string) (string, error) {
+	sMap, hasMethod := ServiceMap[name]
+	if !hasMethod {
+		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
+	}
+
+	if p == nil {
+		p = make(map[string]string)
+	}
+	p["BaseURL"] = baseURL
+
+	// Append the BaseURL to the URL
+	url := fmt.Sprintf("%s%s", baseURL, sMap.URL)
+
+	return ToTemplate(name, p, url)
+}
+
+func ToCacheFilename(name EndPoint, p map[string]string) (string, error) {
+	sMap, hasMethod := ServiceMap[name]
+	if !hasMethod {
+		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
+	}
+	return ToTemplate(name, p, sMap.CacheFilename)
+}
+
+func ToJSON(name EndPoint, method httpMethodType, p map[string]string) (string, error) {
+	sMap, hasMethod := ServiceMap[name]
+	if !hasMethod {
+		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
+	}
+
+	mMap, hasTemplate := sMap.MethodTemplate[method]
+	if !hasTemplate {
+		return "", fmt.Errorf("invalid template for method '%s' for name '%s'", method, name)
+	}
+
+	tmpl := mMap.Template
+	return ToTemplate(name, p, tmpl)
+}
+
+func ToTemplate(name EndPoint, data map[string]string, tmpl string) (string, error) {
+	var rawURL bytes.Buffer
+	t, terr := template.New(fmt.Sprintf("%s", name)).Parse(tmpl)
+	if terr != nil {
+		err := fmt.Errorf("error: failed to parse template for %s: %v", name, terr)
+		return "", err
+	}
+	err := t.Execute(&rawURL, data)
+	if err != nil {
+		return "", err
+	}
+
+	url := rawURL.String()
+
+	return url, nil
 }

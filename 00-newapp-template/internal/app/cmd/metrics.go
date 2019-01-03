@@ -4,9 +4,7 @@ import (
 	"00-newapp-template/internal/pkg"
 	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/ui"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	"net/http"
 )
 
 // Metrics holds the config and CLI references.
@@ -27,8 +25,6 @@ func NewMetrics(config *pkg.Config, metrics *metrics.Metrics) (m Metrics) {
 
 // Metrics with no params will show the help
 func (m *Metrics) Metrics(cmd *cobra.Command, args []string) {
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":"+m.Config.Metrics.ListenPort, nil)
 
 	return
 }

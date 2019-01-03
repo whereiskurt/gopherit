@@ -52,13 +52,12 @@ type Config struct {
 	VerboseLevel4 bool
 	VerboseLevel5 bool
 
-	Client  ClientConfig
-	Server  ServerConfig
-	Version VersionConfig
-	Metrics MetricsConfig
+	Client  ClientConfig  // 'gophercli client list'
+	Server  ServerConfig  // 'gophercli server start'
+	Version VersionConfig // 'gophercli version'
+	Metrics MetricsConfig // 'gophercli metrics'
 }
 type MetricsConfig struct {
-	ListenPort string
 }
 
 // ClientConfig are all of the params for the Client Command

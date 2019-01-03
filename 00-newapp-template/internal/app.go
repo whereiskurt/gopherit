@@ -52,7 +52,7 @@ func NewApp(config *pkg.Config, mmetrics *metrics.Metrics) (a App) {
 	metrics := cmd.NewMetrics(a.Config, a.Metrics)
 	metricsCmd := makeCommand("metrics", metrics.Metrics, a.RootCmd)
 	metricsCmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
-	makeString("Metrics.ListenPort", &a.Config.Metrics.ListenPort, []string{"mp", "mport", "metricsport", "metricsPort"}, metricsCmd)
+	// makeString("Metrics.ListenPort", &a.Config.Metrics.ListenPort, []string{"mp", "mport", "metricsport", "metricsPort"}, metricsCmd)
 
 	ver := cmd.NewVersion(a.Config)
 	versionCmd := makeCommand("version", ver.Version, a.RootCmd)

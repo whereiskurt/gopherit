@@ -19,6 +19,13 @@ var Methods = methodTypes{
 		Invalidate: cacheMethodType("Invalidate"),
 		Store:      cacheMethodType("Store"),
 	},
+	Transport: transportTypes{
+		Put:    transportMethodType("Put"),
+		Delete: transportMethodType("Delete"),
+		Post:   transportMethodType("Post"),
+		Get:    transportMethodType("Get"),
+		Head:   transportMethodType("Head"),
+	},
 }
 
 type methodTypes struct {

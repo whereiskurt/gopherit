@@ -29,5 +29,7 @@ func List(adapter *adapter.Adapter, cli ui.CLI) (gophers map[string]adapter.Goph
 
 	fmt.Println(output)
 
+	adapter.Metrics.Marshal("dump.prom")
+
 	return
 }

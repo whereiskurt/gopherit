@@ -7,48 +7,48 @@ import (
 )
 
 type Metrics struct {
-	server  ServerMetric
-	client  ClientMetric
-	service ServiceMetric
+	server  serverMetric
+	client  clientMetric
+	service serviceMetric
 }
 
-type ServerMetric struct {
-	EndPoint *prometheus.CounterVec
-	Cache    *prometheus.CounterVec
-	DB       *prometheus.CounterVec
+type serverMetric struct {
+	endPoint *prometheus.CounterVec
+	cache    *prometheus.CounterVec
+	db       *prometheus.CounterVec
 }
 
-type ClientMetric struct {
+type clientMetric struct {
 	GophersThings prometheus.CounterVec
 }
 
-type ServiceMetric struct {
+type serviceMetric struct {
 	Transport *prometheus.CounterVec
 }
 
 func NewMetrics() (m *Metrics) {
 	m = new(Metrics)
 
-	m.initServerMetric()
-	m.initServiceMetric()
+	m.serverInit()
+	m.serviceInit()
 
 	return m
 }
 
-func (m *Metrics) initServerMetric() {
-	m.server.EndPoint = promauto.NewCounterVec(
+func (m *Metrics) serverInit() {
+	m.server.endPoint = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_endpoint_total`,
 			Help: "How many service calls",
 		}, []string{"method", "endpoint"},
 	)
-	m.server.Cache = promauto.NewCounterVec(
+	m.server.cache = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_cache_total`,
 			Help: "How many cache calls",
 		}, []string{"method", "endpoint"},
 	)
-	m.server.DB = promauto.NewCounterVec(
+	m.server.db = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_server_db_total`,
 			Help: "How many DB calls",
@@ -56,7 +56,7 @@ func (m *Metrics) initServerMetric() {
 	)
 }
 
-func (m *Metrics) initServiceMetric() {
+func (m *Metrics) serviceInit() {
 	m.service.Transport = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_service_transport_total`,
@@ -65,22 +65,26 @@ func (m *Metrics) initServiceMetric() {
 	)
 }
 
-func (m *Metrics) ServiceInc(endPoint acme.ServiceEndPoint, method serviceMethodType) {
-	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
-	m.server.EndPoint.With(labels).Inc()
+func (m *Metrics) Marshal(filename string) {
+	prometheus.WriteToTextfile(filename, prometheus.DefaultGatherer)
 }
 
-func (m *Metrics) DBInc(endPoint acme.ServiceEndPoint, method dbMethodType) {
+func (m *Metrics) ServerInc(endPoint acme.EndPoint, method serviceMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
-	m.server.DB.With(labels).Inc()
+	m.server.endPoint.With(labels).Inc()
 }
 
-func (m *Metrics) CacheInc(endPoint acme.ServiceEndPoint, method cacheMethodType) {
+func (m *Metrics) DBInc(endPoint acme.EndPoint, method dbMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
-	m.server.Cache.With(labels).Inc()
+	m.server.db.With(labels).Inc()
 }
 
-func (m *Metrics) TransportInc(endPoint acme.ServiceEndPoint, method transportMethodType) {
+func (m *Metrics) CacheInc(endPoint acme.EndPoint, method cacheMethodType) {
+	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
+	m.server.cache.With(labels).Inc()
+}
+
+func (m *Metrics) TransportInc(endPoint acme.EndPoint, method transportMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.service.Transport.With(labels).Inc()
 }
