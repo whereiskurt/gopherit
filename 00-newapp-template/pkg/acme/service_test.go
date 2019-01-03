@@ -2,6 +2,7 @@ package acme_test
 
 import (
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"00-newapp-template/internal/pkg/server"
 	"00-newapp-template/pkg/acme"
 	"os"
@@ -27,7 +28,7 @@ func TestService(t *testing.T) {
 func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 	// We our own server ports and configs.
 	config := pkg.NewConfig()
-	metrics := pkg.NewMetrics(config.Metrics)
+	metrics := metrics.NewMetrics()
 
 	SetupConfig(config)
 	s := server.NewServer(config, metrics)

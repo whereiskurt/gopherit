@@ -3,6 +3,7 @@ package internal_test
 import (
 	"00-newapp-template/internal"
 	"00-newapp-template/internal/pkg"
+	"00-newapp-template/internal/pkg/metrics"
 	"testing"
 )
 
@@ -12,7 +13,7 @@ func TestGopherCLI(t *testing.T) {
 	t.Parallel()
 
 	config := pkg.NewConfig()
-	metrics := pkg.NewMetrics(config.Metrics)
+	metrics := metrics.NewMetrics()
 	SetupConfig(config)
 	internal.NewApp(config, metrics)
 }

@@ -65,83 +65,6 @@ func (m *Metrics) initServiceMetric() {
 	)
 }
 
-var Methods = methodTypes{
-	Service: serviceTypes{
-		Get:    serviceMethodType("Get"),
-		Update: serviceMethodType("Update"),
-		Add:    serviceMethodType("Add"),
-		Delete: serviceMethodType("Delete"),
-	},
-	DB: dbTypes{
-		Delete: dbMethodType("Delete"),
-		Update: dbMethodType("Update"),
-		Read:   dbMethodType("Read"),
-		Insert: dbMethodType("Insert"),
-	},
-	Cache: cacheTypes{
-		Hit:        cacheMethodType("Hit"),
-		Miss:       cacheMethodType("Miss"),
-		Invalidate: cacheMethodType("Invalidate"),
-		Store:      cacheMethodType("Store"),
-	},
-}
-
-type methodTypes struct {
-	Service   serviceTypes
-	DB        dbTypes
-	Cache     cacheTypes
-	Transport transportTypes
-}
-
-type serviceMethodType string
-type serviceTypes struct {
-	Get    serviceMethodType
-	Update serviceMethodType
-	Add    serviceMethodType
-	Delete serviceMethodType
-}
-
-func (c serviceMethodType) String() string {
-	return "pkg.metric.service." + string(c)
-}
-
-type dbMethodType string
-type dbTypes struct {
-	Read   dbMethodType
-	Update dbMethodType
-	Insert dbMethodType
-	Delete dbMethodType
-}
-
-func (c dbMethodType) String() string {
-	return "pkg.metric.db." + string(c)
-}
-
-type cacheMethodType string
-type cacheTypes struct {
-	Hit        cacheMethodType
-	Miss       cacheMethodType
-	Store      cacheMethodType
-	Invalidate cacheMethodType
-}
-
-func (c cacheMethodType) String() string {
-	return "pkg.metric.cache." + string(c)
-}
-
-type transportMethodType string
-type transportTypes struct {
-	Get    transportMethodType
-	Put    transportMethodType
-	Post   transportMethodType
-	Delete transportMethodType
-	Head   transportMethodType
-}
-
-func (c transportMethodType) String() string {
-	return "pkg.metric.transport." + string(c)
-}
-
 func (m *Metrics) ServiceInc(endPoint acme.ServiceEndPoint, method serviceMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.server.EndPoint.With(labels).Inc()
@@ -157,7 +80,6 @@ func (m *Metrics) CacheInc(endPoint acme.ServiceEndPoint, method cacheMethodType
 	m.server.Cache.With(labels).Inc()
 }
 
-// GET/POST/PUT/DELETE
 func (m *Metrics) TransportInc(endPoint acme.ServiceEndPoint, method transportMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.service.Transport.With(labels).Inc()
