@@ -1,7 +1,7 @@
 package adapter
 
 import (
-	"00-newapp-template/internal/pkg"
+	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/acme"
 	"fmt"
 )

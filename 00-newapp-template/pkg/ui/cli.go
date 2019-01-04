@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"00-newapp-template/internal/pkg"
+	"00-newapp-template/pkg"
 	"bytes"
 	"fmt"
 	"log"

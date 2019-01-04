@@ -1,10 +1,10 @@
 package server
 
 import (
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/server/db"
+	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/cache"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server/db"
 	"context"
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

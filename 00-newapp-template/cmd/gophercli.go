@@ -2,8 +2,8 @@ package main
 
 import (
 	"00-newapp-template/internal"
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/metrics"
 )
 
 func main() {

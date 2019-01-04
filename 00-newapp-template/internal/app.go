@@ -2,9 +2,9 @@ package internal
 
 import (
 	"00-newapp-template/internal/app/cmd"
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/ui"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/ui"
 	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"

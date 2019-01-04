@@ -1,9 +1,9 @@
 package server
 
 import (
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/server/middleware"
 	"00-newapp-template/pkg/acme"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server/middleware"
 	"context"
 	"encoding/json"
 	"fmt"

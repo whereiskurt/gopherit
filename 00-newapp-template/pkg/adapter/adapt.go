@@ -1,9 +1,9 @@
 package adapter
 
 import (
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
+	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/cache"
+	"00-newapp-template/pkg/metrics"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -13,9 +13,9 @@ import (
 )
 
 // CacheLabel is the type for where to store the response
-type CacheLabel string
+type CachePathLabel string
 
-func (c CacheLabel) String() string {
+func (c CachePathLabel) String() string {
 	return "adapter/" + string(c)
 }
 
@@ -46,15 +46,15 @@ func NewAdapter(config *pkg.Config, metrics *metrics.Metrics) (a *Adapter) {
 	return
 }
 
-func (a *Adapter) cacheStore(label CacheLabel, obj interface{}) {
-	json, err := json.Marshal(obj)
+func (a *Adapter) diskStore(label CachePathLabel, obj interface{}) {
+	j, err := json.Marshal(obj)
 	if err == nil {
-		a.DiskCache.Store(fmt.Sprintf("%s.json", label), prettify(json))
+		a.DiskCache.Store(fmt.Sprintf("%s.json", label), PrettyJSON(j))
 	}
 }
 
-// prettify will look for 'jq' to pretty the json input
-func prettify(json []byte) []byte {
+// PrettyJSON will look for 'jq' to pretty the json input
+func PrettyJSON(json []byte) []byte {
 	jq, err := exec.LookPath("jq")
 	if err == nil {
 		var pretty bytes.Buffer
@@ -76,6 +76,7 @@ func (a *Adapter) GopherThings() map[string]Gopher {
 		matchOnThings = true
 	}
 
+	a.Metrics.ClientInc("GopherThings", metrics.Methods.Service.Get)
 	gopherThings := make(map[string]Gopher)
 
 	gg := a.Gophers()
@@ -95,35 +96,40 @@ func (a *Adapter) GopherThings() map[string]Gopher {
 		}
 	}
 
-	a.cacheStore(CacheLabel("GopherThings"), &gopherThings)
+	a.diskStore(CachePathLabel("GopherThings"), &gopherThings)
 	return gopherThings
 }
 
 // Gophers returns all gophers with 'things' == nil
 func (a *Adapter) Gophers() map[string]Gopher {
+	a.Metrics.ClientInc("Gophers", metrics.Methods.Service.Get)
+
 	rawGophers := a.Unmarshal.gophers()
 	filtered := a.Filter.gophers(rawGophers)
 	gophers := a.Convert.gophers(filtered)
 
-	a.cacheStore(CacheLabel("Gophers"), &gophers)
+	a.diskStore(CachePathLabel("Gophers"), &gophers)
 
 	return gophers
 }
 
 // Things will return all things for a gopherID
 func (a *Adapter) Things(gopherID string) map[string]Thing {
+	a.Metrics.ClientInc("Things", metrics.Methods.Service.Get)
+
 	rawThings := a.Unmarshal.things(gopherID)
 	filtered := a.Filter.things(rawThings)
 	things := a.Convert.things(filtered)
 
-	label := CacheLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
-	a.cacheStore(label, &things)
+	label := CachePathLabel(fmt.Sprintf("Things/Gopher.%s", gopherID))
+	a.diskStore(label, &things)
 
 	return things
 }
 
 // DeleteGopher will delete the matching gopherID
 func (a *Adapter) DeleteGopher(gopherID string) map[string]Gopher {
+	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Delete)
 	rawGophers := a.Unmarshal.deleteGopher(gopherID)
 	gophers := a.Convert.gophers(rawGophers)
 	return gophers
@@ -131,6 +137,7 @@ func (a *Adapter) DeleteGopher(gopherID string) map[string]Gopher {
 
 // DeleteThing will delete the Thing matching gopherID and thingID - could use FindGopherByThing instead of taking thingID
 func (a *Adapter) DeleteThing(gopherID string, thingID string) map[string]Thing {
+	a.Metrics.ClientInc("Thing", metrics.Methods.Service.Delete)
 	rawThings := a.Unmarshal.deleteThing(gopherID, thingID)
 	things := a.Convert.things(rawThings)
 	return things

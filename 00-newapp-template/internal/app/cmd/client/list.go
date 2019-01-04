@@ -1,8 +1,8 @@
 package client
 
 import (
-	"00-newapp-template/internal/pkg/adapter"
-	"00-newapp-template/internal/pkg/ui"
+	"00-newapp-template/pkg/adapter"
+	"00-newapp-template/pkg/ui"
 	"encoding/json"
 	"fmt"
 	"strings"

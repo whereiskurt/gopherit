@@ -25,16 +25,16 @@ func NewDisk(folder string, key string, crypto bool) (d *Disk) {
 }
 
 // Fetch looks for the stored file and returns it.
-func (d *Disk) Fetch(filename string) (bb []byte, err error) {
+func (d *Disk) Fetch(filename string) ([]byte, error) {
 	if _, stat := os.Stat(filename); os.IsNotExist(stat) {
 		// File doesn't exist return no error
-		return
+		return nil, nil
 	}
 
-	bb, err = ioutil.ReadFile(filename)
+	bb, err := ioutil.ReadFile(filename)
 	if err != nil {
-		// Error! Failed to read file!
-		return
+		// Error! Failed to read file that exists!
+		return bb, err
 	}
 	if d.UseCrypto {
 		var dd []byte
@@ -46,7 +46,7 @@ func (d *Disk) Fetch(filename string) (bb []byte, err error) {
 			err = fmt.Errorf("cache failed to decrypt file '%s' : %s", filename, err)
 		}
 	}
-	return
+	return bb, err
 }
 
 // Store will create a cache file with the bb bytes
@@ -55,18 +55,17 @@ func (d *Disk) Store(filename string, bb []byte) (err error) {
 	if d.UseCrypto && len(d.CacheKey) > 0 {
 		bb, err = Encrypt(bb, d.CacheKey)
 		if err != nil {
-			return
+			return err
 		}
 	}
 
 	err = os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
-		return
+		return err
 	}
 
 	err = ioutil.WriteFile(filename, bb, 0644)
-
-	return
+	return err
 }
 
 // Clear will delete the cache file.

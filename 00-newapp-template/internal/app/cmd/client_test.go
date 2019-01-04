@@ -2,11 +2,11 @@ package cmd_test
 
 import (
 	"00-newapp-template/internal/app/cmd/client"
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/adapter"
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/server"
-	"00-newapp-template/internal/pkg/ui"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/adapter"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server"
+	"00-newapp-template/pkg/ui"
 	"os"
 	"testing"
 	"time"

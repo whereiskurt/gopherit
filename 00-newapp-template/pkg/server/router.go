@@ -1,7 +1,7 @@
 package server
 
 import (
-	"00-newapp-template/internal/pkg/server/middleware"
+	"00-newapp-template/pkg/server/middleware"
 	"github.com/go-chi/chi"
 	chimiddleware "github.com/go-chi/chi/middleware"
 )

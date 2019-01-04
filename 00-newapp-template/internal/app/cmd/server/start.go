@@ -1,9 +1,9 @@
 package server
 
 import (
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/server"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server"
 )
 
 // Start will create a new Server, attach a Router, and start listening on the port logging to the log.

@@ -1,9 +1,9 @@
 package server_test
 
 import (
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/metrics"
-	"00-newapp-template/internal/pkg/server"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server"
 	"os"
 	"testing"
 	"time"

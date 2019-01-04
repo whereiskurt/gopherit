@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"00-newapp-template/internal/pkg"
-	"00-newapp-template/internal/pkg/ui"
+	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/ui"
 	"github.com/spf13/cobra"
 )
 

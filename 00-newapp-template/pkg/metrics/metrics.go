@@ -19,11 +19,11 @@ type serverMetric struct {
 }
 
 type clientMetric struct {
-	GophersThings prometheus.CounterVec
+	command *prometheus.CounterVec
 }
 
 type serviceMetric struct {
-	Transport *prometheus.CounterVec
+	transport *prometheus.CounterVec
 }
 
 func NewMetrics() (m *Metrics) {
@@ -31,6 +31,7 @@ func NewMetrics() (m *Metrics) {
 
 	m.serverInit()
 	m.serviceInit()
+	m.clientInit()
 
 	return m
 }
@@ -57,10 +58,18 @@ func (m *Metrics) serverInit() {
 }
 
 func (m *Metrics) serviceInit() {
-	m.service.Transport = promauto.NewCounterVec(
+	m.service.transport = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: `gophercli_service_transport_total`,
 			Help: "How many services calls",
+		}, []string{"method", "endpoint"},
+	)
+}
+func (m *Metrics) clientInit() {
+	m.client.command = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: `gophercli_client_total`,
+			Help: "How many CLI client / command calls were made",
 		}, []string{"method", "endpoint"},
 	)
 }
@@ -86,5 +95,10 @@ func (m *Metrics) CacheInc(endPoint acme.EndPoint, method cacheMethodType) {
 
 func (m *Metrics) TransportInc(endPoint acme.EndPoint, method transportMethodType) {
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
-	m.service.Transport.With(labels).Inc()
+	m.service.transport.With(labels).Inc()
+}
+
+func (m *Metrics) ClientInc(endPoint string, method serviceMethodType) {
+	labels := prometheus.Labels{"endpoint": endPoint, "method": method.String()}
+	m.client.command.With(labels).Inc()
 }
