@@ -10,7 +10,7 @@ import (
 
 // Start will create a new Server, attach a Router, and start listening on the port logging to the log.
 func Start(config *pkg.Config, metrics *metrics.Metrics) {
-	config.EnableServerLogging()
+	config.Server.EnableLogging()
 
 	l := config.Log.WithFields(log.Fields{
 		"docroot": config.Server.RootFolder,
@@ -32,10 +32,10 @@ func Start(config *pkg.Config, metrics *metrics.Metrics) {
 
 	_ = s.ListenAndServe()
 
-	l.Info("stopping server")
+	l.Info("server stopped.")
 
-	config.Server.DumpMetrics()
 	l.Info("dumping metrics for server")
+	config.Server.DumpMetrics()
 
 	return
 }

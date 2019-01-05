@@ -11,7 +11,7 @@ import (
 // List uses a configured adapter to list matching gopher/things.
 // Returns all matching gophers
 func List(a *adapter.Adapter, cli ui.CLI) map[string]adapter.Gopher {
-	a.Config.EnableClientLogging()
+	a.Config.Client.EnableLogging()
 
 	log := a.Config.Log
 

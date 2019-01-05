@@ -36,7 +36,6 @@ func (c *Server) Start(cmd *cobra.Command, args []string) {
 
 	server.Start(c.Config, c.Metrics)
 
-
 	return
 }
 

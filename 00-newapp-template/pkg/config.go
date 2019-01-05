@@ -262,28 +262,6 @@ func (c *Config) hasVerboseLevel() bool {
 	return c.VerboseLevel1 || c.VerboseLevel2 || c.VerboseLevel3 || c.VerboseLevel4 || c.VerboseLevel5
 }
 
-func (c *ServerConfig) LogFilename() string {
-	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("server.%s.log", dts)
-	file := filepath.Join(".", c.Config.LogFolder, name)
-	return file
-}
-func (c *ClientConfig) LogFilename() string {
-	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("client.%s.log", dts)
-	file := filepath.Join(".", c.Config.LogFolder, name)
-	return file
-}
-
-func (c *Config) EnableClientLogging() {
-	filename := c.Client.LogFilename()
-	c.SetLogFilename(filename)
-}
-func (c *Config) EnableServerLogging() {
-	filename := c.Server.LogFilename()
-	c.SetLogFilename(filename)
-}
-
 func (c *Config) SetLogFilename(filename string) {
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
@@ -291,26 +269,48 @@ func (c *Config) SetLogFilename(filename string) {
 	}
 
 	// If DEBUG level is on we output log to STDOUT as well.
-	var mw io.Writer
+	mw := io.MultiWriter(f)
 	if c.Log.IsLevelEnabled(log.DebugLevel) {
 		mw = io.MultiWriter(os.Stdout, f)
-	} else {
-		mw = io.MultiWriter(f)
 	}
-
 	c.Log.SetOutput(mw)
+
 	c.Log.SetFormatter(&log.TextFormatter{})
 }
 
-func (c *ClientConfig) DumpMetrics() {
+func (c *ClientConfig) EnableLogging() {
+	filename := c.LogFilename()
+	c.Config.SetLogFilename(filename)
+}
+func (c *ServerConfig) EnableLogging() {
+	filename := c.LogFilename()
+	c.Config.SetLogFilename(filename)
+}
+func (c *ServerConfig) LogFilename() string {
+	pid := os.Getpid()
 	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("client.%s.prom", dts)
+	name := fmt.Sprintf("server.%d.%s.log", pid, dts)
+	file := filepath.Join(".", c.Config.LogFolder, name)
+	return file
+}
+func (c *ClientConfig) LogFilename() string {
+	pid := os.Getpid()
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("client.%d.%s.log", pid, dts)
+	file := filepath.Join(".", c.Config.LogFolder, name)
+	return file
+}
+func (c *ClientConfig) DumpMetrics() {
+	pid := os.Getpid()
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("client.%d.%s.prom", pid, dts)
 	file := filepath.Join(".", c.MetricsFolder, name)
 	metrics.DumpMetrics(file)
 }
 func (c *ServerConfig) DumpMetrics() {
+	pid := os.Getpid()
 	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("server.%s.prom", dts)
+	name := fmt.Sprintf("server.%d.%s.prom", pid, dts)
 	file := filepath.Join(".", c.MetricsFolder, name)
 	metrics.DumpMetrics(file)
 }
