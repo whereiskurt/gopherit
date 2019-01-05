@@ -35,10 +35,7 @@ func NewApp(config *pkg.Config, mmetrics *metrics.Metrics) (a App) {
 	// NOTE: we need to set the PreRun BEFORE making other commands below.
 	a.RootCmd.PreRun = func(cmd *cobra.Command, args []string) {
 		a.Config.UnmarshalViper()  // copy values from cobra
-		err := a.Config.Validate() // and validate.
-		if err != nil {
-			log.Fatalf("failed to validate: %s", err)
-		}
+		a.Config.ValidateOrFatal() // and validate.
 	}
 
 	a.RootCmd.SetUsageTemplate(a.usageTemplate("GopherCLIUsage", nil))

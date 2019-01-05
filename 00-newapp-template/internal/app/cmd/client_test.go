@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var Metrics metrics.Metrics
+
 func TestUnAuthenticatedClient(t *testing.T) {
 	serverConfig := pkg.NewConfig()
 	SetupConfig(serverConfig)
@@ -19,6 +21,7 @@ func TestUnAuthenticatedClient(t *testing.T) {
 	t.Parallel()
 
 	StartServerRunTests(t, ClientTests)
+
 }
 
 func SetupConfig(c *pkg.Config) {
@@ -34,18 +37,17 @@ func SetupConfig(c *pkg.Config) {
 	os.RemoveAll(c.Client.CacheFolder)
 }
 
-func StartServerRunTests(t *testing.T, f func(*testing.T)) {
-	// We our own server ports and configs.
+func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
+	mm := metrics.NewMetrics()
 	config := pkg.NewConfig()
-	metrics := metrics.NewMetrics()
-
 	SetupConfig(config)
-	s := server.NewServer(config, metrics)
+	s := server.NewServer(config, mm)
 	s.NewRouter()
 	var err error
 	go func() {
 		err = s.ListenAndServe() // BLOCKS
 	}()
+
 	select {
 	// Give the server 2 seconds to fail on startup, before we start client tests.
 	case <-time.After(2 * time.Second):
@@ -54,11 +56,11 @@ func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 			t.Fail()
 			break
 		}
-		f(t)
+		f(mm, t)
 	}
 }
 
-func ClientTests(t *testing.T) {
+func ClientTests(mm *metrics.Metrics, t *testing.T) {
 	t.Run("Gopher.List", func(t *testing.T) {
 		c := pkg.NewConfig()
 		SetupConfig(c)
@@ -67,7 +69,7 @@ func ClientTests(t *testing.T) {
 		c.Client.ThingID = ""
 		c.Client.SecretKey = ""
 		c.Client.AccessKey = ""
-		gophers := client.List(adapter.NewAdapter(c, nil), ui.NewCLI(c))
+		gophers := client.List(adapter.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 4 {
 			t.Errorf("Unexpected count of gophers: %d", len(gophers))
 			t.Fail()
@@ -77,7 +79,7 @@ func ClientTests(t *testing.T) {
 		c := pkg.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
-		gophers := client.Delete(adapter.NewAdapter(c, nil), ui.NewCLI(c))
+		gophers := client.Delete(adapter.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 1 { // DELETE returns the matching undelete item.
 			t.Errorf("Unexpected count of gophers return on UNAUTHORIZED delete: %d - %+v", len(gophers), gophers)
 			t.Fail()
@@ -89,7 +91,7 @@ func ClientTests(t *testing.T) {
 		c.Client.GopherID = "1"
 		c.Client.SecretKey = "notempty"
 		c.Client.AccessKey = "notempty"
-		gophers := client.Delete(adapter.NewAdapter(c, nil), ui.NewCLI(c))
+		gophers := client.Delete(adapter.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 0 { // DELETE should return empty after successful delete.
 			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))
 			t.Fail()

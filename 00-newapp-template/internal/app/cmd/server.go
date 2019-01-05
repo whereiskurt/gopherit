@@ -6,7 +6,6 @@ import (
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/ui"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +21,7 @@ func NewServer(config *pkg.Config, metrics *metrics.Metrics) (c Server) {
 	c.Config = config
 	c.CLI = ui.NewCLI(config)
 	c.Metrics = metrics
+
 	return
 }
 
@@ -34,17 +34,8 @@ func (c *Server) Server(cmd *cobra.Command, args []string) {
 // Start will configure a server and start it.
 func (c *Server) Start(cmd *cobra.Command, args []string) {
 
-	l := c.Config.Log.WithFields(log.Fields{
-		"docroot": c.Config.Server.RootFolder,
-		"cache":   c.Config.Server.CacheFolder,
-		"port":    c.Config.Server.ListenPort,
-	})
-
-	l.Info("starting server")
-
 	server.Start(c.Config, c.Metrics)
 
-	l.Info("server finished")
 
 	return
 }

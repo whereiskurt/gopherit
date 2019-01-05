@@ -1,14 +1,19 @@
 package pkg
 
 import (
+	"00-newapp-template/pkg/metrics"
 	"context"
 	"fmt"
 	home "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 // These defaults are needed to configure Viper/Cobra
@@ -30,6 +35,10 @@ const defaultMetricsListenPort = "22222"
 const DefaultClientCacheFolder = "./.cache/client/"
 const defaultClientCacheResponse = true
 
+const defaultLogFolder = "./log/"
+const defaultServerMetricsFolder = "./log/metrics/server/"
+const defaultClientMetricsFolder = "./log/metrics/client/"
+
 // DefaultServerCacheFolder  stores default server cache file location
 const DefaultServerCacheFolder = "./.cache/server/"
 const defaultServerCacheResponse = true
@@ -42,15 +51,14 @@ type Config struct {
 	ConfigFolder   string
 	ConfigFilename string
 	TemplateFolder string
-
-	Log *log.Logger
-
-	VerboseLevel  string
-	VerboseLevel1 bool
-	VerboseLevel2 bool
-	VerboseLevel3 bool
-	VerboseLevel4 bool
-	VerboseLevel5 bool
+	LogFolder      string
+	Log            *log.Logger
+	VerboseLevel   string
+	VerboseLevel1  bool
+	VerboseLevel2  bool
+	VerboseLevel3  bool
+	VerboseLevel4  bool
+	VerboseLevel5  bool
 
 	Client  ClientConfig  // 'gophercli client list'
 	Server  ServerConfig  // 'gophercli server start'
@@ -62,6 +70,7 @@ type MetricsConfig struct {
 
 // ClientConfig are all of the params for the Client Command
 type ClientConfig struct {
+	Config            *Config
 	BaseURL           string
 	AccessKey         string
 	SecretKey         string
@@ -75,10 +84,12 @@ type ClientConfig struct {
 	ThingID           string
 	ThingName         string
 	ThingDescription  string
+	MetricsFolder     string
 }
 
 // ServerConfig are all of the params for the Client Command
 type ServerConfig struct {
+	Config            *Config
 	ListenPort        string
 	AccessKey         string // CSV of allowed AccessKeys
 	SecretKey         string // CSV of allowed SecretKeys
@@ -87,10 +98,12 @@ type ServerConfig struct {
 	CacheFolder       string
 	CacheResponse     bool
 	MetricsListenPort string
+	MetricsFolder     string
 }
 
 // VersionConfig are all of the params for the Client Command
 type VersionConfig struct {
+	Config     *Config
 	ShowServer bool
 	ShowClient bool
 }
@@ -105,11 +118,16 @@ func NewConfig() (config *Config) {
 	})
 	config.Context = context.Background()
 
+	// Provide access to config variables - ie. log!
+	config.Client.Config = config
+	config.Server.Config = config
+	config.Version.Config = config
+
 	return
 }
 
 // UnmarshalViper copies all of the cobra/viper config data into our Config struct
-// This is the deliniation bertween cobra/ciper and using our Config struct.
+// This is the delineation between cobra/viper and using our Config struct.
 func (c *Config) UnmarshalViper() {
 	// Copy everything from the Viper into our Config
 	err := viper.Unmarshal(&c)
@@ -119,13 +137,24 @@ func (c *Config) UnmarshalViper() {
 	return
 }
 
-// Validate the string values inside of the Config after copying from Unmarshal or self-setting.
-func (c *Config) Validate() (err error) {
+// ValidateOrFatal will validate the string values inside of the Config after copying from Unmarshal or self-setting.
+func (c *Config) ValidateOrFatal() {
 	c.validateVerbosity()
 	c.validateOutputMode()
 
-	c.Log.SetFormatter(&log.TextFormatter{})
-	c.Log.SetOutput(os.Stdout)
+	var err error
+	err = os.MkdirAll(path.Dir(c.Client.MetricsFolder), 0777)
+	if err != nil {
+		log.Fatalf("error: making folder for client metrics: '%s'", err)
+	}
+	err = os.MkdirAll(path.Dir(c.Server.MetricsFolder), 0777)
+	if err != nil {
+		log.Fatalf("error: making folder for server metrics: '%s'", err)
+	}
+	err = os.MkdirAll(path.Dir(c.LogFolder), 0777)
+	if err != nil {
+		log.Fatalf("error: making folder for log folder: '%s'", err)
+	}
 
 	return
 }
@@ -154,10 +183,12 @@ func (c *Config) readWithViper() {
 	return
 }
 func (c *Config) useDefaultValues() {
+	c.LogFolder = defaultLogFolder
 	c.Client.CacheFolder = DefaultClientCacheFolder
 	c.Client.CacheResponse = defaultClientCacheResponse
 	c.Server.CacheFolder = DefaultServerCacheFolder
 	c.Server.CacheResponse = defaultServerCacheResponse
+	c.Server.MetricsFolder = defaultServerMetricsFolder
 
 	c.Server.MetricsListenPort = defaultMetricsListenPort
 	c.Client.OutputMode = defaultClientOutputMode
@@ -166,6 +197,7 @@ func (c *Config) useDefaultValues() {
 	c.ConfigFolder = defaultConfigFolder
 	c.ConfigFilename = defaultConfigFilename
 	c.TemplateFolder = defaultTemplateFolder
+	c.Client.MetricsFolder = defaultClientMetricsFolder
 
 	// Find the User's home folder
 	folder, err := home.Dir()
@@ -228,4 +260,57 @@ func (c *Config) validateVerbosity() {
 }
 func (c *Config) hasVerboseLevel() bool {
 	return c.VerboseLevel1 || c.VerboseLevel2 || c.VerboseLevel3 || c.VerboseLevel4 || c.VerboseLevel5
+}
+
+func (c *ServerConfig) LogFilename() string {
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("server.%s.log", dts)
+	file := filepath.Join(".", c.Config.LogFolder, name)
+	return file
+}
+func (c *ClientConfig) LogFilename() string {
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("client.%s.log", dts)
+	file := filepath.Join(".", c.Config.LogFolder, name)
+	return file
+}
+
+func (c *Config) EnableClientLogging() {
+	filename := c.Client.LogFilename()
+	c.SetLogFilename(filename)
+}
+func (c *Config) EnableServerLogging() {
+	filename := c.Server.LogFilename()
+	c.SetLogFilename(filename)
+}
+
+func (c *Config) SetLogFilename(filename string) {
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Printf("error opening file: %v", err)
+	}
+
+	// If DEBUG level is on we output log to STDOUT as well.
+	var mw io.Writer
+	if c.Log.IsLevelEnabled(log.DebugLevel) {
+		mw = io.MultiWriter(os.Stdout, f)
+	} else {
+		mw = io.MultiWriter(f)
+	}
+
+	c.Log.SetOutput(mw)
+	c.Log.SetFormatter(&log.TextFormatter{})
+}
+
+func (c *ClientConfig) DumpMetrics() {
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("client.%s.prom", dts)
+	file := filepath.Join(".", c.MetricsFolder, name)
+	metrics.DumpMetrics(file)
+}
+func (c *ServerConfig) DumpMetrics() {
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("server.%s.prom", dts)
+	file := filepath.Join(".", c.MetricsFolder, name)
+	metrics.DumpMetrics(file)
 }

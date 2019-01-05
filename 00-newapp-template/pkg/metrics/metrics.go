@@ -78,27 +78,46 @@ func (m *Metrics) Marshal(filename string) {
 	prometheus.WriteToTextfile(filename, prometheus.DefaultGatherer)
 }
 
-func (m *Metrics) ServerInc(endPoint acme.EndPoint, method serviceMethodType) {
+func (m *Metrics) ServerInc(endPoint acme.ServiceType, method serviceMethodType) {
+	if m.server.endPoint == nil {
+		return
+	}
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.server.endPoint.With(labels).Inc()
 }
 
-func (m *Metrics) DBInc(endPoint acme.EndPoint, method dbMethodType) {
+func (m *Metrics) DBInc(endPoint acme.ServiceType, method dbMethodType) {
+	if m.server.db == nil {
+		return
+	}
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.server.db.With(labels).Inc()
 }
 
-func (m *Metrics) CacheInc(endPoint acme.EndPoint, method cacheMethodType) {
+func (m *Metrics) CacheInc(endPoint acme.ServiceType, method cacheMethodType) {
+	if m.server.cache == nil {
+		return
+	}
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.server.cache.With(labels).Inc()
 }
 
-func (m *Metrics) TransportInc(endPoint acme.EndPoint, method transportMethodType) {
+func (m *Metrics) TransportInc(endPoint acme.ServiceType, method transportMethodType) {
+	if m.service.transport == nil {
+		return
+	}
 	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
 	m.service.transport.With(labels).Inc()
 }
 
 func (m *Metrics) ClientInc(endPoint string, method serviceMethodType) {
+	if m.client.command == nil {
+		return
+	}
 	labels := prometheus.Labels{"endpoint": endPoint, "method": method.String()}
 	m.client.command.With(labels).Inc()
+}
+
+func DumpMetrics(file string) {
+	prometheus.WriteToTextfile(file, prometheus.DefaultGatherer)
 }

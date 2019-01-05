@@ -25,7 +25,7 @@ func (s *Server) shutdown(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Gophers")
+	endPoint := acme.ServiceType("Gophers")
 
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Get)
 
@@ -50,7 +50,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Gopher")
+	endPoint := acme.ServiceType("Gopher")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
@@ -80,7 +80,7 @@ func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Gopher")
+	endPoint := acme.ServiceType("Gopher")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Get)
 
 	gopher := acme.Gopher{
@@ -98,12 +98,12 @@ func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	return
 }
 func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Gopher")
+	endPoint := acme.ServiceType("Gopher")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Delete)
 
 	// Deleting a Gopher impacts Gophers cached response, so clear cache for things too!
 	s.cacheClear(r, endPoint)
-	s.cacheClear(r, acme.EndPoint("Gophers"))
+	s.cacheClear(r, acme.ServiceType("Gophers"))
 
 	gopherID := middleware.GopherID(r)
 
@@ -115,7 +115,7 @@ func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) things(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Things")
+	endPoint := acme.ServiceType("Things")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
@@ -139,7 +139,7 @@ func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 	w.Write(bb)
 }
 func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Thing")
+	endPoint := acme.ServiceType("Thing")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Get)
 
 	// Check for a cache hit! :- )
@@ -170,18 +170,18 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Thing")
+	endPoint := acme.ServiceType("Thing")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Update)
 	// TODO: Write and implement s.DB.UpdateThing(thing)
 	s.Metrics.DBInc(endPoint, metrics.Methods.DB.Update)
 	s.cacheClear(r, endPoint)
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoint("Thing")
+	endPoint := acme.ServiceType("Thing")
 	s.Metrics.ServerInc(endPoint, metrics.Methods.Service.Delete)
 
 	s.cacheClear(r, endPoint)
-	s.cacheClear(r, acme.EndPoint("Things"))
+	s.cacheClear(r, acme.ServiceType("Things"))
 
 	gopherID := middleware.GopherID(r)
 	thingID := middleware.ThingID(r)
@@ -192,7 +192,7 @@ func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
 	s.things(w, r)
 }
 
-func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPoint) {
+func (s *Server) cacheClear(r *http.Request, endPoint acme.ServiceType) {
 	if s.DiskCache == nil {
 		return
 	}
@@ -202,7 +202,7 @@ func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPoint) {
 	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
 	s.DiskCache.Clear(filename)
 }
-func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.EndPoint, bb []byte) {
+func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.ServiceType, bb []byte) {
 	if s.DiskCache == nil {
 		return
 	}
@@ -212,7 +212,7 @@ func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acm
 	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
 	s.DiskCache.Store(filename, prettyCache)
 }
-func (s *Server) cacheFetch(r *http.Request, endPoint acme.EndPoint) (bb []byte, err error) {
+func (s *Server) cacheFetch(r *http.Request, endPoint acme.ServiceType) (bb []byte, err error) {
 	if s.DiskCache == nil {
 		return
 	}

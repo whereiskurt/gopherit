@@ -95,7 +95,7 @@ func (s *Server) hookShutdownSignal() {
 	s.Context, s.Finished = context.WithCancel(s.Context)
 	go func() {
 		sig := <-stop
-		s.Log.Infof("s termination signal '%s' received", sig)
+		s.Log.Infof("termination signal '%s' received for server", sig)
 		s.Finished()
 	}()
 

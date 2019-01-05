@@ -56,7 +56,7 @@ func (t *Transport) header() string {
 	return fmt.Sprintf("AccessKey=%s;SecretKey=%s", akeys[mod], skeys[mod])
 }
 
-func (t *Transport) get(url string) (body []byte, err error) {
+func (t *Transport) get(url string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 
@@ -64,27 +64,29 @@ func (t *Transport) get(url string) (body []byte, err error) {
 
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
-		return
+		return nil, 0, err
 	}
 	req.Header.Add("X-ApiKeys", t.header())
 
 	resp, err = client.Do(req) // <-------HTTPS GET Request!
+
 	if err != nil {
-		return
+		return nil, 0, err
 	}
 
-	if resp.StatusCode == 429 {
+	status = resp.StatusCode
+	if status == 429 {
 		err = errors.New("error: we need to slow down")
-		return
+		return nil, status, err
 	}
-	if resp.StatusCode == 403 {
+	if status == 403 {
 		err = errors.New("error: creds no longer authorized")
-		return
+		return nil, status, err
 	}
 
-	if resp.StatusCode != 200 {
-		err = fmt.Errorf("error: status code does not appear successful: %d", resp.StatusCode)
-		return
+	if status != 200 {
+		err = fmt.Errorf("error: status code does not appear successful: %d", status)
+		return nil, status, err
 	}
 
 	body, err = ioutil.ReadAll(resp.Body)
@@ -92,7 +94,7 @@ func (t *Transport) get(url string) (body []byte, err error) {
 		err = resp.Body.Close()
 	}
 
-	return
+	return body, status, err
 }
 func (t *Transport) post(url string, data string, datatype string) (body []byte, err error) {
 	var req *http.Request

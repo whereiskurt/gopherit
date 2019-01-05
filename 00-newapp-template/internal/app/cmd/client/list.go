@@ -10,15 +10,17 @@ import (
 
 // List uses a configured adapter to list matching gopher/things.
 // Returns all matching gophers
-func List(adapter *adapter.Adapter, cli ui.CLI) (gophers map[string]adapter.Gopher) {
-	log := adapter.Config.Log
+func List(a *adapter.Adapter, cli ui.CLI) map[string]adapter.Gopher {
+	a.Config.EnableClientLogging()
 
-	gophers = adapter.GopherThings()
+	log := a.Config.Log
+
+	gophers := a.GopherThings()
 
 	log.Debugf("Gopher Map retrieved: %+v", gophers)
 
 	var output string
-	switch strings.ToLower(adapter.Config.Client.OutputMode) {
+	switch strings.ToLower(a.Config.Client.OutputMode) {
 	case "csv":
 	case "json":
 		bb, _ := json.Marshal(gophers)
@@ -29,7 +31,7 @@ func List(adapter *adapter.Adapter, cli ui.CLI) (gophers map[string]adapter.Goph
 
 	fmt.Println(output)
 
-	adapter.Metrics.Marshal("dump.prom")
+	a.Config.Client.DumpMetrics()
 
-	return
+	return gophers
 }
