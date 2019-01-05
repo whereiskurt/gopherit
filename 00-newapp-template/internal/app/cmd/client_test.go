@@ -42,7 +42,7 @@ func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
 	config := pkg.NewConfig()
 	SetupConfig(config)
 	s := server.NewServer(config, mm)
-	s.NewRouter()
+	s.EnableDefaultRouter()
 	var err error
 	go func() {
 		err = s.ListenAndServe() // BLOCKS

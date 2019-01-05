@@ -6,8 +6,8 @@ import (
 	chimiddleware "github.com/go-chi/chi/middleware"
 )
 
-// NewRouter defines routes with middleware for request tracking, logging, param contexts
-func (s *Server) NewRouter() {
+// EnableDefaultRouter defines routes with middleware for request tracking, logging, param contexts
+func (s *Server) EnableDefaultRouter() {
 
 	s.Router.Use(chimiddleware.RequestID)
 	s.Router.Use(middleware.NewStructuredLogger(s.Log))

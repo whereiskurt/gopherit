@@ -12,16 +12,15 @@ import (
 func Start(config *pkg.Config, metrics *metrics.Metrics) {
 	config.Server.EnableLogging()
 
+	config.Log.Debugf("internal.app.cmd.server.Start called with -> config(%+v) and metrics->(%+v)", config, metrics)
 	l := config.Log.WithFields(log.Fields{
 		"docroot": config.Server.RootFolder,
 		"cache":   config.Server.CacheFolder,
 		"port":    config.Server.ListenPort,
 	})
 
-	l.Info("starting server")
-
 	s := server.NewServer(config, metrics)
-	s.NewRouter()
+	s.EnableDefaultRouter()
 
 	go func() {
 		for {
@@ -30,8 +29,8 @@ func Start(config *pkg.Config, metrics *metrics.Metrics) {
 		}
 	}()
 
+	l.Info("starting server")
 	_ = s.ListenAndServe()
-
 	l.Info("server stopped.")
 
 	l.Info("dumping metrics for server")

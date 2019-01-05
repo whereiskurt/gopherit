@@ -32,7 +32,7 @@ func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 
 	SetupConfig(config)
 	s := server.NewServer(config, metrics)
-	s.NewRouter()
+	s.EnableDefaultRouter()
 	var err error
 	go func() {
 		err = s.ListenAndServe() // BLOCKS
