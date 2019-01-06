@@ -61,10 +61,13 @@ func (c *Config) String() string {
 	var safeConfig = new(Config)
 
 	spew.Config.MaxDepth = 2
+
+	// With DisableMethods, String() will be recursively called on the *Config sub-elements and blow the stack. :-)
 	spew.Config.DisableMethods = true
 	
 	// Copy config that was passed
 	*safeConfig = *c
+
 	// Overwrite sensitive values with the masked value
 	mask := "[**MASKED**]"
 	safeConfig.Client.AccessKey = mask
