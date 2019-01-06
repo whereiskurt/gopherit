@@ -77,7 +77,7 @@ func (t *Transport) header() string {
 	return fmt.Sprintf("AccessKey=%s;SecretKey=%s", akeys[mod], skeys[mod])
 }
 
-func (t *Transport) get(url string) (body []byte, status int, err error) {
+func (t *Transport) Get(url string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 
@@ -117,12 +117,11 @@ func (t *Transport) get(url string) (body []byte, status int, err error) {
 
 	return body, status, err
 }
-func (t *Transport) post(url string, data string, datatype string) (body []byte, status int, err error) {
+func (t *Transport) Post(url string, data string, datatype string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 
 	client := &http.Client{Transport: tr}
-
 
 	req, err = http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
 	if err != nil {
@@ -144,7 +143,7 @@ func (t *Transport) post(url string, data string, datatype string) (body []byte,
 
 	return body, status, err
 }
-func (t *Transport) put(url string, data string, datatype string) (body []byte, err error) {
+func (t *Transport) Put(url string, data string, datatype string) (body []byte, err error) {
 	var req *http.Request
 	var resp *http.Response
 
@@ -168,7 +167,7 @@ func (t *Transport) put(url string, data string, datatype string) (body []byte, 
 	}
 	return
 }
-func (t *Transport) delete(url string) (body []byte, status int, err error) {
+func (t *Transport) Delete(url string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 

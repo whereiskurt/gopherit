@@ -31,10 +31,12 @@ func GopherID(r *http.Request) string {
 func ThingID(r *http.Request) string {
 	return ContextMap(r)["ThingID"]
 }
+
 // ThingName extracts from request context
 func ThingName(r *http.Request) string {
 	return ContextMap(r)["ThingName"]
 }
+
 // ThingDescription extracts from request context
 func ThingDescription(r *http.Request) string {
 	return ContextMap(r)["ThingDescription"]

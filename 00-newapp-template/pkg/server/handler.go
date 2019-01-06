@@ -210,7 +210,7 @@ func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	s.cacheClear(r, acme.EndPoints.Thing, serviceType)
 	s.cacheClear(r, acme.EndPoints.Things, serviceType)
 
-	s.thing(w,r)
+	s.thing(w, r)
 
 	return
 }

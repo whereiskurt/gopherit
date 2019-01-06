@@ -30,5 +30,5 @@ func Update(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 		a.UpdateThing(t)
 	}
 
-	return List(a, cli)
+	return a.GopherThings()
 }

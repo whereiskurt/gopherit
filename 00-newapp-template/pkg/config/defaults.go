@@ -21,8 +21,9 @@ const defaultHomeFilename = ".gophercli"
 const defaultVerboseLevel = "3"
 const defaultClientOutputMode = "table"
 const defaultServerListenPort = "10101"
-
 const defaultMetricsListenPort = "22222"
+
+const defaultBaseURL = "http://localhost:" + defaultServerListenPort
 
 // Used by the *_test to the set defaults
 // DefaultClientCacheFolder stores default client cache file location
@@ -38,6 +39,8 @@ const DefaultServerCacheFolder = "./.cache/server/"
 const defaultServerCacheResponse = true
 
 func (c *Config) SetToDefaults() {
+	c.Client.BaseURL = defaultBaseURL
+
 	c.LogFolder = defaultLogFolder
 	c.Client.CacheFolder = DefaultClientCacheFolder
 	c.Client.CacheResponse = defaultClientCacheResponse

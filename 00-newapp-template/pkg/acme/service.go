@@ -75,7 +75,7 @@ type ServiceTransport struct {
 }
 
 // MethodTemplate for each GET/PUT/POST/DELETE that is called this template is rendered
-// For POST it is put in the BODY, for GET it is added after "?" on the URL, f
+// For POST it is Put in the BODY, for GET it is added after "?" on the URL, f
 type MethodTemplate struct {
 	Template string
 }
@@ -236,8 +236,8 @@ func (s *Service) UpdateThing(t Thing) Thing {
 	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, status, err := s.update(EndPoints.Thing, map[string]string{
 			"GopherID": string(t.GopherID),
-			"ThingID": string(t.ID),
-			"Thing":   string(tjson),
+			"ThingID":  string(t.ID),
+			"Thing":    string(tjson),
 		})
 		if s.Metrics != nil {
 			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Post, status)
@@ -402,7 +402,7 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 	return
 }
 
-// TODO: Add 'put' aka 'add'
+// TODO: Add 'Put' aka 'add'
 func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 
 	url, err := ToURL(s.BaseURL, endPoint, p)
@@ -411,7 +411,7 @@ func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, 
 	}
 
 	t := NewTransport(s)
-	body, status, err := t.get(url)
+	body, status, err := t.Get(url)
 
 	if err != nil {
 		return nil, status, err
@@ -439,7 +439,7 @@ func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, in
 		return nil, 0, err
 	}
 	t := NewTransport(s)
-	body, status, err := t.delete(url)
+	body, status, err := t.Delete(url)
 	if err != nil {
 		return nil, status, err
 	}
@@ -457,7 +457,7 @@ func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, in
 	}
 
 	t := NewTransport(s)
-	body, status, err := t.post(url, j, "application/json")
+	body, status, err := t.Post(url, j, "application/json")
 	if err != nil {
 		return nil, status, err
 	}

@@ -150,10 +150,8 @@ func (a *Adapter) FindGopherByThing(thingID string) string {
 	gophers := a.Convert.gophers(allGophers)
 
 	for g := range gophers {
-
 		rawThings := a.Unmarshal.things(gophers[g].ID)
 		things := a.Convert.things(rawThings)
-
 		for t := range things {
 			if string(things[t].ID) == thingID {
 				return gophers[g].ID
@@ -164,7 +162,7 @@ func (a *Adapter) FindGopherByThing(thingID string) string {
 	return ""
 }
 
-// UpdateGopher is not implemented yet!
+// UpdateGopher uses the details in newGopher to update the Gopher
 func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Update)
 	a.Unmarshal.updateGopher(newGopher)
@@ -172,13 +170,13 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 	return
 }
 
-// UpdateThing is not implemented yet!
+// UpdateThing uses the details in newThing to update the Thing
 func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) {
 	a.Metrics.ClientInc("Thing", metrics.Methods.Service.Update)
 
 	if newThing.Gopher.ID == "" {
 		newThing.Gopher.ID = a.FindGopherByThing(newThing.ID)
-		if newThing.Gopher.ID  == "" {
+		if newThing.Gopher.ID == "" {
 			return thing
 		}
 	}
