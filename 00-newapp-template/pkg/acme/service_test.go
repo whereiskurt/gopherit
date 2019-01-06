@@ -25,7 +25,7 @@ func TestService(t *testing.T) {
 	StartServerRunTests(t, ServiceTests)
 }
 
-func StartServerRunTests(t *testing.T, f func(*testing.T)) {
+func StartServerRunTests(t *testing.T, f func(*testing.T, *metrics.Metrics)) {
 	// We our own server ports and configs.
 	config := pkg.NewConfig()
 	metrics := metrics.NewMetrics()
@@ -45,11 +45,11 @@ func StartServerRunTests(t *testing.T, f func(*testing.T)) {
 			t.Fail()
 			break
 		}
-		f(t)
+		f(t, metrics)
 	}
 }
 
-func ServiceTests(t *testing.T) {
+func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
 	config := pkg.NewConfig()
 	SetupConfig(config)
 
@@ -58,6 +58,7 @@ func ServiceTests(t *testing.T) {
 
 	t.Run("Service.DELETE.Gopher.NOAUTH", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "", "")
+		ss.EnableMetrics(metrics)
 		gophers := ss.DeleteGopher("1")
 		if len(gophers) > 0 {
 			t.Logf("Failed: %+v", len(gophers))
@@ -66,6 +67,7 @@ func ServiceTests(t *testing.T) {
 	})
 	t.Run("Service.DELETE.Gopher.AUTHORIZED", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "notempty", "notempty")
+		ss.EnableMetrics(metrics)
 		gophers := ss.DeleteGopher("1")
 		if len(gophers) > 3 {
 			t.Logf("Failed: %+v", len(gophers))
@@ -74,6 +76,7 @@ func ServiceTests(t *testing.T) {
 	})
 	t.Run("Service.DELETE.Thing.NOAUTH", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "", "")
+		ss.EnableMetrics(metrics)
 		things := ss.DeleteThing("2", "2")
 		if things != nil {
 			t.Fail()
@@ -82,6 +85,7 @@ func ServiceTests(t *testing.T) {
 
 	t.Run("Service.DELETE.Thing.AUTHORIZED", func(t *testing.T) {
 		ss := acme.NewService(config.Client.BaseURL, "notempty", "notempty")
+		ss.EnableMetrics(metrics)
 		things := ss.DeleteThing("2", "2")
 		if len(things) != 2 {
 			t.Fail()

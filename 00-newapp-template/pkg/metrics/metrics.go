@@ -1,10 +1,30 @@
 package metrics
 
 import (
-	"00-newapp-template/pkg/acme"
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
+
+type EndPointType string
+
+var EndPoints = endPointTypes{
+	Gophers: EndPointType("Gophers"),
+	Gopher:  EndPointType("Gopher"),
+	Things:  EndPointType("Things"),
+	Thing:   EndPointType("Thing"),
+}
+
+type endPointTypes struct {
+	Gophers EndPointType
+	Gopher  EndPointType
+	Things  EndPointType
+	Thing   EndPointType
+}
+
+func (c EndPointType) String() string {
+	return "pkg.metrics.endpoints." + string(c)
+}
 
 type Metrics struct {
 	server  serverMetric
@@ -62,7 +82,7 @@ func (m *Metrics) serviceInit() {
 		prometheus.CounterOpts{
 			Name: `gophercli_service_transport_total`,
 			Help: "How many services calls",
-		}, []string{"method", "endpoint"},
+		}, []string{"method", "endpoint", "status"},
 	)
 }
 func (m *Metrics) clientInit() {
@@ -78,7 +98,7 @@ func (m *Metrics) Marshal(filename string) {
 	prometheus.WriteToTextfile(filename, prometheus.DefaultGatherer)
 }
 
-func (m *Metrics) ServerInc(endPoint acme.ServiceType, method serviceMethodType) {
+func (m *Metrics) ServerInc(endPoint EndPointType, method serviceMethodType) {
 	if m.server.endPoint == nil {
 		return
 	}
@@ -86,7 +106,7 @@ func (m *Metrics) ServerInc(endPoint acme.ServiceType, method serviceMethodType)
 	m.server.endPoint.With(labels).Inc()
 }
 
-func (m *Metrics) DBInc(endPoint acme.ServiceType, method dbMethodType) {
+func (m *Metrics) DBInc(endPoint EndPointType, method dbMethodType) {
 	if m.server.db == nil {
 		return
 	}
@@ -94,7 +114,7 @@ func (m *Metrics) DBInc(endPoint acme.ServiceType, method dbMethodType) {
 	m.server.db.With(labels).Inc()
 }
 
-func (m *Metrics) CacheInc(endPoint acme.ServiceType, method cacheMethodType) {
+func (m *Metrics) CacheInc(endPoint EndPointType, method cacheMethodType) {
 	if m.server.cache == nil {
 		return
 	}
@@ -102,11 +122,11 @@ func (m *Metrics) CacheInc(endPoint acme.ServiceType, method cacheMethodType) {
 	m.server.cache.With(labels).Inc()
 }
 
-func (m *Metrics) TransportInc(endPoint acme.ServiceType, method transportMethodType) {
+func (m *Metrics) TransportInc(endPoint EndPointType, method transportMethodType, status int) {
 	if m.service.transport == nil {
 		return
 	}
-	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String()}
+	labels := prometheus.Labels{"endpoint": endPoint.String(), "method": method.String(), "status": fmt.Sprintf("%d", status)}
 	m.service.transport.With(labels).Inc()
 }
 

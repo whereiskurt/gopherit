@@ -2,6 +2,7 @@ package acme
 
 import (
 	"00-newapp-template/pkg/cache"
+	"00-newapp-template/pkg/metrics"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -13,18 +14,29 @@ import (
 	"time"
 )
 
-type ServiceType string
+type EndPointType string
 
-var Services = serviceTypes{
-	Gophers: ServiceType("Gophers"),
-	Gopher:  ServiceType("Gopher"),
-	Things:  ServiceType("Things"),
-	Thing:   ServiceType("Thing"),
+var EndPoints = endPointTypes{
+	Gophers: EndPointType("Gophers"),
+	Gopher:  EndPointType("Gopher"),
+	Things:  EndPointType("Things"),
+	Thing:   EndPointType("Thing"),
+}
+
+type endPointTypes struct {
+	Gophers EndPointType
+	Gopher  EndPointType
+	Things  EndPointType
+	Thing   EndPointType
+}
+
+func (c EndPointType) String() string {
+	return "pkg.acme.endpoints." + string(c)
 }
 
 // ServiceMap defines all the endpoints provided by the ACME service
-var ServiceMap = map[ServiceType]ServiceTransport{
-	Services.Gophers: {
+var ServiceMap = map[EndPointType]ServiceTransport{
+	EndPoints.Gophers: {
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
@@ -32,7 +44,7 @@ var ServiceMap = map[ServiceType]ServiceTransport{
 			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	Services.Gopher: {
+	EndPoints.Gopher: {
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
@@ -41,7 +53,7 @@ var ServiceMap = map[ServiceType]ServiceTransport{
 			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	Services.Things: {
+	EndPoints.Things: {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
@@ -49,7 +61,7 @@ var ServiceMap = map[ServiceType]ServiceTransport{
 			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-	Services.Thing: {
+	EndPoints.Thing: {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
@@ -58,17 +70,6 @@ var ServiceMap = map[ServiceType]ServiceTransport{
 			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
-}
-
-type serviceTypes struct {
-	Gophers ServiceType
-	Gopher  ServiceType
-	Things  ServiceType
-	Thing   ServiceType
-}
-
-func (c ServiceType) String() string {
-	return "pkg.acme.endpoint." + string(c)
 }
 
 // ServiceTransport describes a URL endpoint that can be called ACME. Depending on the HTTP method (GET/POST/DELETE)
@@ -97,6 +98,7 @@ type Service struct {
 	DiskCache      *cache.Disk
 	Worker         *sync.WaitGroup // Used by Go routines to control workers (TODO)
 	Log            *log.Logger
+	Metrics        *metrics.Metrics
 }
 
 // NewService is configured to call ACME services with the BaseURL and credentials.
@@ -109,6 +111,10 @@ func NewService(base string, secret string, access string) (s Service) {
 	s.Worker = new(sync.WaitGroup)
 	s.Log = new(log.Logger)
 	return
+}
+
+func (s *Service) EnableMetrics(metrics *metrics.Metrics) {
+	s.Metrics = metrics
 }
 
 // EnableCache will create a new Disk Cache for all request.
@@ -128,8 +134,14 @@ func (s *Service) SetLogger(log *log.Logger) {
 // GetGophers uses a Transport to make GET HTTP call against ACME "GetGophers"
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetGophers() (gophers []Gopher) {
+
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, status, err := s.get(Services.Gophers, nil)
+		body, status, err := s.get(EndPoints.Gophers, nil)
+
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Gophers, metrics.Methods.Transport.Get, status)
+		}
+
 		if err != nil {
 			s.Log.Printf("failed getting gophers: error:%s: %d", err, status)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -155,7 +167,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, status, err := s.get(Services.Things, map[string]string{"GopherID": gopherID})
+		body, status, err := s.get(EndPoints.Things, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			s.Log.Infof("failed to retrieve gopherID: %s : http status: %d: %s", gopherID, status, err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -181,7 +193,7 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete(Services.Gopher, map[string]string{"GopherID": gopherID})
+		body, err := s.delete(EndPoints.Gopher, map[string]string{"GopherID": gopherID})
 		if err != nil {
 			log.Printf("failed to DELETE Gopher: %+v", err)
 		}
@@ -204,7 +216,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	p := make(map[string]string)
 	p["ThingID"] = thingID
 	p["GopherID"] = gopherID
-	body, err := s.delete(Services.Thing, p)
+	body, err := s.delete(EndPoints.Thing, p)
 	if err != nil {
 		log.Printf("failed to DELETE thing: %+v", err)
 	}
@@ -216,7 +228,7 @@ func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) 
 	return
 }
 
-func ToURL(baseURL string, name ServiceType, p map[string]string) (string, error) {
+func ToURL(baseURL string, name EndPointType, p map[string]string) (string, error) {
 	sMap, hasMethod := ServiceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid name '%s' for URL lookup", name)
@@ -233,15 +245,15 @@ func ToURL(baseURL string, name ServiceType, p map[string]string) (string, error
 	return ToTemplate(name, p, url)
 }
 
-func ToCacheFilename(name ServiceType, p map[string]string) (string, error) {
-	sMap, hasMethod := ServiceMap[name]
-	if !hasMethod {
+func ToCacheFilename(name EndPointType, p map[string]string) (string, error) {
+	sMap, ok := ServiceMap[name]
+	if !ok {
 		return "", fmt.Errorf("invalid name '%s' for cache filename lookup", name)
 	}
 	return ToTemplate(name, p, sMap.CacheFilename)
 }
 
-func ToJSON(name ServiceType, method httpMethodType, p map[string]string) (string, error) {
+func ToJSON(name EndPointType, method httpMethodType, p map[string]string) (string, error) {
 	sMap, hasMethod := ServiceMap[name]
 	if !hasMethod {
 		return "", fmt.Errorf("invalid method '%s' for name '%s'", method, name)
@@ -256,7 +268,7 @@ func ToJSON(name ServiceType, method httpMethodType, p map[string]string) (strin
 	return ToTemplate(name, p, tmpl)
 }
 
-func ToTemplate(name ServiceType, data map[string]string, tmpl string) (string, error) {
+func ToTemplate(name EndPointType, data map[string]string, tmpl string) (string, error) {
 	var rawURL bytes.Buffer
 	t, terr := template.New(fmt.Sprintf("%s", name)).Parse(tmpl)
 	if terr != nil {
@@ -282,16 +294,18 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 }
 
 //TODO: Add 'put' aka 'add'
-func (s *Service) get(endPoint ServiceType, p map[string]string) ([]byte, int, error) {
+func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
 		return nil, 0, err
 	}
+
 	t := NewTransport(s)
 	body, status, err := t.get(url)
+
 	if err != nil {
-		return nil, 0, err
+		return nil, status, err
 	}
 
 	// If we have a DiskCache it means we will write out responses to disk.
@@ -299,19 +313,19 @@ func (s *Service) get(endPoint ServiceType, p map[string]string) ([]byte, int, e
 		// We have initialized a cache then write to it.
 		filename, err := ToCacheFilename(endPoint, p)
 		if err != nil {
-			return nil, 0, err
+			return nil, status, err
 		}
 
 		err = s.DiskCache.Store(filename, body)
 		if err != nil {
-			return nil, 0, err
+			return nil, status, err
 		}
 	}
 
 	return body, status, err
 }
 
-func (s *Service) delete(endPoint ServiceType, p map[string]string) ([]byte, error) {
+func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
 		return nil, err
@@ -324,7 +338,7 @@ func (s *Service) delete(endPoint ServiceType, p map[string]string) ([]byte, err
 
 	return body, err
 }
-func (s *Service) update(endPoint ServiceType, p map[string]string) ([]byte, error) {
+func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
 		return nil, err

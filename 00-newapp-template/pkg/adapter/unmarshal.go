@@ -3,22 +3,27 @@ package adapter
 import (
 	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/acme"
+	"00-newapp-template/pkg/metrics"
 	"path/filepath"
 )
 
 // Unmarshal holds the config - needed for Service.... TODO: Remove config and take Service
 type Unmarshal struct {
-	Config *pkg.Config
+	Config  *pkg.Config
+	Metrics *metrics.Metrics
 }
 
-// NewUnmarshal calls the ACME Services and returns ACME JSONs to the adapter
-func NewUnmarshal(config *pkg.Config) (u Unmarshal) {
+// NewUnmarshal calls the ACME EndPoints and returns ACME JSONs to the adapter
+func NewUnmarshal(config *pkg.Config, metrics *metrics.Metrics) (u Unmarshal) {
 	u.Config = config
+	u.Metrics = metrics
 	return
 }
 
 func (u *Unmarshal) service() (s acme.Service) {
 	s = acme.NewService(u.Config.Client.BaseURL, u.Config.Client.SecretKey, u.Config.Client.AccessKey)
+	s.EnableMetrics(u.Metrics)
+
 	if u.Config.Client.CacheResponse {
 		serviceCacheFolder := filepath.Join(".", u.Config.Client.CacheFolder, "service/")
 		s.EnableCache(serviceCacheFolder, u.Config.Client.CacheKey)

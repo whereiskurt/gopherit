@@ -79,6 +79,10 @@ type transportTypes struct {
 	Delete transportMethodType
 	Head   transportMethodType
 }
+type transportStatusType string
+type transportStatus struct {
+	Success transportStatusType
+}
 
 func (c transportMethodType) String() string {
 	return "pkg.metric.transport." + string(c)

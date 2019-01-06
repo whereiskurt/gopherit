@@ -36,7 +36,7 @@ func NewAdapter(config *pkg.Config, metrics *metrics.Metrics) (a *Adapter) {
 	a.Config = config
 	a.Metrics = metrics
 	a.Worker = new(sync.WaitGroup)
-	a.Unmarshal = NewUnmarshal(config)
+	a.Unmarshal = NewUnmarshal(config, metrics)
 	a.Filter = NewFilter(config)
 	a.Convert = NewConvert()
 	if a.Config.Client.CacheResponse {
