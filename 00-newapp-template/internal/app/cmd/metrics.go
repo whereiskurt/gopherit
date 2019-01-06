@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/ui"
 	"github.com/spf13/cobra"
@@ -9,13 +9,13 @@ import (
 
 // Metrics holds the config and CLI references.
 type Metrics struct {
-	Config   *pkg.Config
+	Config   *config.Config
 	MMetrics *metrics.Metrics
 	CLI      ui.CLI
 }
 
 // NewMetrics holds a configuration and command line interface reference (for log out, etc.)
-func NewMetrics(config *pkg.Config, metrics *metrics.Metrics) (m Metrics) {
+func NewMetrics(config *config.Config, metrics *metrics.Metrics) (m Metrics) {
 
 	m.Config = config
 	m.MMetrics = metrics

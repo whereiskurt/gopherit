@@ -1,8 +1,8 @@
 package server
 
 import (
-	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/cache"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server/db"
 	"context"
@@ -31,7 +31,7 @@ type Server struct {
 }
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
-func NewServer(config *pkg.Config, metrics *metrics.Metrics) (server Server) {
+func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) {
 	server.Log = config.Log
 	server.ListenPort = config.Server.ListenPort
 	server.CacheFolder = config.Server.CacheFolder

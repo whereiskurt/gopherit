@@ -83,3 +83,23 @@ type transportTypes struct {
 func (c transportMethodType) String() string {
 	return "pkg.metric.transport." + string(c)
 }
+
+type EndPointType string
+
+var EndPoints = endPointTypes{
+	Gophers: EndPointType("Gophers"),
+	Gopher:  EndPointType("Gopher"),
+	Things:  EndPointType("Things"),
+	Thing:   EndPointType("Thing"),
+}
+
+type endPointTypes struct {
+	Gophers EndPointType
+	Gopher  EndPointType
+	Things  EndPointType
+	Thing   EndPointType
+}
+
+func (c EndPointType) String() string {
+	return "pkg.metrics.endpoints." + string(c)
+}

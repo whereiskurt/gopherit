@@ -1,20 +1,20 @@
 package adapter
 
 import (
-	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/acme"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"path/filepath"
 )
 
 // Unmarshal holds the config - needed for Service.... TODO: Remove config and take Service
 type Unmarshal struct {
-	Config  *pkg.Config
+	Config  *config.Config
 	Metrics *metrics.Metrics
 }
 
 // NewUnmarshal calls the ACME EndPoints and returns ACME JSONs to the adapter
-func NewUnmarshal(config *pkg.Config, metrics *metrics.Metrics) (u Unmarshal) {
+func NewUnmarshal(config *config.Config, metrics *metrics.Metrics) (u Unmarshal) {
 	u.Config = config
 	u.Metrics = metrics
 	return

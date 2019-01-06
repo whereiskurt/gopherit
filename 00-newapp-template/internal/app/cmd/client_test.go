@@ -2,8 +2,8 @@ package cmd_test
 
 import (
 	"00-newapp-template/internal/app/cmd/client"
-	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/adapter"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server"
 	"00-newapp-template/pkg/ui"
@@ -15,7 +15,7 @@ import (
 var Metrics metrics.Metrics
 
 func TestUnAuthenticatedClient(t *testing.T) {
-	serverConfig := pkg.NewConfig()
+	serverConfig := config.NewConfig()
 	SetupConfig(serverConfig)
 
 	t.Parallel()
@@ -24,7 +24,7 @@ func TestUnAuthenticatedClient(t *testing.T) {
 
 }
 
-func SetupConfig(c *pkg.Config) {
+func SetupConfig(c *config.Config) {
 	c.Server.ListenPort = "10201"
 	// Use a different port than the DEFAULT, then we can parallel tests
 	c.Client.BaseURL = "http://localhost:10201"
@@ -39,7 +39,7 @@ func SetupConfig(c *pkg.Config) {
 
 func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
 	mm := metrics.NewMetrics()
-	config := pkg.NewConfig()
+	config := config.NewConfig()
 	SetupConfig(config)
 	s := server.NewServer(config, mm)
 	s.EnableDefaultRouter()
@@ -62,7 +62,7 @@ func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
 
 func ClientTests(mm *metrics.Metrics, t *testing.T) {
 	t.Run("Gopher.List", func(t *testing.T) {
-		c := pkg.NewConfig()
+		c := config.NewConfig()
 		SetupConfig(c)
 		// Show all gopher/things
 		c.Client.GopherID = ""
@@ -76,7 +76,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		}
 	})
 	t.Run("Gopher.DELETE.NOAUTH", func(t *testing.T) {
-		c := pkg.NewConfig()
+		c := config.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
 		gophers := client.Delete(adapter.NewAdapter(c, mm), ui.NewCLI(c))
@@ -86,7 +86,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		}
 	})
 	t.Run("Gopher.DELETE.AUTHROIZED", func(t *testing.T) {
-		c := pkg.NewConfig()
+		c := config.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
 		c.Client.SecretKey = "notempty"

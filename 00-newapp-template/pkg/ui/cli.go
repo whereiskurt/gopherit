@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/config"
 	"bytes"
 	"fmt"
 	"log"
@@ -11,11 +11,11 @@ import (
 
 // CLI makes the text output to the terminal.
 type CLI struct {
-	Config *pkg.Config
+	Config *config.Config
 }
 
 // NewCLI takes a configuration used for describing how to output.
-func NewCLI(c *pkg.Config) (cli CLI) {
+func NewCLI(c *config.Config) (cli CLI) {
 	cli.Config = c
 	return
 }

@@ -1,18 +1,18 @@
 package adapter
 
 import (
-	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/acme"
+	"00-newapp-template/pkg/config"
 	"strings"
 )
 
 // Filter is used adapter to remove unneeded results (ie. only matching Gophers)
 type Filter struct {
-	Config *pkg.Config
+	Config *config.Config
 }
 
 // NewFilter loops through in[] and keeps/skips matching items based on attributes.
-func NewFilter(config *pkg.Config) (filter *Filter) {
+func NewFilter(config *config.Config) (filter *Filter) {
 	filter = new(Filter)
 	filter.Config = config
 	return

@@ -2,7 +2,7 @@ package internal_test
 
 import (
 	"00-newapp-template/internal"
-	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"testing"
 )
@@ -12,16 +12,16 @@ func TestGopherCLI(t *testing.T) {
 
 	t.Parallel()
 
-	config := pkg.NewConfig()
+	config := config.NewConfig()
 	metrics := metrics.NewMetrics()
 	SetupConfig(config)
 	internal.NewApp(config, metrics)
 }
 
-func SetupConfig(c *pkg.Config) {
+func SetupConfig(c *config.Config) {
 	// Test cases are run from the package folder containing the source file.
 	c.TemplateFolder = "./../config/template/"
-	c.Client.CacheFolder = "./.." + pkg.DefaultClientCacheFolder
+	c.Client.CacheFolder = "./.." + config.DefaultClientCacheFolder
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 }

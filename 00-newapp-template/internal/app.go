@@ -2,7 +2,7 @@ package internal
 
 import (
 	"00-newapp-template/internal/app/cmd"
-	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/ui"
 	"bytes"
@@ -17,7 +17,7 @@ import (
 
 // App is created from package main. App handles the configuration and cobra/viper.
 type App struct {
-	Config  *pkg.Config
+	Config  *config.Config
 	Metrics *metrics.Metrics
 	RootCmd *cobra.Command
 }
@@ -26,7 +26,7 @@ type App struct {
 var CommandList = []string{"client", "server", "version", "metrics"}
 
 // NewApp constructs the command line and configuration
-func NewApp(config *pkg.Config, mmetrics *metrics.Metrics) (a App) {
+func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 	a.Config = config
 	a.Metrics = mmetrics
 	a.RootCmd = new(cobra.Command)

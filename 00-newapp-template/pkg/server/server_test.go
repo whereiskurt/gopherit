@@ -1,7 +1,7 @@
 package server_test
 
 import (
-	"00-newapp-template/pkg"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server"
 	"os"
@@ -11,7 +11,7 @@ import (
 
 func TestServerStart(t *testing.T) {
 
-	config := pkg.NewConfig()
+	config := config.NewConfig()
 	metrics := metrics.NewMetrics()
 
 	config.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests

@@ -1,8 +1,8 @@
 package acme_test
 
 import (
-	"00-newapp-template/pkg"
 	"00-newapp-template/pkg/acme"
+	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func SetupConfig(c *pkg.Config) {
+func SetupConfig(c *config.Config) {
 	c.Server.ListenPort = "10301"
 	// c.Server.CacheFolder = "../../" + pkg.DefaultServerCacheFolder
 	c.Client.BaseURL = "http://localhost:10301"
@@ -27,7 +27,7 @@ func TestService(t *testing.T) {
 
 func StartServerRunTests(t *testing.T, f func(*testing.T, *metrics.Metrics)) {
 	// We our own server ports and configs.
-	config := pkg.NewConfig()
+	config := config.NewConfig()
 	metrics := metrics.NewMetrics()
 
 	SetupConfig(config)
@@ -50,7 +50,7 @@ func StartServerRunTests(t *testing.T, f func(*testing.T, *metrics.Metrics)) {
 }
 
 func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
-	config := pkg.NewConfig()
+	config := config.NewConfig()
 	SetupConfig(config)
 
 	os.RemoveAll(config.Server.CacheFolder)
