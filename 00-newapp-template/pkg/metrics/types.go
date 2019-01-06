@@ -81,7 +81,7 @@ type transportTypes struct {
 }
 
 func (c transportMethodType) String() string {
-	return "HTTP." + string(c)
+	return "http." + string(c)
 }
 
 type EndPointType string
@@ -101,5 +101,5 @@ type endPointTypes struct {
 }
 
 func (c EndPointType) String() string {
-	return string(c)
+	return "api." + string(c)
 }
