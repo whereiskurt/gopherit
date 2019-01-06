@@ -71,3 +71,15 @@ func (u *Unmarshal) updateGopher(gopher Gopher) (gg acme.Gopher) {
 	gg = s.UpdateGopher(g)
 	return
 }
+func (u *Unmarshal) updateThing(thing Thing) (tt acme.Thing) {
+	s := u.service()
+
+	var t = acme.Thing{
+		GopherID:    json.Number(thing.Gopher.ID),
+		ID:          json.Number(thing.ID),
+		Description: thing.Description,
+		Name:        thing.Name,
+	}
+	tt = s.UpdateThing(t)
+	return
+}

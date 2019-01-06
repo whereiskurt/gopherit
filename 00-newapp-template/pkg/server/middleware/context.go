@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"00-newapp-template/pkg/acme"
 	"context"
-	"encoding/json"
 	"github.com/go-chi/chi"
 	"net/http"
 	"strings"
@@ -32,6 +30,14 @@ func GopherID(r *http.Request) string {
 // ThingID extracts from request context
 func ThingID(r *http.Request) string {
 	return ContextMap(r)["ThingID"]
+}
+// ThingName extracts from request context
+func ThingName(r *http.Request) string {
+	return ContextMap(r)["ThingName"]
+}
+// ThingDescription extracts from request context
+func ThingDescription(r *http.Request) string {
+	return ContextMap(r)["ThingDescription"]
 }
 
 // GopherName extracts from request context
@@ -92,16 +98,6 @@ func GopherCtx(next http.Handler) http.Handler {
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["GopherID"] = chi.URLParam(r, "GopherID")
 
-		// If the request is update/insert the body has the Gopher object
-		if r.Method == http.MethodPost || r.Method == http.MethodPut {
-			var g acme.Gopher
-			err := json.NewDecoder(r.Body).Decode(&g)
-			if err == nil {
-				ctxMap["GopherName"] = g.Name
-				ctxMap["GopherDescription"] = g.Description
-			}
-		}
-
 		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -118,16 +114,6 @@ func ThingCtx(next http.Handler) http.Handler {
 
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["ThingID"] = chi.URLParam(r, "ThingID")
-
-		// If the request is update/insert the body has the Gopher object
-		if r.Method == http.MethodPost || r.Method == http.MethodPut {
-			var t acme.Thing
-			err := json.NewDecoder(r.Body).Decode(&t)
-			if err == nil {
-				ctxMap["ThingName"] = t.Name
-				ctxMap["ThingDescription"] = t.Description
-			}
-		}
 
 		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))

@@ -88,6 +88,22 @@ func (s *SimpleDB) UpdateGopher(newGopher acme.Gopher) {
 	s.gg = gophers
 }
 
+
+func (s *SimpleDB) UpdateThing(newThing acme.Thing) {
+	var things []acme.Thing
+
+	for _, t := range s.tt {
+		if (t.GopherID == newThing.GopherID) && (t.ID == newThing.ID) {
+			things = append(things,newThing)
+			continue
+		}
+		things = append(things,t)
+	}
+	s.tt = things
+}
+
+
+
 // DeleteThing deletes Thing that matches ID and Gopher ID
 func (s *SimpleDB) DeleteThing(gopherID string, thingID string) {
 	var things []acme.Thing

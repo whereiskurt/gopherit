@@ -12,13 +12,23 @@ func Update(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 	log := a.Config.Log
 	log.Debugf("Client Update")
 
-	var g = client.Gopher{
-		ID:          a.Config.Client.GopherID,
-		Name:        a.Config.Client.GopherName,
-		Description: a.Config.Client.GopherDescription,
-		Things:      map[string]client.Thing{},
+	if a.Config.Client.ThingID == "" {
+		var g = client.Gopher{
+			ID:          a.Config.Client.GopherID,
+			Name:        a.Config.Client.GopherName,
+			Description: a.Config.Client.GopherDescription,
+			Things:      map[string]client.Thing{},
+		}
+		a.UpdateGopher(g)
+	} else {
+
+		var t = client.Thing{
+			ID:          a.Config.Client.ThingID,
+			Name:        a.Config.Client.ThingName,
+			Description: a.Config.Client.ThingDescription,
+		}
+		a.UpdateThing(t)
 	}
-	a.UpdateGopher(g)
 
 	return List(a, cli)
 }

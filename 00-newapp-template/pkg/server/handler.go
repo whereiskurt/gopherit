@@ -87,10 +87,16 @@ func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	methodType := metrics.Methods.Service.Update
 	s.Metrics.ServerInc(serviceType, methodType)
 
+	var g acme.Gopher
+	err := json.NewDecoder(r.Body).Decode(&g)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	}
+
 	gopher := acme.Gopher{
 		ID:          json.Number(middleware.GopherID(r)),
-		Name:        middleware.GopherName(r),
-		Description: middleware.GopherDescription(r),
+		Name:        g.Name,
+		Description: g.Description,
 	}
 
 	s.DB.UpdateGopher(gopher)
@@ -181,13 +187,32 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoints.Thing
 	serviceType := metrics.EndPoints.Thing
 
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Update)
-	// TODO: Write and implement s.DB.UpdateThing(thing)
+
+	var t acme.Thing
+	err := json.NewDecoder(r.Body).Decode(&t)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	}
+
+	thing := acme.Thing{
+		GopherID:    t.GopherID,
+		ID:          t.ID,
+		Description: t.Description,
+		Name:        t.Name,
+	}
+
+	s.DB.UpdateThing(thing)
 	s.Metrics.DBInc(serviceType, metrics.Methods.DB.Update)
-	s.cacheClear(r, endPoint, serviceType)
+
+	s.cacheClear(r, acme.EndPoints.Thing, serviceType)
+	s.cacheClear(r, acme.EndPoints.Things, serviceType)
+
+	s.thing(w,r)
+
+	return
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.EndPoints.Thing

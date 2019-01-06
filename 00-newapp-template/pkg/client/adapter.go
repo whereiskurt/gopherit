@@ -144,17 +144,24 @@ func (a *Adapter) DeleteThing(gopherID string, thingID string) map[string]Thing 
 }
 
 // FindGopherByThing returns the Gopher ID to the associated Thing by ID.
-func (a *Adapter) FindGopherByThing(thingID string) (gopherID string) {
-	gophers := a.GopherThings()
+func (a *Adapter) FindGopherByThing(thingID string) string {
+
+	allGophers := a.Unmarshal.gophers()
+	gophers := a.Convert.gophers(allGophers)
+
 	for g := range gophers {
-		for t := range gophers[g].Things {
-			if string(gophers[g].Things[t].ID) == thingID {
-				gopherID = gophers[g].ID
-				return
+
+		rawThings := a.Unmarshal.things(gophers[g].ID)
+		things := a.Convert.things(rawThings)
+
+		for t := range things {
+			if string(things[t].ID) == thingID {
+				return gophers[g].ID
 			}
 		}
 	}
-	return
+
+	return ""
 }
 
 // UpdateGopher is not implemented yet!
@@ -166,4 +173,18 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 }
 
 // UpdateThing is not implemented yet!
-func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) { return }
+func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) {
+	a.Metrics.ClientInc("Thing", metrics.Methods.Service.Update)
+
+	if newThing.Gopher.ID == "" {
+		newThing.Gopher.ID = a.FindGopherByThing(newThing.ID)
+		if newThing.Gopher.ID  == "" {
+			return thing
+		}
+	}
+
+	a.Unmarshal.updateThing(newThing)
+
+	return
+
+}

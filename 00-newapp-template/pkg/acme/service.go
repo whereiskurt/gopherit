@@ -40,7 +40,7 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			HTTP.Put: {`{{.Gopher}}`},
 		},
 	},
 	EndPoints.Gopher: {
@@ -54,14 +54,14 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			HTTP.Put: {`{{.Thing}}`},
 		},
 	},
 	EndPoints.Thing: {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Post: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			HTTP.Post: {`{{.Thing}}`},
 		},
 	},
 }
@@ -196,7 +196,6 @@ func (s *Service) UpdateGopher(g Gopher) Gopher {
 		return gopher
 	}
 	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
-		shouldRetry = s.sleepBeforeRetry(attempt)
 		body, status, err := s.update(EndPoints.Gopher, map[string]string{
 			"GopherID": string(g.ID),
 			"Gopher":   string(gjson),
@@ -224,6 +223,45 @@ func (s *Service) UpdateGopher(g Gopher) Gopher {
 	})
 
 	return gopher
+}
+
+func (s *Service) UpdateThing(t Thing) Thing {
+	var thing Thing
+
+	tjson, err := json.Marshal(t)
+
+	if err != nil {
+		return thing
+	}
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		body, status, err := s.update(EndPoints.Thing, map[string]string{
+			"GopherID": string(t.GopherID),
+			"ThingID": string(t.ID),
+			"Thing":   string(tjson),
+		})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Post, status)
+		}
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+		if err != nil {
+			s.Log.Warnf("failed to UPDATE Thing: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
+		}
+
+		err = json.Unmarshal(body, &thing)
+		if err != nil {
+			s.Log.Warnf("failed to unmarshal updated thing: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+		}
+
+		return shouldRetry, err
+	})
+
+	return thing
 }
 
 // DeleteGopher uses a Transport to make a DELETE HTTP call against ACME "DeleteGophers"
