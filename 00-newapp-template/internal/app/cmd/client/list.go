@@ -1,7 +1,7 @@
 package client
 
 import (
-	"00-newapp-template/pkg/adapter"
+	"00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/ui"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 // List uses a configured adapter to list matching gopher/things.
 // Returns all matching gophers
-func List(a *adapter.Adapter, cli ui.CLI) map[string]adapter.Gopher {
+func List(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 	a.Config.Client.EnableLogging()
 
 	log := a.Config.Log

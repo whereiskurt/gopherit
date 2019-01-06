@@ -1,16 +1,16 @@
-package adapter
+package client
 
 import (
 	"00-newapp-template/pkg/acme"
 )
 
-// Convert does need any other objects or references
-type Convert struct{}
+// Converter does need any other objects or references
+type Converter struct{}
 
 // NewConvert returns a converter, used by the adapter
-func NewConvert() (convert Convert) { return }
+func NewConvert() (convert Converter) { return }
 
-func (convert *Convert) gophers(rawGophers []acme.Gopher) (gg map[string]Gopher) {
+func (convert *Converter) gophers(rawGophers []acme.Gopher) (gg map[string]Gopher) {
 	gg = make(map[string]Gopher)
 	for _, g := range rawGophers {
 		id := string(g.ID)
@@ -23,7 +23,7 @@ func (convert *Convert) gophers(rawGophers []acme.Gopher) (gg map[string]Gopher)
 	return
 }
 
-func (convert *Convert) things(rawThings []acme.Thing) (tt map[string]Thing) {
+func (convert *Converter) things(rawThings []acme.Thing) (tt map[string]Thing) {
 	tt = make(map[string]Thing)
 	for _, t := range rawThings {
 		id := string(t.ID)

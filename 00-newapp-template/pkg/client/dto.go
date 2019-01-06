@@ -1,4 +1,4 @@
-package adapter
+package client
 
 // Gopher is used by the Client Library and converted from ACME JSONs
 type Gopher struct {

@@ -2,7 +2,7 @@ package cmd_test
 
 import (
 	"00-newapp-template/internal/app/cmd/client"
-	"00-newapp-template/pkg/adapter"
+	pkgclient "00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server"
@@ -69,7 +69,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c.Client.ThingID = ""
 		c.Client.SecretKey = ""
 		c.Client.AccessKey = ""
-		gophers := client.List(adapter.NewAdapter(c, mm), ui.NewCLI(c))
+		gophers := client.List(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 4 {
 			t.Errorf("Unexpected count of gophers: %d", len(gophers))
 			t.Fail()
@@ -79,7 +79,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c := config.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
-		gophers := client.Delete(adapter.NewAdapter(c, mm), ui.NewCLI(c))
+		gophers := client.Delete(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 1 { // DELETE returns the matching undelete item.
 			t.Errorf("Unexpected count of gophers return on UNAUTHORIZED delete: %d - %+v", len(gophers), gophers)
 			t.Fail()
@@ -91,7 +91,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c.Client.GopherID = "1"
 		c.Client.SecretKey = "notempty"
 		c.Client.AccessKey = "notempty"
-		gophers := client.Delete(adapter.NewAdapter(c, mm), ui.NewCLI(c))
+		gophers := client.Delete(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 0 { // DELETE should return empty after successful delete.
 			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))
 			t.Fail()

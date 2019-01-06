@@ -143,13 +143,14 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 		}
 
 		if err != nil {
-			s.Log.Printf("failed getting gophers: error:%s: %d", err, status)
+			s.Log.Warnf("failed getting gophers: error:%s: %d", err, status)
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
 		}
 		// Take the Transport results and convert to []struts
 		err = json.Unmarshal(body, &gophers)
 		if err != nil {
+			s.Log.Warnf("failed to unmarshal gophers: %s: ", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
 		}
@@ -157,7 +158,7 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 		return
 	})
 	if tErr != nil {
-		s.Log.Printf("failed to GET gophers: %+v", tErr)
+		s.Log.Warnf("failed to GET gophers: %+v", tErr)
 	}
 
 	return
@@ -168,6 +169,9 @@ func (s *Service) GetGophers() (gophers []Gopher) {
 func (s *Service) GetThings(gopherID string) (things []Thing) {
 	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, status, err := s.get(EndPoints.Things, map[string]string{"GopherID": gopherID})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Things, metrics.Methods.Transport.Get, status)
+		}
 		if err != nil {
 			s.Log.Infof("failed to retrieve gopherID: %s : http status: %d: %s", gopherID, status, err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
@@ -176,56 +180,72 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 
 		err = json.Unmarshal(body, &things)
 		if err != nil {
-			shouldRetry = s.sleepBeforeRetry(attempt)
 			s.Log.Infof("failed to unmarshal gopherID: %s: %s", gopherID, err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
 			return
 		}
 		return
 	})
 
 	if tErr != nil {
-		log.Printf("failed to GET things: %+v", tErr)
+		s.Log.Warnf("failed to GET things: %+v", tErr)
 	}
 	return
 }
 
 // DeleteGopher uses a Transport to make a DELETE HTTP call against ACME "DeleteGophers"
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
-func (s *Service) DeleteGopher(gopherID string) (gophers []Gopher) {
-	tErr := try.Do(func(attempt int) (shouldRetry bool, err error) {
-		body, err := s.delete(EndPoints.Gopher, map[string]string{"GopherID": gopherID})
-		if err != nil {
-			log.Printf("failed to DELETE Gopher: %+v", err)
+func (s *Service) DeleteGopher(gopherID string) []Gopher {
+	var gophers []Gopher
+
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		body, status, err := s.delete(EndPoints.Gopher, map[string]string{
+			"GopherID": gopherID,
+		})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Delete, status)
 		}
+
+		if err != nil {
+			s.Log.Warnf("failed to DELETE Gopher: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+		}
+
 		err = json.Unmarshal(body, &gophers)
 		if err != nil {
-			log.Printf("failed to unmarshal non-deleted gophers: %+v", err)
+			s.Log.Warnf("failed to unmarshal non-deleted gophers: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
 		}
+
 		return
 	})
-
-	if tErr != nil {
-		log.Printf("failed to DELETE gopher: %+v", tErr)
-	}
-	return
+	return gophers
 }
 
 // DeleteThing uses a Transport to make a DELETE HTTP call against ACME "DeleteGophers"
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
-func (s *Service) DeleteThing(gopherID string, thingID string) (things []Thing) {
-	p := make(map[string]string)
-	p["ThingID"] = thingID
-	p["GopherID"] = gopherID
-	body, err := s.delete(EndPoints.Thing, p)
-	if err != nil {
-		log.Printf("failed to DELETE thing: %+v", err)
-	}
-	err = json.Unmarshal(body, &things)
-	if err != nil {
-		log.Printf("failed to unmarshal non-deleted things: %+v", err)
+func (s *Service) DeleteThing(gopherID string, thingID string) []Thing {
+	body, status, err := s.delete(EndPoints.Thing, map[string]string{
+		"GopherID": gopherID,
+		"ThingID":  thingID,
+	})
+
+	if s.Metrics != nil {
+		s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Delete, status)
 	}
 
-	return
+	if err != nil {
+		s.Log.Warnf("failed to DELETE thing: %+v: %d", err, status)
+		return nil
+	}
+
+	var things []Thing
+	err = json.Unmarshal(body, &things)
+	if err != nil {
+		s.Log.Warnf("failed to unmarshal non-deleted things: %+v", err)
+	}
+
+	return things
 }
 
 func ToURL(baseURL string, name EndPointType, p map[string]string) (string, error) {
@@ -325,18 +345,18 @@ func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, 
 	return body, status, err
 }
 
-func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, error) {
+func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	t := NewTransport(s)
-	body, err := t.delete(url)
+	body, status, err := t.delete(url)
 	if err != nil {
-		return nil, err
+		return nil, status, err
 	}
 
-	return body, err
+	return body, status, err
 }
 func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)

@@ -1,4 +1,4 @@
-package adapter
+package client
 
 import (
 	"00-newapp-template/pkg/acme"

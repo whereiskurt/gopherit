@@ -1,4 +1,4 @@
-package adapter
+package client
 
 import (
 	"00-newapp-template/pkg/cache"
@@ -25,7 +25,7 @@ type Adapter struct {
 	Metrics   *metrics.Metrics
 	Unmarshal Unmarshal
 	Filter    *Filter
-	Convert   Convert
+	Convert   Converter
 	Worker    *sync.WaitGroup
 	DiskCache *cache.Disk
 }

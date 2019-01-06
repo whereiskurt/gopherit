@@ -1,7 +1,7 @@
 package client
 
 import (
-	"00-newapp-template/pkg/adapter"
+	"00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/ui"
 	"fmt"
 	"strings"
@@ -9,7 +9,7 @@ import (
 
 // Delete uses a configured adapter to delete matching gopher.
 // Returns all other gophers not deleted.
-func Delete(a *adapter.Adapter, cli ui.CLI) (gophers map[string]adapter.Gopher) {
+func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
 	gopherID := a.Config.Client.GopherID
 	thingID := a.Config.Client.ThingID
 	log := a.Config.Log

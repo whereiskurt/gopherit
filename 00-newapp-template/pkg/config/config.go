@@ -115,14 +115,14 @@ func (c *Config) readWithViper() {
 	viper.SetConfigName(c.ConfigFilename)
 	err = viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("fatal: couldn't read in config: %s", err)
+		c.Log.Fatalf("fatal: couldn't read in config: %s", err)
 	}
 
 	viper.AddConfigPath(c.HomeFolder)
 	viper.SetConfigName(c.HomeFilename)
 	err = viper.MergeInConfig()
 	if err != nil {
-		log.Printf("warning: couldn't load configs from: %s or : %s: %s", c.HomeFolder, c.HomeFilename, err)
+		c.Log.Info("warning: couldn't load configs from: %s or : %s: %s", c.HomeFolder, c.HomeFilename, err)
 	}
 
 	viper.AutomaticEnv()

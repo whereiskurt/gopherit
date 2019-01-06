@@ -11,6 +11,27 @@ import (
 	"time"
 )
 
+var HTTP = httpMethodTypes{
+	Get:    httpMethodType("Get"),
+	Delete: httpMethodType("Delete"),
+	Head:   httpMethodType("Head"),
+	Post:   httpMethodType("Post"),
+	Put:    httpMethodType("Put"),
+}
+
+type httpMethodType string
+type httpMethodTypes struct {
+	Get    httpMethodType
+	Put    httpMethodType
+	Post   httpMethodType
+	Delete httpMethodType
+	Head   httpMethodType
+}
+
+func (c httpMethodType) String() string {
+	return "pkg.acme.transport." + string(c)
+}
+
 var tr = &http.Transport{
 	MaxIdleConns:    20,
 	IdleConnTimeout: 30 * time.Second,
@@ -144,7 +165,7 @@ func (t *Transport) put(url string, data string, datatype string) (body []byte, 
 	}
 	return
 }
-func (t *Transport) delete(url string) (body []byte, err error) {
+func (t *Transport) delete(url string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 
@@ -152,40 +173,22 @@ func (t *Transport) delete(url string) (body []byte, err error) {
 
 	req, err = http.NewRequest("DELETE", url, nil)
 	if err != nil {
-		return
+		return nil, 0, err
 	}
 
 	req.Header.Add("X-ApiKeys", t.header())
 
 	resp, err = client.Do(req)
 	if err != nil {
-		return
+		return nil, 0, err
 	}
 
+	status = resp.StatusCode
 	body, err = ioutil.ReadAll(resp.Body)
+
 	if err == nil {
 		err = resp.Body.Close()
 	}
-	return
-}
 
-var HTTP = httpMethodTypes{
-	Get:    httpMethodType("Get"),
-	Delete: httpMethodType("Delete"),
-	Head:   httpMethodType("Head"),
-	Post:   httpMethodType("Post"),
-	Put:    httpMethodType("Put"),
-}
-
-type httpMethodType string
-type httpMethodTypes struct {
-	Get    httpMethodType
-	Put    httpMethodType
-	Post   httpMethodType
-	Delete httpMethodType
-	Head   httpMethodType
-}
-
-func (c httpMethodType) String() string {
-	return "pkg.acme.transport." + string(c)
+	return body, status, err
 }

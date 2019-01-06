@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"00-newapp-template/internal/app/cmd/client"
-	"00-newapp-template/pkg/adapter"
+	pkgclient "00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/ui"
@@ -14,7 +14,7 @@ import (
 type Client struct {
 	Config  *config.Config
 	Metrics *metrics.Metrics
-	Adapter *adapter.Adapter
+	Adapter *pkgclient.Adapter
 	CLI     ui.CLI
 }
 
@@ -23,7 +23,7 @@ func NewClient(config *config.Config, metrics *metrics.Metrics) (c Client) {
 	c.Config = config
 	c.Metrics = metrics
 	c.CLI = ui.NewCLI(config)
-	c.Adapter = adapter.NewAdapter(c.Config, c.Metrics)
+	c.Adapter = pkgclient.NewAdapter(c.Config, c.Metrics)
 	return
 }
 
