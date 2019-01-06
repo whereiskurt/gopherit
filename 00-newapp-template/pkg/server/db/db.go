@@ -38,11 +38,6 @@ func NewSimpleDB() (s SimpleDB) {
 	return
 }
 
-// Gophers returns array of acme.Gophers
-func (s *SimpleDB) Gophers() []acme.Gopher {
-	return s.gg
-}
-
 // GopherThings returns array of acme.Things for a given Gopher ID
 func (s *SimpleDB) GopherThings(gopherID string) (things []acme.Thing) {
 	for _, v := range s.tt {
@@ -51,6 +46,11 @@ func (s *SimpleDB) GopherThings(gopherID string) (things []acme.Thing) {
 		}
 	}
 	return
+}
+
+// Gophers returns array of acme.Gophers
+func (s *SimpleDB) Gophers() []acme.Gopher {
+	return s.gg
 }
 
 // DeleteGopher 'cascade deleted' from gophers and things.
@@ -75,6 +75,19 @@ func (s *SimpleDB) DeleteGopher(gopherID string) {
 	s.tt = things
 }
 
+// UpdateGopher replaces the matching Gopher with the one passed in.
+func (s *SimpleDB) UpdateGopher(newGopher acme.Gopher) {
+	var gophers []acme.Gopher
+	for _, g := range s.gg {
+		if string(newGopher.ID) == string(g.ID) {
+			gophers = append(gophers, newGopher)
+			continue
+		}
+		gophers = append(gophers, g)
+	}
+	s.gg = gophers
+}
+
 // DeleteThing deletes Thing that matches ID and Gopher ID
 func (s *SimpleDB) DeleteThing(gopherID string, thingID string) {
 	var things []acme.Thing
@@ -87,17 +100,4 @@ func (s *SimpleDB) DeleteThing(gopherID string, thingID string) {
 	}
 
 	s.tt = things
-}
-
-// UpdateGopher replaces the matching Gopher with the one passed in.
-func (s *SimpleDB) UpdateGopher(newGopher acme.Gopher) {
-	var gophers []acme.Gopher
-	for _, g := range s.gg {
-		if string(newGopher.ID) == string(g.ID) {
-			gophers = append(gophers, newGopher)
-			continue
-		}
-		gophers = append(gophers, g)
-	}
-	s.gg = gophers
 }

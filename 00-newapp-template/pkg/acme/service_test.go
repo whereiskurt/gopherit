@@ -27,11 +27,11 @@ func TestService(t *testing.T) {
 
 func StartServerRunTests(t *testing.T, f func(*testing.T, *metrics.Metrics)) {
 	// We our own server ports and configs.
-	config := config.NewConfig()
-	metrics := metrics.NewMetrics()
+	c := config.NewConfig()
+	m := metrics.NewMetrics()
 
-	SetupConfig(config)
-	s := server.NewServer(config, metrics)
+	SetupConfig(c)
+	s := server.NewServer(c, m)
 	s.EnableDefaultRouter()
 	var err error
 	go func() {
@@ -45,19 +45,19 @@ func StartServerRunTests(t *testing.T, f func(*testing.T, *metrics.Metrics)) {
 			t.Fail()
 			break
 		}
-		f(t, metrics)
+		f(t, m)
 	}
 }
 
 func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
-	config := config.NewConfig()
-	SetupConfig(config)
+	c := config.NewConfig()
+	SetupConfig(c)
 
-	os.RemoveAll(config.Server.CacheFolder)
-	os.RemoveAll(config.Client.CacheFolder)
+	_ = os.RemoveAll(c.Server.CacheFolder)
+	_ = os.RemoveAll(c.Client.CacheFolder)
 
 	t.Run("Service.DELETE.Gopher.NOAUTH", func(t *testing.T) {
-		ss := acme.NewService(config.Client.BaseURL, "", "")
+		ss := acme.NewService(c.Client.BaseURL, "", "")
 		ss.EnableMetrics(metrics)
 		gophers := ss.DeleteGopher("1")
 		if len(gophers) > 0 {
@@ -66,7 +66,7 @@ func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
 		}
 	})
 	t.Run("Service.DELETE.Gopher.AUTHORIZED", func(t *testing.T) {
-		ss := acme.NewService(config.Client.BaseURL, "notempty", "notempty")
+		ss := acme.NewService(c.Client.BaseURL, "notempty", "notempty")
 		ss.EnableMetrics(metrics)
 		gophers := ss.DeleteGopher("1")
 		if len(gophers) > 3 {
@@ -75,7 +75,7 @@ func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
 		}
 	})
 	t.Run("Service.DELETE.Thing.NOAUTH", func(t *testing.T) {
-		ss := acme.NewService(config.Client.BaseURL, "", "")
+		ss := acme.NewService(c.Client.BaseURL, "", "")
 		ss.EnableMetrics(metrics)
 		things := ss.DeleteThing("2", "2")
 		if things != nil {
@@ -84,7 +84,7 @@ func ServiceTests(t *testing.T, metrics *metrics.Metrics) {
 	})
 
 	t.Run("Service.DELETE.Thing.AUTHORIZED", func(t *testing.T) {
-		ss := acme.NewService(config.Client.BaseURL, "notempty", "notempty")
+		ss := acme.NewService(c.Client.BaseURL, "notempty", "notempty")
 		ss.EnableMetrics(metrics)
 		things := ss.DeleteThing("2", "2")
 		if len(things) != 2 {

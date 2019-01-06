@@ -28,6 +28,7 @@ func (c *Config) ValidateOrFatal() {
 
 	return
 }
+
 func (c *Config) validateOutputMode() {
 	switch strings.ToLower(c.Client.OutputMode) {
 	case "csv":
@@ -78,7 +79,6 @@ func (c *Config) validateVerbosity() {
 	}
 
 }
-
 func (c *Config) hasVerboseLevel() bool {
 	return c.VerboseLevel1 || c.VerboseLevel2 || c.VerboseLevel3 || c.VerboseLevel4 || c.VerboseLevel5
 }

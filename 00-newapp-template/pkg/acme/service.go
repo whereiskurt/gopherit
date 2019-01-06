@@ -40,7 +40,6 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Get: {},
 			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
@@ -48,16 +47,13 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Get:    {},
-			HTTP.Delete: {},
-			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			HTTP.Post: {`{{.Gopher}}`},
 		},
 	},
 	EndPoints.Things: {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Get: {},
 			HTTP.Put: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
@@ -65,9 +61,7 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Get:    {},
-			HTTP.Delete: {},
-			HTTP.Post:   {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
+			HTTP.Post: {`{"name": "{{.Name}}", "description":"{{.Description}}"}`},
 		},
 	},
 }
@@ -191,6 +185,45 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 		s.Log.Warnf("failed to GET things: %+v", tErr)
 	}
 	return
+}
+
+func (s *Service) UpdateGopher(g Gopher) Gopher {
+	var gopher Gopher
+
+	gjson, err := json.Marshal(g)
+
+	if err != nil {
+		return gopher
+	}
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		shouldRetry = s.sleepBeforeRetry(attempt)
+		body, status, err := s.update(EndPoints.Gopher, map[string]string{
+			"GopherID": string(g.ID),
+			"Gopher":   string(gjson),
+		})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Post, status)
+		}
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+		if err != nil {
+			s.Log.Warnf("failed to UPDATE Gopher: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
+		}
+
+		err = json.Unmarshal(body, &gopher)
+		if err != nil {
+			s.Log.Warnf("failed to unmarshal updated gopher: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+		}
+
+		return shouldRetry, err
+	})
+
+	return gopher
 }
 
 // DeleteGopher uses a Transport to make a DELETE HTTP call against ACME "DeleteGophers"
@@ -331,7 +364,7 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 	return
 }
 
-//TODO: Add 'put' aka 'add'
+// TODO: Add 'put' aka 'add'
 func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 
 	url, err := ToURL(s.BaseURL, endPoint, p)
@@ -362,7 +395,6 @@ func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, 
 
 	return body, status, err
 }
-
 func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
@@ -376,21 +408,21 @@ func (s *Service) delete(endPoint EndPointType, p map[string]string) ([]byte, in
 
 	return body, status, err
 }
-func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, error) {
+func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 	url, err := ToURL(s.BaseURL, endPoint, p)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	json, err := ToJSON(endPoint, HTTP.Post, p)
+	j, err := ToJSON(endPoint, HTTP.Post, p)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	t := NewTransport(s)
-	body, err := t.post(url, json, "application/json")
+	body, status, err := t.post(url, j, "application/json")
 	if err != nil {
-		return nil, err
+		return nil, status, err
 	}
 
-	return body, err
+	return body, status, err
 }

@@ -95,6 +95,30 @@ func NewConfig() (config *Config) {
 	return
 }
 
+func (c *ClientConfig) DumpMetrics() {
+	pid := os.Getpid()
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("client.%d.%s.prom", pid, dts)
+	file := filepath.Join(".", c.MetricsFolder, name)
+	metrics.DumpMetrics(file)
+}
+func (c *ServerConfig) DumpMetrics() {
+	pid := os.Getpid()
+	dts := time.Now().Format("20060102150405")
+	name := fmt.Sprintf("server.%d.%s.prom", pid, dts)
+	file := filepath.Join(".", c.MetricsFolder, name)
+	metrics.DumpMetrics(file)
+}
+
+func (c *ClientConfig) EnableLogging() {
+	filename := c.LogFilename()
+	c.Config.SetLogFilename(filename)
+}
+func (c *ServerConfig) EnableLogging() {
+	filename := c.LogFilename()
+	c.Config.SetLogFilename(filename)
+}
+
 // UnmarshalViper copies all of the cobra/viper config data into our Config struct
 // This is the delineation between cobra/viper and using our Config struct.
 func (c *Config) UnmarshalViper() {
@@ -128,28 +152,4 @@ func (c *Config) readWithViper() {
 	viper.AutomaticEnv()
 
 	return
-}
-
-func (c *ClientConfig) DumpMetrics() {
-	pid := os.Getpid()
-	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("client.%d.%s.prom", pid, dts)
-	file := filepath.Join(".", c.MetricsFolder, name)
-	metrics.DumpMetrics(file)
-}
-func (c *ServerConfig) DumpMetrics() {
-	pid := os.Getpid()
-	dts := time.Now().Format("20060102150405")
-	name := fmt.Sprintf("server.%d.%s.prom", pid, dts)
-	file := filepath.Join(".", c.MetricsFolder, name)
-	metrics.DumpMetrics(file)
-}
-
-func (c *ClientConfig) EnableLogging() {
-	filename := c.LogFilename()
-	c.Config.SetLogFilename(filename)
-}
-func (c *ServerConfig) EnableLogging() {
-	filename := c.LogFilename()
-	c.Config.SetLogFilename(filename)
 }

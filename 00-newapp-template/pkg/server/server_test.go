@@ -11,17 +11,17 @@ import (
 
 func TestServerStart(t *testing.T) {
 
-	config := config.NewConfig()
-	metrics := metrics.NewMetrics()
+	c := config.NewConfig()
+	m := metrics.NewMetrics()
 
-	config.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
+	c.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
-	os.RemoveAll(config.Server.CacheFolder)
-	os.RemoveAll(config.Client.CacheFolder)
+	_ = os.RemoveAll(c.Server.CacheFolder)
+	_ = os.RemoveAll(c.Client.CacheFolder)
 
 	t.Parallel()
 
-	s := server.NewServer(config, metrics)
+	s := server.NewServer(c, m)
 
 	go func() {
 		err := s.ListenAndServe() // BLOCKS

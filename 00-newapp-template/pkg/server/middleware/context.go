@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"00-newapp-template/pkg/acme"
 	"context"
+	"encoding/json"
 	"github.com/go-chi/chi"
 	"net/http"
 	"strings"
@@ -82,16 +84,23 @@ func GopherCtx(next http.Handler) http.Handler {
 				// ALLOW!
 			default:
 				// DENY ALL OTHERS!
-				http.Error(w, http.StatusText(403), 403)
+				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 				return
 			}
 		}
 
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["GopherID"] = chi.URLParam(r, "GopherID")
-		//TODO: Replace this with unpacking the JSON
-		ctxMap["GopherName"] = r.FormValue("GopherName")
-		ctxMap["GopherDescription"] = r.FormValue("GopherDescription")
+
+		// If the request is update/insert the body has the Gopher object
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			var g acme.Gopher
+			err := json.NewDecoder(r.Body).Decode(&g)
+			if err == nil {
+				ctxMap["GopherName"] = g.Name
+				ctxMap["GopherDescription"] = g.Description
+			}
+		}
 
 		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -103,15 +112,22 @@ func ThingCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !IsAuthenticated(r) {
 			// PS: Never /actually/ do this.. create a proper SecurityCtx and evaluates the uri etc. :-)
-			http.Error(w, http.StatusText(403), 403)
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}
 
 		ctxMap := r.Context().Value(ContextMapKey).(map[string]string)
 		ctxMap["ThingID"] = chi.URLParam(r, "ThingID")
-		//TODO: Replace this with unpacking the JSON
-		ctxMap["ThingName"] = r.FormValue("ThingName")
-		ctxMap["ThingDescription"] = r.FormValue("ThingDescription")
+
+		// If the request is update/insert the body has the Gopher object
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			var t acme.Thing
+			err := json.NewDecoder(r.Body).Decode(&t)
+			if err == nil {
+				ctxMap["ThingName"] = t.Name
+				ctxMap["ThingDescription"] = t.Description
+			}
+		}
 
 		ctx := context.WithValue(r.Context(), ContextMapKey, ctxMap)
 		next.ServeHTTP(w, r.WithContext(ctx))

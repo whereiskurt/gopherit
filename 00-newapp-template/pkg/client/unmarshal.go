@@ -4,6 +4,7 @@ import (
 	"00-newapp-template/pkg/acme"
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
+	"encoding/json"
 	"path/filepath"
 )
 
@@ -56,5 +57,17 @@ func (u *Unmarshal) deleteGopher(gopherID string) (gg []acme.Gopher) {
 func (u *Unmarshal) deleteThing(gopherID string, thingID string) (tt []acme.Thing) {
 	s := u.service()
 	tt = s.DeleteThing(gopherID, thingID)
+	return
+}
+
+func (u *Unmarshal) updateGopher(gopher Gopher) (gg acme.Gopher) {
+	s := u.service()
+
+	var g = acme.Gopher{
+		ID:          json.Number(gopher.ID),
+		Description: gopher.Description,
+		Name:        gopher.Name,
+	}
+	gg = s.UpdateGopher(g)
 	return
 }

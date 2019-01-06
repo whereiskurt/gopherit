@@ -66,7 +66,7 @@ func (s *Server) ListenAndServe() (err error) {
 	// Start the /metrics server
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":"+s.MetricsListenPort, nil)
+		_ = http.ListenAndServe(":"+s.MetricsListenPort, nil)
 	}()
 
 	// Start the HTTP server

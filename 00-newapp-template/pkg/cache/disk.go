@@ -70,5 +70,5 @@ func (d *Disk) Store(filename string, bb []byte) (err error) {
 
 // Clear will delete the cache file.
 func (d *Disk) Clear(filename string) {
-	os.Remove(filename) // delete the cache file.
+	_ = os.Remove(filename) // delete the cache file.
 }

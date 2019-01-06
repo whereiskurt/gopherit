@@ -49,7 +49,7 @@ func NewAdapter(config *config.Config, metrics *metrics.Metrics) (a *Adapter) {
 func (a *Adapter) diskStore(label CachePathLabel, obj interface{}) {
 	j, err := json.Marshal(obj)
 	if err == nil {
-		a.DiskCache.Store(fmt.Sprintf("%s.json", label), PrettyJSON(j))
+		_ = a.DiskCache.Store(fmt.Sprintf("%s.json", label), PrettyJSON(j))
 	}
 }
 
@@ -158,7 +158,12 @@ func (a *Adapter) FindGopherByThing(thingID string) (gopherID string) {
 }
 
 // UpdateGopher is not implemented yet!
-func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) { return }
+func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
+	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Update)
+	a.Unmarshal.updateGopher(newGopher)
+
+	return
+}
 
 // UpdateThing is not implemented yet!
 func (a *Adapter) UpdateThing(newThing Thing) (thing Thing) { return }

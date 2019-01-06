@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	config := config.NewConfig()
-	metrics := metrics.NewMetrics()
+	c := config.NewConfig()
+	m := metrics.NewMetrics()
 
-	a := internal.NewApp(config, metrics)
+	a := internal.NewApp(c, m)
 
 	a.InvokeCLI()
 	return

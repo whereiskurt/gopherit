@@ -6,7 +6,6 @@ import (
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/ui"
-	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +46,6 @@ func (c *Client) Delete(cmd *cobra.Command, args []string) {
 
 // Update command
 func (c *Client) Update(cmd *cobra.Command, args []string) {
-	fmt.Printf("UpdateCommand\n")
+	client.Update(c.Adapter, c.CLI)
 	return
 }

@@ -117,7 +117,7 @@ func (t *Transport) get(url string) (body []byte, status int, err error) {
 
 	return body, status, err
 }
-func (t *Transport) post(url string, data string, datatype string) (body []byte, err error) {
+func (t *Transport) post(url string, data string, datatype string) (body []byte, status int, err error) {
 	var req *http.Request
 	var resp *http.Response
 
@@ -134,12 +134,14 @@ func (t *Transport) post(url string, data string, datatype string) (body []byte,
 	if err != nil {
 		return
 	}
+	status = resp.StatusCode
 
 	body, err = ioutil.ReadAll(resp.Body)
 	if err == nil {
 		err = resp.Body.Close()
 	}
-	return
+
+	return body, status, err
 }
 func (t *Transport) put(url string, data string, datatype string) (body []byte, err error) {
 	var req *http.Request

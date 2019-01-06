@@ -25,7 +25,7 @@ func (s *Server) EnableDefaultRouter() {
 			r.Route("/{GopherID}", func(r chi.Router) {
 				r.Use(middleware.GopherCtx)
 				r.Get("/", s.gopher)
-				r.Put("/", s.updateGopher) // Update/Delete required IsAuthenticated() true.
+				r.Post("/", s.updateGopher) // Update/Delete required IsAuthenticated() true.
 				r.Delete("/", s.deleteGopher)
 
 				// Things doesn't a ThingID and therefore doesn't have a ThingCtx
@@ -34,7 +34,7 @@ func (s *Server) EnableDefaultRouter() {
 				r.Route("/thing/{ThingID}", func(r chi.Router) {
 					r.Use(middleware.ThingCtx) // Requires IsAuthenticated() true.
 					r.Get("/", s.thing)
-					r.Put("/", s.updateThing)
+					r.Post("/", s.updateThing)
 					r.Delete("/", s.deleteThing)
 				})
 			})

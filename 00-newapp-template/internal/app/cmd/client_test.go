@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-var Metrics metrics.Metrics
-
 func TestUnAuthenticatedClient(t *testing.T) {
 	serverConfig := config.NewConfig()
 	SetupConfig(serverConfig)
@@ -33,15 +31,15 @@ func SetupConfig(c *config.Config) {
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 
-	os.RemoveAll(c.Server.CacheFolder)
-	os.RemoveAll(c.Client.CacheFolder)
+	_ = os.RemoveAll(c.Server.CacheFolder)
+	_ = os.RemoveAll(c.Client.CacheFolder)
 }
 
 func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
 	mm := metrics.NewMetrics()
-	config := config.NewConfig()
-	SetupConfig(config)
-	s := server.NewServer(config, mm)
+	c := config.NewConfig()
+	SetupConfig(c)
+	s := server.NewServer(c, mm)
 	s.EnableDefaultRouter()
 	var err error
 	go func() {

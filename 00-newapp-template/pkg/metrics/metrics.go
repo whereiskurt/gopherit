@@ -75,7 +75,7 @@ func (m *Metrics) clientInit() {
 }
 
 func (m *Metrics) Marshal(filename string) {
-	prometheus.WriteToTextfile(filename, prometheus.DefaultGatherer)
+	_ = prometheus.WriteToTextfile(filename, prometheus.DefaultGatherer)
 }
 
 func (m *Metrics) ServerInc(endPoint EndPointType, method serviceMethodType) {
@@ -115,5 +115,5 @@ func (m *Metrics) ClientInc(endPoint string, method serviceMethodType) {
 }
 
 func DumpMetrics(file string) {
-	prometheus.WriteToTextfile(file, prometheus.DefaultGatherer)
+	_ = prometheus.WriteToTextfile(file, prometheus.DefaultGatherer)
 }
