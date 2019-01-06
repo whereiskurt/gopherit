@@ -6,8 +6,8 @@ import (
 	"00-newapp-template/pkg/server/middleware"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 )
 
@@ -106,14 +106,14 @@ func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	return
 }
 func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Gopher")
+	endPoint := acme.EndPoints.Gopher
 	serviceType := metrics.EndPoints.Gopher
 
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Delete)
 
 	// Deleting a Gopher impacts Gophers cached response, so clear cache for things too!
 	s.cacheClear(r, endPoint, serviceType)
-	s.cacheClear(r, acme.EndPointType("Gophers"), serviceType)
+	s.cacheClear(r, acme.EndPoints.Gophers, serviceType)
 
 	gopherID := middleware.GopherID(r)
 
@@ -125,7 +125,7 @@ func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) things(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Things")
+	endPoint := acme.EndPoints.Things
 	serviceType := metrics.EndPoints.Things
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Get)
 
@@ -150,7 +150,7 @@ func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 	w.Write(bb)
 }
 func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Thing")
+	endPoint := acme.EndPoints.Thing
 	serviceType := metrics.EndPoints.Thing
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Get)
 
@@ -182,7 +182,7 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Thing")
+	endPoint := acme.EndPoints.Thing
 	serviceType := metrics.EndPoints.Thing
 
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Update)
@@ -191,7 +191,7 @@ func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	s.cacheClear(r, endPoint, serviceType)
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Thing")
+	endPoint := acme.EndPoints.Thing
 	serviceType := metrics.EndPoints.Thing
 
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Delete)
@@ -217,7 +217,8 @@ func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPointType, service
 	}
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
-	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
+
 	s.DiskCache.Clear(filename)
 }
 func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.EndPointType, service metrics.EndPointType, bb []byte) {
@@ -239,7 +240,8 @@ func (s *Server) cacheFetch(r *http.Request, endPoint acme.EndPointType, service
 	}
 
 	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
-	filename = fmt.Sprintf("%s/%s", s.DiskCache.CacheFolder, filename)
+	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
+
 	bb, err = s.DiskCache.Fetch(filename)
 
 	if err == nil && len(bb) > 0 && s.Metrics != nil {
