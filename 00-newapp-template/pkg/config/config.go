@@ -4,6 +4,7 @@ import (
 	"00-newapp-template/pkg/metrics"
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -34,8 +35,7 @@ type Config struct {
 	Version VersionConfig // 'gophercli version'
 	Metrics MetricsConfig // 'gophercli metrics'
 }
-type MetricsConfig struct {
-}
+type MetricsConfig struct{}
 
 // ClientConfig are all of the params for the Client Command
 type ClientConfig struct {
@@ -54,6 +54,27 @@ type ClientConfig struct {
 	ThingName         string
 	ThingDescription  string
 	MetricsFolder     string
+}
+
+// String allows us to mask the Keys we don't want to reveal
+func (c *Config) String() string {
+	var safeConfig = new(Config)
+
+	spew.Config.MaxDepth = 2
+	spew.Config.DisableMethods = true
+
+	// Copy config that was passed
+	*safeConfig = *c
+	// Overwrite sensitive values with the masked value
+	mask := "[*******]"
+	safeConfig.Client.AccessKey = mask
+	safeConfig.Client.SecretKey = mask
+	safeConfig.Client.CacheKey = mask
+	safeConfig.Server.AccessKey = mask
+	safeConfig.Server.SecretKey = mask
+	safeConfig.Server.CacheKey = mask
+
+	return spew.Sdump(safeConfig)
 }
 
 // ServerConfig are all of the params for the Client Command

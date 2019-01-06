@@ -3,6 +3,7 @@ module 00-newapp-template
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-chi/chi v3.3.3+incompatible
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2 // indirect

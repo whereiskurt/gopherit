@@ -197,8 +197,8 @@ func (s *Service) UpdateGopher(g Gopher) Gopher {
 	}
 	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, status, err := s.update(EndPoints.Gopher, map[string]string{
-			"GopherID": string(g.ID),
-			"GopherJSON":   string(gjson),
+			"GopherID":   string(g.ID),
+			"GopherJSON": string(gjson),
 		})
 		if s.Metrics != nil {
 			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Post, status)
@@ -235,9 +235,9 @@ func (s *Service) UpdateThing(t Thing) Thing {
 	}
 	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, status, err := s.update(EndPoints.Thing, map[string]string{
-			"GopherID": string(t.GopherID),
-			"ThingID":  string(t.ID),
-			"ThingJSON":    string(tjson),
+			"GopherID":  string(t.GopherID),
+			"ThingID":   string(t.ID),
+			"ThingJSON": string(tjson),
 		})
 		if s.Metrics != nil {
 			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Post, status)

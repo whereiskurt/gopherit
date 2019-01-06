@@ -1,10 +1,12 @@
 package server
 
 import (
+	"00-newapp-template/pkg/acme"
 	"00-newapp-template/pkg/cache"
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server/db"
+	"00-newapp-template/pkg/server/middleware"
 	"context"
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -12,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 )
 
@@ -49,16 +52,6 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 	return
 }
 
-// EnableCache will create a new Disk Cache for all request.
-func (s *Server) EnableCache(cacheFolder string, cryptoKey string) {
-	var useCrypto = false
-	if cryptoKey != "" {
-		useCrypto = true
-	}
-	s.DiskCache = cache.NewDisk(cacheFolder, cryptoKey, useCrypto)
-	return
-}
-
 // ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth shutdown.
 func (s *Server) ListenAndServe() (err error) {
 	s.hookShutdownSignal()
@@ -86,6 +79,7 @@ func (s *Server) ListenAndServe() (err error) {
 
 	return
 }
+
 func (s *Server) hookShutdownSignal() {
 	stop := make(chan os.Signal)
 
@@ -98,6 +92,61 @@ func (s *Server) hookShutdownSignal() {
 		s.Log.Infof("termination signal '%s' received for server", sig)
 		s.Finished()
 	}()
+
+	return
+}
+
+// EnableCache will create a new Disk Cache for all request.
+func (s *Server) EnableCache(cacheFolder string, cryptoKey string) {
+	var useCrypto = false
+	if cryptoKey != "" {
+		useCrypto = true
+	}
+	s.DiskCache = cache.NewDisk(cacheFolder, cryptoKey, useCrypto)
+	return
+}
+
+func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPointType, service metrics.EndPointType) {
+	if s.DiskCache == nil {
+		return
+	}
+	if s.Metrics != nil {
+		s.Metrics.CacheInc(service, metrics.Methods.Cache.Invalidate)
+	}
+
+	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
+	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
+
+	s.DiskCache.Clear(filename)
+}
+func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.EndPointType, service metrics.EndPointType, bb []byte) {
+	if s.DiskCache == nil {
+		return
+	}
+	// Metrics!
+	if s.Metrics != nil {
+		s.Metrics.CacheInc(service, metrics.Methods.Cache.Store)
+	}
+
+	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
+	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
+	_ = s.DiskCache.Store(filename, prettyCache)
+}
+func (s *Server) cacheFetch(r *http.Request, endPoint acme.EndPointType, service metrics.EndPointType) (bb []byte, err error) {
+	if s.DiskCache == nil {
+		return
+	}
+
+	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
+	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
+
+	bb, err = s.DiskCache.Fetch(filename)
+
+	if err == nil && len(bb) > 0 && s.Metrics != nil {
+		s.Metrics.CacheInc(service, metrics.Methods.Cache.Hit)
+	} else {
+		s.Metrics.CacheInc(service, metrics.Methods.Cache.Miss)
+	}
 
 	return
 }

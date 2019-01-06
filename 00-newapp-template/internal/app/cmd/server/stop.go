@@ -25,6 +25,6 @@ func Stop(config *config.Config, metrics *metrics.Metrics) {
 		return
 	}
 
-	fmt.Println(fmt.Sprintf("Shutdown success: Status from server:%d\n%s", status, body))
+	fmt.Println(fmt.Sprintf("Success [%d]!\n%s", status, body))
 	return
 }

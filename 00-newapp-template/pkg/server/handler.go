@@ -4,26 +4,27 @@ import (
 	"00-newapp-template/pkg/acme"
 	"00-newapp-template/pkg/metrics"
 	"00-newapp-template/pkg/server/middleware"
+	"00-newapp-template/pkg/ui"
 	"context"
 	"encoding/json"
 	"net/http"
-	"path/filepath"
 	"time"
 )
 
 func (s *Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	s.Log.Debugf("/shutdown called - beginning s shutdown")
 
-	_, _ = w.Write([]byte("bye felcia"))
+	_, _ = w.Write([]byte(ui.Gopher()))
+	_, _ = w.Write([]byte("\n...bye felicia\n"))
+
 	timeout, cancel := context.WithTimeout(s.Context, 5*time.Second)
 	err := s.HTTP.Shutdown(timeout)
 	if err != nil {
-		s.Log.Errorf("s error during shutdown: %+v", err)
+		s.Log.Errorf("server error during shutdown: %+v", err)
 	}
 	s.Finished()
 	cancel()
 }
-
 func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.EndPointType("Gophers")
 
@@ -128,7 +129,6 @@ func (s *Server) deleteGopher(w http.ResponseWriter, r *http.Request) {
 	s.gophers(w, r)
 	return
 }
-
 func (s *Server) things(w http.ResponseWriter, r *http.Request) {
 	endPoint := acme.EndPoints.Things
 	serviceType := metrics.EndPoints.Things
@@ -229,49 +229,4 @@ func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
 	s.cacheClear(r, acme.EndPoints.Things, serviceType)
 
 	s.things(w, r)
-}
-
-func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPointType, service metrics.EndPointType) {
-	if s.DiskCache == nil {
-		return
-	}
-	if s.Metrics != nil {
-		s.Metrics.CacheInc(service, metrics.Methods.Cache.Invalidate)
-	}
-
-	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
-	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
-
-	s.DiskCache.Clear(filename)
-}
-func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.EndPointType, service metrics.EndPointType, bb []byte) {
-	if s.DiskCache == nil {
-		return
-	}
-	// Metrics!
-	if s.Metrics != nil {
-		s.Metrics.CacheInc(service, metrics.Methods.Cache.Store)
-	}
-
-	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
-	prettyCache := middleware.NewPrettyPrint(w).Prettify(bb)
-	_ = s.DiskCache.Store(filename, prettyCache)
-}
-func (s *Server) cacheFetch(r *http.Request, endPoint acme.EndPointType, service metrics.EndPointType) (bb []byte, err error) {
-	if s.DiskCache == nil {
-		return
-	}
-
-	filename, _ := acme.ToCacheFilename(endPoint, middleware.ContextMap(r))
-	filename = filepath.Join(".", s.DiskCache.CacheFolder, filename)
-
-	bb, err = s.DiskCache.Fetch(filename)
-
-	if err == nil && len(bb) > 0 && s.Metrics != nil {
-		s.Metrics.CacheInc(service, metrics.Methods.Cache.Hit)
-	} else {
-		s.Metrics.CacheInc(service, metrics.Methods.Cache.Miss)
-	}
-
-	return
 }
