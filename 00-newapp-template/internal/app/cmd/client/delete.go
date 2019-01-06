@@ -10,9 +10,11 @@ import (
 // Delete uses a configured adapter to delete matching gopher.
 // Returns all other gophers not deleted.
 func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
+	a.Config.Client.EnableLogging()
+	log := a.Config.Log
+
 	gopherID := a.Config.Client.GopherID
 	thingID := a.Config.Client.ThingID
-	log := a.Config.Log
 
 	switch {
 	case gopherID != "" && thingID != "":
@@ -44,5 +46,8 @@ func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
 		}
 	}
 
-	return a.GopherThings()
+	things := a.GopherThings()
+
+	a.Config.Client.DumpMetrics()
+	return things
 }

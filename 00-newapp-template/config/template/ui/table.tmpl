@@ -32,9 +32,7 @@
 {{ printf "| %-4s| %-10s| %-25s|" "ID" "Name" "Description"}}
 +--------------------------------------------+
 {{range $kg, $vg := . -}}
-{{range $kt, $vt := .Things -}}
     {{ printf "| %-4s |%-10s| %-25s|\n" .ID .Name .Description }}
-{{- end -}}
 {{- end -}}
 +------------------------------------------+
 {{end}}

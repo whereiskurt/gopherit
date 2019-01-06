@@ -44,7 +44,7 @@ type serviceTypes struct {
 }
 
 func (c serviceMethodType) String() string {
-	return "pkg.metric.service." + string(c)
+	return "service." + string(c)
 }
 
 type dbMethodType string
@@ -56,7 +56,7 @@ type dbTypes struct {
 }
 
 func (c dbMethodType) String() string {
-	return "pkg.metric.db." + string(c)
+	return "db." + string(c)
 }
 
 type cacheMethodType string
@@ -68,7 +68,7 @@ type cacheTypes struct {
 }
 
 func (c cacheMethodType) String() string {
-	return "pkg.metric.cache." + string(c)
+	return "cache." + string(c)
 }
 
 type transportMethodType string
@@ -81,7 +81,7 @@ type transportTypes struct {
 }
 
 func (c transportMethodType) String() string {
-	return "pkg.metric.transport." + string(c)
+	return "HTTP." + string(c)
 }
 
 type EndPointType string
@@ -101,5 +101,5 @@ type endPointTypes struct {
 }
 
 func (c EndPointType) String() string {
-	return "pkg.metrics.endpoints." + string(c)
+	return string(c)
 }

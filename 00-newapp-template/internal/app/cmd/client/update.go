@@ -10,9 +10,9 @@ func Update(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 	a.Config.Client.EnableLogging()
 
 	log := a.Config.Log
-	log.Debugf("Client Update")
 
 	if a.Config.Client.ThingID == "" {
+		log.Debugf("Update a Gopher")
 		var g = client.Gopher{
 			ID:          a.Config.Client.GopherID,
 			Name:        a.Config.Client.GopherName,
@@ -20,14 +20,19 @@ func Update(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 			Things:      map[string]client.Thing{},
 		}
 		a.UpdateGopher(g)
-	} else {
 
+	} else {
+		log.Debugf("Update a Thing")
 		var t = client.Thing{
 			ID:          a.Config.Client.ThingID,
 			Name:        a.Config.Client.ThingName,
 			Description: a.Config.Client.ThingDescription,
+			Gopher: client.Gopher{
+				ID: a.Config.Client.GopherID,
+			},
 		}
 		a.UpdateThing(t)
+
 	}
 
 	return a.GopherThings()

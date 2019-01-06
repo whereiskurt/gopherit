@@ -54,10 +54,10 @@ func (u *Unmarshal) deleteGopher(gopherID string) (gg []acme.Gopher) {
 }
 
 // DeleteThings returns all things for a gopher that aren't deleted.
-func (u *Unmarshal) deleteThing(gopherID string, thingID string) (tt []acme.Thing) {
+func (u *Unmarshal) deleteThing(gopherID string, thingID string) []acme.Thing {
 	s := u.service()
-	tt = s.DeleteThing(gopherID, thingID)
-	return
+	tt := s.DeleteThing(gopherID, thingID)
+	return tt
 }
 
 func (u *Unmarshal) updateGopher(gopher Gopher) (gg acme.Gopher) {

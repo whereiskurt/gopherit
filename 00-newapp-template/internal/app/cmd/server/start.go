@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Start will create a new Server, attach a Router, and start listening on the port logging to the log.
+// Start will create a new Server, attach a Handler, and start listening on the port logging to the log.
 func Start(config *config.Config, metrics *metrics.Metrics) {
 	config.Server.EnableLogging()
 

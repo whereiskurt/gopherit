@@ -215,19 +215,18 @@ func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	return
 }
 func (s *Server) deleteThing(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPoints.Thing
 	serviceType := metrics.EndPoints.Thing
 
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Delete)
-
-	s.cacheClear(r, endPoint, serviceType)
-	s.cacheClear(r, acme.EndPointType("Things"), serviceType)
 
 	gopherID := middleware.GopherID(r)
 	thingID := middleware.ThingID(r)
 
 	s.DB.DeleteThing(gopherID, thingID)
 	s.Metrics.DBInc(serviceType, metrics.Methods.DB.Delete)
+
+	s.cacheClear(r, acme.EndPoints.Thing, serviceType)
+	s.cacheClear(r, acme.EndPoints.Things, serviceType)
 
 	s.things(w, r)
 }

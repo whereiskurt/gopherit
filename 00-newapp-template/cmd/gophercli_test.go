@@ -4,6 +4,6 @@ import (
 	"testing"
 )
 
-func TestGopherit(t *testing.T) {
+func TestGophercli(t *testing.T) {
 	t.Logf("Testing all of Gopherit....")
 }

@@ -9,11 +9,11 @@ import (
 // EnableDefaultRouter defines routes with middleware for request tracking, logging, param contexts
 func (s *Server) EnableDefaultRouter() {
 
-	s.Router.Use(chimiddleware.RequestID)
-	s.Router.Use(middleware.NewStructuredLogger(s.Log))
-	s.Router.Use(chimiddleware.Recoverer)
+	s.Handler.Use(chimiddleware.RequestID)
+	s.Handler.Use(middleware.NewStructuredLogger(s.Log))
+	s.Handler.Use(chimiddleware.Recoverer)
 
-	s.Router.Route("/", func(r chi.Router) {
+	s.Handler.Route("/", func(r chi.Router) {
 
 		r.Use(middleware.InitialCtx)
 		r.Use(middleware.PrettyResponseCtx)

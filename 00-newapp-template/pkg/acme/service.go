@@ -40,28 +40,28 @@ var ServiceMap = map[EndPointType]ServiceTransport{
 		URL:           "/gophers",
 		CacheFilename: "Gophers.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Put: {`{{.Gopher}}`},
+			HTTP.Put: {`{{.GopherJSON}}`},
 		},
 	},
 	EndPoints.Gopher: {
 		URL:           "/gopher/{{.GopherID}}",
 		CacheFilename: "gopher/{{.GopherID}}/Gopher.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Post: {`{{.Gopher}}`},
+			HTTP.Post: {`{{.GopherJSON}}`},
 		},
 	},
 	EndPoints.Things: {
 		URL:           "/gopher/{{.GopherID}}/things",
 		CacheFilename: "gopher/{{.GopherID}}/Things.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Put: {`{{.Thing}}`},
+			HTTP.Put: {`{{.ThingJSON}}`},
 		},
 	},
 	EndPoints.Thing: {
 		URL:           "/gopher/{{.GopherID}}/thing/{{.ThingID}}",
 		CacheFilename: "gopher/{{.GopherID}}/thing/{{.ThingID}}/Thing.json",
 		MethodTemplate: map[httpMethodType]MethodTemplate{
-			HTTP.Post: {`{{.Thing}}`},
+			HTTP.Post: {`{{.ThingJSON}}`},
 		},
 	},
 }
@@ -198,7 +198,7 @@ func (s *Service) UpdateGopher(g Gopher) Gopher {
 	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
 		body, status, err := s.update(EndPoints.Gopher, map[string]string{
 			"GopherID": string(g.ID),
-			"Gopher":   string(gjson),
+			"GopherJSON":   string(gjson),
 		})
 		if s.Metrics != nil {
 			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Post, status)
@@ -237,7 +237,7 @@ func (s *Service) UpdateThing(t Thing) Thing {
 		body, status, err := s.update(EndPoints.Thing, map[string]string{
 			"GopherID": string(t.GopherID),
 			"ThingID":  string(t.ID),
-			"Thing":    string(tjson),
+			"ThingJSON":    string(tjson),
 		})
 		if s.Metrics != nil {
 			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Post, status)

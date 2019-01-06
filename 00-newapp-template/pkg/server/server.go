@@ -18,7 +18,7 @@ import (
 // Server is built on go-chi
 type Server struct {
 	Context           context.Context
-	Router            chi.Router
+	Handler           chi.Router
 	HTTP              *http.Server
 	Finished          context.CancelFunc
 	DB                db.SimpleDB
@@ -42,8 +42,8 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 	}
 
 	server.Context = config.Context
-	server.Router = chi.NewRouter()
-	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Router}
+	server.Handler = chi.NewRouter()
+	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Handler}
 	server.DB = db.NewSimpleDB()
 	server.Metrics = metrics
 	return
