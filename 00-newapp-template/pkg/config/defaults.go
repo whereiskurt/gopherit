@@ -63,7 +63,6 @@ func (c *Config) SetToDefaults() {
 	}
 	c.HomeFilename = defaultHomeFilename
 }
-
 func (c *Config) SetLogFilename(filename string) {
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {

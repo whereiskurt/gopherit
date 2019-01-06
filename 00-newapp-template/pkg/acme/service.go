@@ -206,9 +206,15 @@ func (s *Service) DeleteGopher(gopherID string) []Gopher {
 			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Delete, status)
 		}
 
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+
 		if err != nil {
 			s.Log.Warnf("failed to DELETE Gopher: %+v", err)
 			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
 		}
 
 		err = json.Unmarshal(body, &gophers)
@@ -217,33 +223,45 @@ func (s *Service) DeleteGopher(gopherID string) []Gopher {
 			shouldRetry = s.sleepBeforeRetry(attempt)
 		}
 
-		return
+		return shouldRetry, err
 	})
+
 	return gophers
 }
 
 // DeleteThing uses a Transport to make a DELETE HTTP call against ACME "DeleteGophers"
 // If the Service RetryIntervals list is populated the calls will retry on Transport errors.
 func (s *Service) DeleteThing(gopherID string, thingID string) []Thing {
-	body, status, err := s.delete(EndPoints.Thing, map[string]string{
-		"GopherID": gopherID,
-		"ThingID":  thingID,
-	})
-
-	if s.Metrics != nil {
-		s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Delete, status)
-	}
-
-	if err != nil {
-		s.Log.Warnf("failed to DELETE thing: %+v: %d", err, status)
-		return nil
-	}
-
 	var things []Thing
-	err = json.Unmarshal(body, &things)
-	if err != nil {
-		s.Log.Warnf("failed to unmarshal non-deleted things: %+v", err)
-	}
+
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		body, status, err := s.delete(EndPoints.Thing, map[string]string{
+			"GopherID": gopherID,
+			"ThingID":  thingID,
+		})
+
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Delete, status)
+		}
+
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+
+		if err != nil {
+			s.Log.Warnf("failed to DELETE thing: %+v: %d", err, status)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
+		}
+
+		err = json.Unmarshal(body, &things)
+		if err != nil {
+			s.Log.Warnf("failed to unmarshal non-deleted things: %+v", err)
+		}
+
+		return shouldRetry, err
+	})
 
 	return things
 }
