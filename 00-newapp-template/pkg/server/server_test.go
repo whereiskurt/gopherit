@@ -24,15 +24,18 @@ func TestServerStart(t *testing.T) {
 	s := server.NewServer(c, m)
 
 	go func() {
+		select {
+		case <-time.After(3 * time.Second):
+			s.Finished()
+		}
+	}()
+
+	go func() {
 		err := s.ListenAndServe() // BLOCKS
 		if err != nil {
 			t.Fail()
 		}
-	}()
-
-	select {
-	case <-time.After(3 * time.Second):
 		s.Finished()
-	}
+	}()
 
 }

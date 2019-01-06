@@ -62,11 +62,11 @@ func (c *Config) String() string {
 
 	spew.Config.MaxDepth = 2
 	spew.Config.DisableMethods = true
-
+	
 	// Copy config that was passed
 	*safeConfig = *c
 	// Overwrite sensitive values with the masked value
-	mask := "[*******]"
+	mask := "[**MASKED**]"
 	safeConfig.Client.AccessKey = mask
 	safeConfig.Client.SecretKey = mask
 	safeConfig.Client.CacheKey = mask
@@ -74,7 +74,9 @@ func (c *Config) String() string {
 	safeConfig.Server.SecretKey = mask
 	safeConfig.Server.CacheKey = mask
 
-	return spew.Sdump(safeConfig)
+	s := spew.Sdump(safeConfig)
+
+	return s
 }
 
 // ServerConfig are all of the params for the Client Command
