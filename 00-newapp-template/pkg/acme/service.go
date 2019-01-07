@@ -14,7 +14,8 @@ import (
 	"time"
 )
 
-type EndPointType string
+// DefaultRetryIntervals values in here we control the re-try of the Service
+var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000, 1000, 3000}
 
 var EndPoints = endPointTypes{
 	Gophers: EndPointType("Gophers"),
@@ -23,16 +24,6 @@ var EndPoints = endPointTypes{
 	Thing:   EndPointType("Thing"),
 }
 
-type endPointTypes struct {
-	Gophers EndPointType
-	Gopher  EndPointType
-	Things  EndPointType
-	Thing   EndPointType
-}
-
-func (c EndPointType) String() string {
-	return "pkg.acme.endpoints." + string(c)
-}
 
 // ServiceMap defines all the endpoints provided by the ACME service
 var ServiceMap = map[EndPointType]ServiceTransport{
@@ -80,9 +71,6 @@ type MethodTemplate struct {
 	Template string
 }
 
-// DefaultRetryIntervals values in here we control the re-try of the Service
-var DefaultRetryIntervals = []int{0, 500, 500, 500, 500, 1000, 1000, 1000, 1000, 1000, 3000}
-
 // Service exposes ACME services by converting the JSON results to to Go []structures
 type Service struct {
 	BaseURL        string // Put in front of every transport call
@@ -93,6 +81,17 @@ type Service struct {
 	Worker         *sync.WaitGroup // Used by Go routines to control workers (TODO)
 	Log            *log.Logger
 	Metrics        *metrics.Metrics
+}
+
+type EndPointType string
+type endPointTypes struct {
+	Gophers EndPointType
+	Gopher  EndPointType
+	Things  EndPointType
+	Thing   EndPointType
+}
+func (c EndPointType) String() string {
+	return "pkg.acme.endpoints." + string(c)
 }
 
 // NewService is configured to call ACME services with the BaseURL and credentials.

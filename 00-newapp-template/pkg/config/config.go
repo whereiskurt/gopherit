@@ -64,7 +64,7 @@ func (c *Config) String() string {
 
 	// With DisableMethods, String() will be recursively called on the *Config sub-elements and blow the stack. :-)
 	spew.Config.DisableMethods = true
-	
+
 	// Copy config that was passed
 	*safeConfig = *c
 

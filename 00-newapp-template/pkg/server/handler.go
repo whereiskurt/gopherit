@@ -26,7 +26,7 @@ func (s *Server) shutdown(w http.ResponseWriter, r *http.Request) {
 	cancel()
 }
 func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Gophers")
+	endPoint := acme.EndPoints.Gophers
 
 	serviceType := metrics.EndPoints.Gophers
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Get)
@@ -52,7 +52,7 @@ func (s *Server) gophers(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(b)
 }
 func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
-	endPoint := acme.EndPointType("Gopher")
+	endPoint := acme.EndPoints.Gopher
 	serviceType := metrics.EndPoints.Gopher
 	s.Metrics.ServerInc(serviceType, metrics.Methods.Service.Get)
 
@@ -80,7 +80,7 @@ func (s *Server) gopher(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 }
 func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	// Metrics!
@@ -91,7 +91,7 @@ func (s *Server) updateGopher(w http.ResponseWriter, r *http.Request) {
 	var g acme.Gopher
 	err := json.NewDecoder(r.Body).Decode(&g)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 
 	gopher := acme.Gopher{
@@ -184,7 +184,7 @@ func (s *Server) thing(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 }
 func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	serviceType := metrics.EndPoints.Thing
@@ -194,7 +194,7 @@ func (s *Server) updateThing(w http.ResponseWriter, r *http.Request) {
 	var t acme.Thing
 	err := json.NewDecoder(r.Body).Decode(&t)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 
 	thing := acme.Thing{
