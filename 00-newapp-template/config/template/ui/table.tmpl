@@ -54,6 +54,7 @@
 {{range $kt, $vt := .Things -}}
 {{ printf "| %-4s|%-10s|%-30s| %-4s| %-11s|%-11s|\n" $vg.ID $vg.Name $vg.Description $vt.ID $vt.Name $vt.Description }}
 {{- end -}}
+{{if not .Things}}{{printf "| %-4s|%-10s|%-30s| %-4s| %-11s|%-11s|\n" $vg.ID $vg.Name $vg.Description "" "" "" }}{{end}}
 {{- end -}}
 +------------------------------------------------------------------------------+
 {{end}}

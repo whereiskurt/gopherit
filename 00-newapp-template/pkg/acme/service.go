@@ -186,6 +186,44 @@ func (s *Service) GetThings(gopherID string) (things []Thing) {
 	return
 }
 
+func (s *Service) AddGopher(g Gopher) Gopher {
+	var gopher Gopher
+
+	gjson, err := json.Marshal(g)
+	if err != nil {
+		return gopher
+	}
+
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		body, status, err := s.add(EndPoints.Gophers, map[string]string{
+			"GopherID":   string(g.ID),
+			"GopherJSON": string(gjson),
+		})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Gopher, metrics.Methods.Transport.Put, status)
+		}
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+		if err != nil {
+			s.Log.Warnf("failed to ADD Gopher: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
+		}
+
+		err = json.Unmarshal(body, &gopher)
+		if err != nil {
+			s.Log.Warnf("failed to unmarshal ADDED gopher: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+		}
+
+		return shouldRetry, err
+	})
+
+	return gopher
+}
+
 func (s *Service) UpdateGopher(g Gopher) Gopher {
 	var gopher Gopher
 
@@ -401,7 +439,6 @@ func (s *Service) sleepBeforeRetry(attempt int) (shouldReRun bool) {
 	return
 }
 
-// TODO: Add 'Put' aka 'add'
 func (s *Service) get(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
 
 	url, err := ToURL(s.BaseURL, endPoint, p)
@@ -457,6 +494,24 @@ func (s *Service) update(endPoint EndPointType, p map[string]string) ([]byte, in
 
 	t := NewTransport(s)
 	body, status, err := t.Post(url, j, "application/json")
+	if err != nil {
+		return nil, status, err
+	}
+
+	return body, status, err
+}
+func (s *Service) add(endPoint EndPointType, p map[string]string) ([]byte, int, error) {
+	url, err := ToURL(s.BaseURL, endPoint, p)
+	if err != nil {
+		return nil, 0, err
+	}
+	j, err := ToJSON(endPoint, HTTP.Put, p)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	t := NewTransport(s)
+	body, status, err := t.Put(url, j, "application/json")
 	if err != nil {
 		return nil, status, err
 	}

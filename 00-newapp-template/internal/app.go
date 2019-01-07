@@ -1,5 +1,6 @@
 package internal
 
+
 import (
 	"00-newapp-template/internal/app/cmd"
 	"00-newapp-template/pkg/config"
@@ -73,6 +74,7 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 	_ = makeCommand("list", client.List, clientCmd)
 	_ = makeCommand("update", client.Update, clientCmd)
 	_ = makeCommand("delete", client.Delete, clientCmd)
+	_ = makeCommand("add", client.Add, clientCmd)
 
 	server := cmd.NewServer(a.Config, a.Metrics)
 	serverCmd := makeCommand("server", server.Server, a.RootCmd)

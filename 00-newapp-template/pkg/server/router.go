@@ -19,7 +19,8 @@ func (s *Server) EnableDefaultRouter() {
 		r.Use(middleware.PrettyResponseCtx)
 
 		r.Get("/shutdown", s.shutdown) // Anyone can shutdown s - try it by visiting http://localhost:10201/shutdown
-		r.Get("/gophers", s.gophers)   // Anyone can get all gophers
+		r.Get("/gophers", s.gophers)   // Anyone can get all gophers etc..
+		r.Put("/gophers", s.addGopher)
 
 		r.Route("/gopher", func(r chi.Router) {
 			r.Route("/{GopherID}", func(r chi.Router) {

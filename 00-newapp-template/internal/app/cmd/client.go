@@ -49,3 +49,9 @@ func (c *Client) Update(cmd *cobra.Command, args []string) {
 	client.Update(c.Adapter, c.CLI)
 	return
 }
+
+// Add command
+func (c *Client) Add(cmd *cobra.Command, args []string) {
+	client.Add(c.Adapter, c.CLI)
+	return
+}

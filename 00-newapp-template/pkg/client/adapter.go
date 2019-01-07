@@ -166,7 +166,12 @@ func (a *Adapter) FindGopherByThing(thingID string) string {
 func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Update)
 	a.Unmarshal.updateGopher(newGopher)
-
+	return
+}
+// AddGopher
+func (a *Adapter) AddGopher(newGopher Gopher) (gopher Gopher) {
+	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Add)
+	a.Unmarshal.addGopher(newGopher)
 	return
 }
 

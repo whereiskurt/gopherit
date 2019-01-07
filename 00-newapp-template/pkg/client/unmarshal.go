@@ -60,7 +60,7 @@ func (u *Unmarshal) deleteThing(gopherID string, thingID string) []acme.Thing {
 	return tt
 }
 
-func (u *Unmarshal) updateGopher(gopher Gopher) (gg acme.Gopher) {
+func (u *Unmarshal) updateGopher(gopher Gopher) acme.Gopher {
 	s := u.service()
 
 	var g = acme.Gopher{
@@ -68,9 +68,23 @@ func (u *Unmarshal) updateGopher(gopher Gopher) (gg acme.Gopher) {
 		Description: gopher.Description,
 		Name:        gopher.Name,
 	}
-	gg = s.UpdateGopher(g)
-	return
+	gg := s.UpdateGopher(g)
+	return gg
 }
+func (u *Unmarshal) addGopher(gopher Gopher) acme.Gopher {
+	s := u.service()
+
+	var g = acme.Gopher{
+		ID:          json.Number(gopher.ID),
+		Description: gopher.Description,
+		Name:        gopher.Name,
+	}
+
+	s.AddGopher(g)
+
+	return g
+}
+
 func (u *Unmarshal) updateThing(thing Thing) (tt acme.Thing) {
 	s := u.service()
 
