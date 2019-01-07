@@ -169,10 +169,10 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 	return
 }
 // AddGopher
-func (a *Adapter) AddGopher(newGopher Gopher) (gopher Gopher) {
+func (a *Adapter) AddGopher(newGopher Gopher) Gopher {
 	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Add)
 	a.Unmarshal.addGopher(newGopher)
-	return
+	return newGopher
 }
 
 // UpdateThing uses the details in newThing to update the Thing

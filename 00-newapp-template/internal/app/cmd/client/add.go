@@ -3,17 +3,19 @@ package client
 import (
 	"00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/ui"
+	"fmt"
 )
 
-// Update takes command line parameters to update a gopher/thing depending
-func Add(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
+// Add new gopher, and return the added gopher
+func Add(a *client.Adapter, cli ui.CLI) {
 	a.Config.Client.EnableLogging()
 
 	log := a.Config.Log
 
+	var g client.Gopher
 	if a.Config.Client.ThingID == "" {
 		log.Debugf("Update a Gopher")
-		var g = client.Gopher{
+		g = client.Gopher{
 			ID:          a.Config.Client.GopherID,
 			Name:        a.Config.Client.GopherName,
 			Description: a.Config.Client.GopherDescription,
@@ -21,9 +23,11 @@ func Add(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 		}
 		a.AddGopher(g)
 
-	} else {
+		output := cli.Render("GopherTable", []client.Gopher{g})
+		fmt.Println(output)
 
+	} else {
 	}
 
-	return a.GopherThings()
+	return
 }

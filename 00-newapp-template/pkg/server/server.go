@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 // Server is built on go-chi
@@ -46,7 +47,17 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 
 	server.Context = config.Context
 	server.Handler = chi.NewRouter()
-	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Handler}
+
+	server.HTTP = &http.Server{
+		Addr: ":"+server.ListenPort,
+		Handler: server.Handler,
+		// Ian Kent recommends these timeouts be set:
+		//   https://www.youtube.com/watch?v=YF1qSfkDGAQ&t=333s
+		IdleTimeout:time.Duration(time.Second), // This maybe tooooo aggressive..*shrugs* :)
+		ReadTimeout:time.Duration(time.Second),
+		WriteTimeout:time.Duration(time.Second),
+	}
+
 	server.DB = db.NewSimpleDB()
 	server.Metrics = metrics
 	return
