@@ -16,8 +16,6 @@ func TestUnAuthenticatedClient(t *testing.T) {
 	serverConfig := config.NewConfig()
 	SetupConfig(serverConfig)
 
-	t.Parallel()
-
 	StartServerRunTests(t, ClientTests)
 
 }

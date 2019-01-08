@@ -168,6 +168,7 @@ func (a *Adapter) UpdateGopher(newGopher Gopher) (gopher Gopher) {
 	a.Unmarshal.updateGopher(newGopher)
 	return
 }
+
 // AddGopher
 func (a *Adapter) AddGopher(newGopher Gopher) Gopher {
 	a.Metrics.ClientInc("Gopher", metrics.Methods.Service.Add)

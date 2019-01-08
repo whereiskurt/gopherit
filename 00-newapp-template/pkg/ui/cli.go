@@ -58,7 +58,7 @@ func (cli *CLI) Render(name string, data interface{}) (usage string) {
 		template.FuncMap{
 			"Gopher": Gopher,
 		},
-	).ParseGlob(fmt.Sprintf("%s/ui/*.tmpl", templateDir))
+	).ParseGlob(fmt.Sprintf("%s/client/*/*.tmpl", templateDir))
 
 	if err != nil {
 		log.Fatalf("couldn't load template: %v", err)

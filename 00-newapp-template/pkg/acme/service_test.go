@@ -19,9 +19,6 @@ func SetupConfig(c *config.Config) {
 }
 
 func TestService(t *testing.T) {
-
-	t.Parallel()
-
 	StartServerRunTests(t, ServiceTests)
 }
 

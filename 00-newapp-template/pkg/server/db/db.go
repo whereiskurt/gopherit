@@ -54,18 +54,35 @@ func (s *SimpleDB) Gophers() []acme.Gopher {
 }
 
 // Gophers returns array of acme.Gophers
-func (s *SimpleDB) AddGopher(v acme.Gopher) {
+func (s *SimpleDB) Things() []acme.Thing {
+	return s.tt
+}
+
+// Gophers returns array of acme.Gophers
+func (s *SimpleDB) AddGopher(g acme.Gopher) {
 	for i := range s.gg {
 		// Skip if ID already exists
-		if s.gg[i].ID == v.ID {
+		if s.gg[i].ID == g.ID {
 			return
 		}
 	}
 	// Add it.
-	s.gg = append(s.gg, v)
+	s.gg = append(s.gg, g)
 	return
 }
 
+// Gophers returns array of acme.Gophers
+func (s *SimpleDB) AddThing(t acme.Thing) {
+	for i := range s.tt {
+		// Skip if ID already exists
+		if s.tt[i].ID == t.ID {
+			return
+		}
+	}
+	// Add it.
+	s.tt = append(s.tt, t)
+	return
+}
 
 // DeleteGopher 'cascade deleted' from gophers and things.
 func (s *SimpleDB) DeleteGopher(gopherID string) {

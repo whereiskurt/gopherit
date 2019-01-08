@@ -1,6 +1,5 @@
 package internal
 
-
 import (
 	"00-newapp-template/internal/app/cmd"
 	"00-newapp-template/pkg/config"

@@ -10,8 +10,6 @@ import (
 func TestGopherCLI(t *testing.T) {
 	t.Logf("Testing creation of CLI Application....")
 
-	t.Parallel()
-
 	c := config.NewConfig()
 	m := metrics.NewMetrics()
 	SetupConfig(c)

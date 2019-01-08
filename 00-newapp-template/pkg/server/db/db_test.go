@@ -9,7 +9,6 @@ import (
 )
 
 func TestGopherAddDelete(t *testing.T) {
-	t.Parallel()
 
 	d := db.NewSimpleDB()
 
@@ -30,5 +29,29 @@ func TestGopherAddDelete(t *testing.T) {
 		t.Fail()
 	}
 	t.Log(spew.Sprintf("%+v", d.Gophers()))
+
+}
+func TestThingAddDelete(t *testing.T) {
+
+	d := db.NewSimpleDB()
+
+	c := len(d.Things())
+	d.AddThing(acme.Thing{
+		ID:          json.Number("1979"),
+		GopherID:    "1",
+		Description: "NewThingerDesc",
+		Name:        "NewThingsName",
+	})
+
+	t.Log(spew.Sprintf("%+v", d.Things()))
+	if c == len(d.Things()) {
+		t.Fail()
+	}
+
+	d.DeleteThing("1", "1979")
+	if c != len(d.Things()) {
+		t.Fail()
+	}
+	t.Log(spew.Sprintf("%+v", d.Things()))
 
 }

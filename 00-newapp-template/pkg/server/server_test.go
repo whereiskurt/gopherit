@@ -9,11 +9,10 @@ import (
 	"time"
 )
 
+var m = metrics.NewMetrics()
 func TestServerStart(t *testing.T) {
-	t.Parallel()
 
 	c := config.NewConfig()
-	m := metrics.NewMetrics()
 
 	c.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
@@ -26,7 +25,7 @@ func TestServerStart(t *testing.T) {
 	go func() {
 		select {
 		case <-time.After(3 * time.Second):
-			// After 3 seconds shutdown server properly with success
+			// After 3 seconds Shutdown server properly with success
 			s.Finished()
 		}
 	}()

@@ -27,6 +27,7 @@ func Add(a *client.Adapter, cli ui.CLI) {
 		fmt.Println(output)
 
 	} else {
+
 	}
 
 	return

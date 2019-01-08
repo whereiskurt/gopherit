@@ -24,7 +24,6 @@ var EndPoints = endPointTypes{
 	Thing:   EndPointType("Thing"),
 }
 
-
 // ServiceMap defines all the endpoints provided by the ACME service
 var ServiceMap = map[EndPointType]ServiceTransport{
 	EndPoints.Gophers: {
@@ -90,6 +89,7 @@ type endPointTypes struct {
 	Things  EndPointType
 	Thing   EndPointType
 }
+
 func (c EndPointType) String() string {
 	return "pkg.acme.endpoints." + string(c)
 }

@@ -16,13 +16,12 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
-	"time"
 )
 
 // Server is built on go-chi
 type Server struct {
 	Context           context.Context
-	Handler           chi.Router
+	Router            *chi.Mux
 	HTTP              *http.Server
 	Finished          context.CancelFunc
 	DB                db.SimpleDB
@@ -36,6 +35,10 @@ type Server struct {
 
 // NewServer configs the HTTP, router, context, log and a DB to mock the ACME HTTP API
 func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) {
+	if config == nil {
+		log.Fatalf("error: config cannot be nil value.")
+	}
+
 	server.Log = config.Log
 	server.ListenPort = config.Server.ListenPort
 	server.CacheFolder = config.Server.CacheFolder
@@ -46,26 +49,28 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 	}
 
 	server.Context = config.Context
-	server.Handler = chi.NewRouter()
+	server.Router = chi.NewRouter()
+	server.HTTP = &http.Server{Addr: ":" + server.ListenPort, Handler: server.Router}
 
-	server.HTTP = &http.Server{
-		Addr: ":"+server.ListenPort,
-		Handler: server.Handler,
-		// Ian Kent recommends these timeouts be set:
-		//   https://www.youtube.com/watch?v=YF1qSfkDGAQ&t=333s
-		IdleTimeout:time.Duration(time.Second), // This maybe tooooo aggressive..*shrugs* :)
-		ReadTimeout:time.Duration(time.Second),
-		WriteTimeout:time.Duration(time.Second),
-	}
+	// server.HTTP = &http.Server{
+	// 	Addr:    ":" + server.ListenPort,
+	// 	Router: server.Router,
+	// 	// Ian Kent recommends these timeouts be set:
+	// 	//   https://www.youtube.com/watch?v=YF1qSfkDGAQ&t=333s
+	// 	IdleTimeout:  time.Duration(time.Second), // This one second timeout may be too aggressive..*shrugs* :)
+	// 	ReadTimeout:  time.Duration(time.Second),
+	// 	WriteTimeout: time.Duration(time.Second),
+	// }
 
 	server.DB = db.NewSimpleDB()
 	server.Metrics = metrics
 	return
 }
 
-// ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth shutdown.
+// ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth Shutdown.
 func (s *Server) ListenAndServe() (err error) {
 	s.hookShutdownSignal()
+
 
 	// Start the /metrics server
 	go func() {
@@ -76,6 +81,7 @@ func (s *Server) ListenAndServe() (err error) {
 	// Start the HTTP server
 	go func() {
 		s.Log.Infof("server started")
+
 		err = s.HTTP.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			s.Log.Errorf("error serving: %+v", err)
@@ -130,7 +136,7 @@ func (s *Server) cacheClear(r *http.Request, endPoint acme.EndPointType, service
 
 	s.DiskCache.Clear(filename)
 }
-func (s *Server) cacheStore(r *http.Request, w http.ResponseWriter, endPoint acme.EndPointType, service metrics.EndPointType, bb []byte) {
+func (s *Server) cacheStore(w http.ResponseWriter, r *http.Request, bb []byte, endPoint acme.EndPointType, service metrics.EndPointType) {
 	if s.DiskCache == nil {
 		return
 	}
