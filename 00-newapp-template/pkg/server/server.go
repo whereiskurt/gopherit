@@ -71,7 +71,6 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 func (s *Server) ListenAndServe() (err error) {
 	s.hookShutdownSignal()
 
-
 	// Start the /metrics server
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())

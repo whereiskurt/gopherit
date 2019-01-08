@@ -51,14 +51,13 @@ func TestAddGopherHandler(t *testing.T) {
 	defer res.Body.Close()
 
 	gg := s.DB.Gophers()
-	if len(gg) != gc+1 || res.StatusCode != 200 {
+	if len(gg) != gc+1 || res.StatusCode != http.StatusOK {
 		t.Fatalf("failed to add gopher")
 	}
 
 	t.Log(spew.Sprintf("%+v", gg))
 }
 func TestAddThingHandler(t *testing.T) {
-
 	c := config.NewConfig()
 	c.Server.CacheResponse = false
 
@@ -96,7 +95,7 @@ func TestAddThingHandler(t *testing.T) {
 	defer res.Body.Close()
 
 	gg := s.DB.Things()
-	if len(gg) != gc+1 || res.StatusCode != 200 {
+	if len(gg) != gc+1 || res.StatusCode != http.StatusOK {
 		t.Fatalf("failed to add thing")
 	}
 

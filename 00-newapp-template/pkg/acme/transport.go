@@ -90,7 +90,7 @@ func (t *Transport) Get(url string) ([]byte, int, error) {
 	client := &http.Client{Transport: tr}
 
 	var err error
-	req, err = http.NewRequest("GET", url, nil)
+	req, err = http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -102,15 +102,15 @@ func (t *Transport) Get(url string) ([]byte, int, error) {
 	}
 
 	status := resp.StatusCode
-	if status == 429 {
+	if status == http.StatusTooManyRequests {
 		err = errors.New("error: we need to slow down")
 		return nil, status, err
 	}
-	if status == 403 {
+	if status == http.StatusForbidden {
 		err = errors.New("error: credentials no longer authorized")
 		return nil, status, err
 	}
-	if status != 200 {
+	if status != http.StatusOK {
 		err = fmt.Errorf("error: status code does not appear successful: %d", status)
 		return nil, status, err
 	}
@@ -132,7 +132,7 @@ func (t *Transport) Post(url string, data string, datatype string) ([]byte, int,
 	client := &http.Client{Transport: tr}
 
 	var err error
-	req, err = http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
+	req, err = http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -162,7 +162,7 @@ func (t *Transport) Put(url string, data string, datatype string) ([]byte, int, 
 	client := &http.Client{Transport: tr}
 
 	var err error
-	req, err = http.NewRequest("PUT", url, bytes.NewBuffer([]byte(data)))
+	req, err = http.NewRequest(http.MethodPut, url, bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -192,7 +192,7 @@ func (t *Transport) Delete(url string) ([]byte, int, error) {
 	client := &http.Client{Transport: tr}
 
 	var err error
-	req, err = http.NewRequest("DELETE", url, nil)
+	req, err = http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -10,7 +10,8 @@ import (
 )
 
 var m = metrics.NewMetrics()
-func TestServerStart(t *testing.T) {
+
+func TestServerStartup(t *testing.T) {
 
 	c := config.NewConfig()
 
