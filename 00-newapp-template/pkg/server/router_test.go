@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func TestGopherGet(t *testing.T) {
+func TestGophersGet(t *testing.T) {
 	c := config.NewConfig()
 
 	_ = os.RemoveAll(c.Server.CacheFolder)

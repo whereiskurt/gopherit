@@ -12,14 +12,13 @@ import (
 var m = metrics.NewMetrics()
 
 func TestServerStartup(t *testing.T) {
-
 	c := config.NewConfig()
-
-	c.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
 	// Clean up from last run
 	_ = os.RemoveAll(c.Server.CacheFolder)
 	_ = os.RemoveAll(c.Client.CacheFolder)
+
+	c.Server.ListenPort = "20102" // Use a different port than the DEFAULT, then we can parallel tests
 
 	s := server.NewServer(c, m)
 
