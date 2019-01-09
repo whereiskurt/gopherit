@@ -68,10 +68,9 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 	makeString("client.GopherDescription", &a.Config.Client.GopherDescription, []string{"gd", "gdesc", "gdescription"}, clientCmd)
 	makeString("client.ThingName", &a.Config.Client.ThingName, []string{"tn", "tname"}, clientCmd)
 	makeString("client.ThingDescription", &a.Config.Client.ThingDescription, []string{"td", "tdesc", "tdescription"}, clientCmd)
-	makeString("client.ConfigFolder", &a.Config.ConfigFolder, []string{"configFolder", }, clientCmd)
-	makeString("client.ConfigFilename", &a.Config.ConfigFilename, []string{"configFile", }, clientCmd)
-	makeString("client.TemplateFolder", &a.Config.TemplateFolder, []string{"tfolder", "templateFolder", }, clientCmd)
-
+	makeString("client.ConfigFolder", &a.Config.ConfigFolder, []string{"configFolder"}, clientCmd)
+	makeString("client.ConfigFilename", &a.Config.ConfigFilename, []string{"configFile"}, clientCmd)
+	makeString("client.TemplateFolder", &a.Config.TemplateFolder, []string{"tfolder", "templateFolder"}, clientCmd)
 
 	clientCmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, clientCmd)
