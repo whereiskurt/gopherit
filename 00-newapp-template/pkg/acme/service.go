@@ -220,8 +220,43 @@ func (s *Service) AddGopher(g Gopher) Gopher {
 
 		return shouldRetry, err
 	})
-
 	return gopher
+}
+func (s *Service) AddThing(g Thing) Thing {
+	var thing Thing
+
+	tthing, err := json.Marshal(g)
+	if err != nil {
+		return thing
+	}
+
+	_ = try.Do(func(attempt int) (shouldRetry bool, err error) {
+		body, status, err := s.add(EndPoints.Things, map[string]string{
+			"ThingID":   string(g.ID),
+			"ThingJSON": string(tthing),
+		})
+		if s.Metrics != nil {
+			s.Metrics.TransportInc(metrics.EndPoints.Thing, metrics.Methods.Transport.Put, status)
+		}
+		if status == 403 {
+			// FORBIDDEN so don't keep retrying.
+			return false, err
+		}
+		if err != nil {
+			s.Log.Warnf("failed to ADD Thing: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+			return shouldRetry, err
+		}
+
+		err = json.Unmarshal(body, &thing)
+		if err != nil {
+			s.Log.Warnf("failed to unmarshal ADDED thing: %+v", err)
+			shouldRetry = s.sleepBeforeRetry(attempt)
+		}
+
+		return shouldRetry, err
+	})
+	return thing
 }
 
 func (s *Service) UpdateGopher(g Gopher) Gopher {

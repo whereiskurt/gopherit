@@ -16,6 +16,7 @@ func SetupConfig(c *config.Config) {
 	c.Client.BaseURL = "http://localhost:10301"
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
+	c.ValidateOrFatal()
 }
 
 func TestService(t *testing.T) {

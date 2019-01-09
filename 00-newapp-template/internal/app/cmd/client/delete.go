@@ -3,6 +3,7 @@ package client
 import (
 	"00-newapp-template/pkg/client"
 	"00-newapp-template/pkg/ui"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -23,7 +24,18 @@ func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
 			things := a.DeleteThing(gopherID, tt[i])
 			log.Debugf("Remaining things Gopher[%s]:%d", gopherID, len(things))
 			gophers := a.GopherThings()
-			fmt.Println(cli.Render("GopherThingsTable", gophers))
+
+			var output string
+			switch strings.ToLower(a.Config.Client.OutputMode) {
+			case "csv":
+			case "json":
+				bb, _ := json.Marshal(gophers)
+				output = string(bb)
+			default:
+				output = cli.Render("GopherThingsTable", gophers)
+			}
+			fmt.Println(output)
+
 		}
 
 	case gopherID != "":
@@ -31,7 +43,16 @@ func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
 		for i := range gg {
 			gophers := a.DeleteGopher(gg[i])
 			log.Debugf("Gophers remaining: %d", len(gophers))
-			fmt.Println(cli.Render("GopherTable", gophers))
+			var output string
+			switch strings.ToLower(a.Config.Client.OutputMode) {
+			case "csv":
+			case "json":
+				bb, _ := json.Marshal(gophers)
+				output = string(bb)
+			default:
+				output = cli.Render("GopherTable", gophers)
+			}
+			fmt.Println(output)
 		}
 
 	case thingID != "":
@@ -41,7 +62,17 @@ func Delete(a *client.Adapter, cli ui.CLI) (gophers map[string]client.Gopher) {
 			if gopherID != "" {
 				things := a.DeleteThing(gopherID, thingID)
 				log.Debugf("Remaining Things for Gopher[%s]: %d", gopherID, len(things))
-				fmt.Println(cli.Render("ThingTable", things))
+				var output string
+				switch strings.ToLower(a.Config.Client.OutputMode) {
+				case "csv":
+				case "json":
+					bb, _ := json.Marshal(things)
+					output = string(bb)
+				default:
+					output = cli.Render("ThingTable", things)
+				}
+				fmt.Println(output)
+
 			}
 		}
 	}

@@ -66,16 +66,19 @@ func NewServer(config *config.Config, metrics *metrics.Metrics) (server Server) 
 	server.Metrics = metrics
 	return
 }
-
-// ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth Shutdown.
-func (s *Server) ListenAndServe() (err error) {
-	s.hookShutdownSignal()
+func (s *Server) ListenAndServeMetrics() {
 
 	// Start the /metrics server
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
 		_ = http.ListenAndServe(":"+s.MetricsListenPort, nil)
 	}()
+
+}
+
+// ListenAndServe will attempt to bind and provide HTTP service. It's hooked for signals and smooth Shutdown.
+func (s *Server) ListenAndServe() (err error) {
+	s.hookShutdownSignal()
 
 	// Start the HTTP server
 	go func() {

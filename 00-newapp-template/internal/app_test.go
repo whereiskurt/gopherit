@@ -22,4 +22,5 @@ func SetupConfig(c *config.Config) {
 	c.Client.CacheFolder = "./.." + config.DefaultClientCacheFolder
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
+	c.ValidateOrFatal()
 }

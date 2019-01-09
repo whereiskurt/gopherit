@@ -15,9 +15,7 @@ import (
 func TestUnAuthenticatedClient(t *testing.T) {
 	serverConfig := config.NewConfig()
 	SetupConfig(serverConfig)
-
 	StartServerRunTests(t, ClientTests)
-
 }
 
 func SetupConfig(c *config.Config) {
@@ -31,6 +29,8 @@ func SetupConfig(c *config.Config) {
 
 	_ = os.RemoveAll(c.Server.CacheFolder)
 	_ = os.RemoveAll(c.Client.CacheFolder)
+
+	c.ValidateOrFatal()
 }
 
 func StartServerRunTests(t *testing.T, f func(*metrics.Metrics, *testing.T)) {
@@ -71,22 +71,22 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 			t.Fail()
 		}
 	})
-	t.Run("Gopher.DELETE.NOAUTH", func(t *testing.T) {
+	t.Run("Gopher.DELETE.NoCreds", func(t *testing.T) {
 		c := config.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
 		gophers := client.Delete(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
-		if len(gophers) != 1 { // DELETE returns the matching undelete item.
+		if len(gophers) != 1 { // DELETE returns the matching undeleted item.
 			t.Errorf("Unexpected count of gophers return on UNAUTHORIZED delete: %d - %+v", len(gophers), gophers)
 			t.Fail()
 		}
 	})
-	t.Run("Gopher.DELETE.AUTHROIZED", func(t *testing.T) {
+	t.Run("Gopher.DELETE.WithCreds", func(t *testing.T) {
 		c := config.NewConfig()
 		SetupConfig(c)
 		c.Client.GopherID = "1"
-		c.Client.SecretKey = "notempty"
-		c.Client.AccessKey = "notempty"
+		c.Client.SecretKey = "anykeyworks"
+		c.Client.AccessKey = "anykeyworks"
 		gophers := client.Delete(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 0 { // DELETE should return empty after successful delete.
 			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))

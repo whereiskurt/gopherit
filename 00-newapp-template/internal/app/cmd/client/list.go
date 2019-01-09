@@ -19,6 +19,14 @@ func List(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 
 	log.Debugf("Gopher Map retrieved: %+v", gophers)
 
+	outputList(a, gophers, cli)
+
+	a.Config.Client.DumpMetrics()
+
+	return gophers
+}
+
+func outputList(a *client.Adapter, gophers map[string]client.Gopher, cli ui.CLI) {
 	var output string
 	switch strings.ToLower(a.Config.Client.OutputMode) {
 	case "csv":
@@ -28,10 +36,5 @@ func List(a *client.Adapter, cli ui.CLI) map[string]client.Gopher {
 	default:
 		output = cli.Render("GopherThingsTable", gophers)
 	}
-
 	fmt.Println(output)
-
-	a.Config.Client.DumpMetrics()
-
-	return gophers
 }
