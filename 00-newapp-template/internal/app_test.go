@@ -11,30 +11,22 @@ import (
 var m = metrics.NewMetrics()
 
 func TestGopherCLI(t *testing.T) {
-	t.Logf("Testing creation of CLI Application....")
-
 	os.Args = []string{"gopherit", "client", "list", "--mode=json"}
 	c := config.NewConfig()
-
 	SetupConfig(c)
 	app := internal.NewApp(c, m)
 	app.InvokeCLI()
 }
 
 func TestGopherDefaultIsClient(t *testing.T) {
-	t.Logf("Testing creation of CLI Application....")
-
 	os.Args = []string{"gopherit", "list", "--mode=json"}
 	c := config.NewConfig()
-
 	SetupConfig(c)
 	app := internal.NewApp(c, m)
 	app.InvokeCLI()
 }
 
 func TestGopherCLIHelp(t *testing.T) {
-	t.Logf("Testing creation of CLI Application....")
-
 	os.Args = []string{"gopherit", "--help"}
 	c := config.NewConfig()
 	SetupConfig(c)
@@ -43,8 +35,6 @@ func TestGopherCLIHelp(t *testing.T) {
 }
 
 func TestGopherCLIClientHelp(t *testing.T) {
-	t.Logf("Testing creation of CLI Application....")
-
 	os.Args = []string{"gopherit", "client", "--help"}
 	c := config.NewConfig()
 	SetupConfig(c)
@@ -56,7 +46,8 @@ func SetupConfig(c *config.Config) {
 	// Test cases are run from the package folder containing the source file.
 	c.TemplateFolder = "./../config/template/"
 	c.Client.CacheFolder = "./.." + config.DefaultClientCacheFolder
-	c.ConfigFolder = "./../config/test/"
+	c.ConfigFolder = "./../config/"
+	c.ConfigFilename = "default.test.gophercli"
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 	c.ValidateOrFatal()
