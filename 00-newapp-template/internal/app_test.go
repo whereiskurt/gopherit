@@ -13,7 +13,7 @@ var m = metrics.NewMetrics()
 func TestGopherCLI(t *testing.T) {
 	t.Logf("Testing creation of CLI Application....")
 
-	os.Args = []string{"gopherit","client","list", "--mode=json"}
+	os.Args = []string{"gopherit", "client", "list", "--mode=json"}
 	c := config.NewConfig()
 
 	SetupConfig(c)
@@ -24,7 +24,7 @@ func TestGopherCLI(t *testing.T) {
 func TestGopherDefaultIsClient(t *testing.T) {
 	t.Logf("Testing creation of CLI Application....")
 
-	os.Args = []string{"gopherit","list", "--mode=json"}
+	os.Args = []string{"gopherit", "list", "--mode=json"}
 	c := config.NewConfig()
 
 	SetupConfig(c)
@@ -35,7 +35,7 @@ func TestGopherDefaultIsClient(t *testing.T) {
 func TestGopherCLIHelp(t *testing.T) {
 	t.Logf("Testing creation of CLI Application....")
 
-	os.Args = []string{"gopherit","--help"}
+	os.Args = []string{"gopherit", "--help"}
 	c := config.NewConfig()
 	SetupConfig(c)
 	app := internal.NewApp(c, m)
@@ -45,7 +45,7 @@ func TestGopherCLIHelp(t *testing.T) {
 func TestGopherCLIClientHelp(t *testing.T) {
 	t.Logf("Testing creation of CLI Application....")
 
-	os.Args = []string{"gopherit","client", "--help"}
+	os.Args = []string{"gopherit", "client", "--help"}
 	c := config.NewConfig()
 	SetupConfig(c)
 	app := internal.NewApp(c, m)
