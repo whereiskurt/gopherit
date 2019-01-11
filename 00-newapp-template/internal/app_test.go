@@ -4,42 +4,81 @@ import (
 	"00-newapp-template/internal"
 	"00-newapp-template/pkg/config"
 	"00-newapp-template/pkg/metrics"
+	"00-newapp-template/pkg/server"
 	"os"
 	"testing"
+	"time"
 )
 
 var m = metrics.NewMetrics()
 
 func TestGopherCLI(t *testing.T) {
-	os.Args = []string{"gopherit", "client", "list", "--mode=json"}
-	c := config.NewConfig()
-	SetupConfig(c)
-	app := internal.NewApp(c, m)
-	app.InvokeCLI()
+	StartServerRunTests(t)
 }
 
-func TestGopherDefaultIsClient(t *testing.T) {
-	os.Args = []string{"gopherit", "list", "--mode=json"}
+func StartServerRunTests(t *testing.T) {
 	c := config.NewConfig()
 	SetupConfig(c)
-	app := internal.NewApp(c, m)
-	app.InvokeCLI()
+	s := server.NewServer(c, m)
+	s.EnableDefaultRouter()
+	var err error
+	go func() {
+		err = s.ListenAndServe() // BLOCKS
+	}()
+
+	select {
+	// Give the server 1 seconds to fail on startup, before we start client tests.
+	case <-time.After(1* time.Second):
+		if err != nil {
+			t.Logf("Failed: %+v", err)
+			t.Fail()
+			break
+		}
+		ClientTests(t)
+		s.Finished()
+	}
 }
 
-func TestGopherCLIHelp(t *testing.T) {
-	os.Args = []string{"gopherit", "--help"}
-	c := config.NewConfig()
-	SetupConfig(c)
-	app := internal.NewApp(c, m)
-	app.InvokeCLI()
-}
+func ClientTests(t *testing.T) {
 
-func TestGopherCLIClientHelp(t *testing.T) {
-	os.Args = []string{"gopherit", "client", "--help"}
-	c := config.NewConfig()
-	SetupConfig(c)
-	app := internal.NewApp(c, m)
-	app.InvokeCLI()
+	t.Run("App.ServerHelp", func(t *testing.T) {
+		os.Args = []string{"gopherit", "server"}
+		c := config.NewConfig()
+		SetupConfig(c)
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+
+	t.Run("App.Client.List", func(t *testing.T) {
+		c := config.NewConfig()
+		SetupConfig(c)
+		os.Args = []string{"gopherit", "client", "list", "--mode=json"}
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+	t.Run("App.Version.Help", func(t *testing.T) {
+		os.Args = []string{"gopherit", "--help"}
+		c := config.NewConfig()
+		SetupConfig(c)
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+	t.Run("App.Version.ClientHelp", func(t *testing.T) {
+		os.Args = []string{"gopherit", "client", "--help"}
+		c := config.NewConfig()
+		SetupConfig(c)
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+
+	t.Run("App.ServerStop", func(t *testing.T) {
+		os.Args = []string{"gopherit", "server", "stop"}
+		c := config.NewConfig()
+		SetupConfig(c)
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+
 }
 
 func SetupConfig(c *config.Config) {
