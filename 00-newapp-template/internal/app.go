@@ -38,7 +38,6 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 		a.Config.ValidateOrFatal() // and validate.
 	}
 
-	a.RootCmd.SetUsageTemplate(a.usageTemplate("GopherCLIUsage", nil))
 	makeBool("VerboseLevel1", &a.Config.VerboseLevel1, []string{"s", "silent"}, a.RootCmd)
 	makeBool("VerboseLevel2", &a.Config.VerboseLevel2, []string{"q", "quiet"}, a.RootCmd)
 	makeBool("VerboseLevel3", &a.Config.VerboseLevel3, []string{"v", "info"}, a.RootCmd)
@@ -48,7 +47,6 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 
 	ver := cmd.NewVersion(a.Config)
 	versionCmd := makeCommand("version", ver.Version, a.RootCmd)
-	versionCmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, versionCmd)
 	makeBool("Version.ShowServer", &a.Config.Version.ShowServer, []string{"ss", "showserver"}, versionCmd)
 	makeBool("Version.ShowClient", &a.Config.Version.ShowClient, []string{"sc", "showclient"}, versionCmd)
@@ -72,7 +70,6 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 	makeString("client.ConfigFilename", &a.Config.ConfigFilename, []string{"configFile"}, clientCmd)
 	makeString("client.TemplateFolder", &a.Config.TemplateFolder, []string{"tfolder", "templateFolder"}, clientCmd)
 
-	clientCmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, clientCmd)
 	_ = makeCommand("list", client.List, clientCmd)
 	_ = makeCommand("update", client.Update, clientCmd)
@@ -87,10 +84,15 @@ func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
 	makeString("Server.ListenPort", &a.Config.Server.ListenPort, []string{"p", "port", "sport"}, serverCmd)
 	makeString("Server.MetricsListenPort", &a.Config.Server.MetricsListenPort, []string{"mp", "mport", "metricsport", "metricsPort"}, serverCmd)
 
-	serverCmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
 	_ = makeCommand("help", func(command *cobra.Command, i []string) { _ = command.Help() }, serverCmd)
 	_ = makeCommand("start", server.Start, serverCmd)
 	_ = makeCommand("stop", server.Stop, serverCmd)
+
+	// TODO: This block doesn't respect the Config settings. ... need to likely use packr2 :-)
+	a.RootCmd.SetUsageTemplate(a.usageTemplate("GopherCLIUsage", nil))
+	clientCmd.SetUsageTemplate(a.usageTemplate("ClientUsage", nil))
+	serverCmd.SetUsageTemplate(a.usageTemplate("ServerUsage", nil))
+	versionCmd.SetUsageTemplate(a.usageTemplate("VersionUsage", nil))
 
 	return
 }
