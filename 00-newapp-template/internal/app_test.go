@@ -42,6 +42,14 @@ func StartServerRunTests(t *testing.T) {
 func ClientTests(t *testing.T) {
 
 	t.Run("App.ServerHelp", func(t *testing.T) {
+		os.Args = []string{"gopherit", "version"}
+		c := config.NewConfig()
+		SetupConfig(c)
+		app := internal.NewApp(c, m)
+		app.InvokeCLI()
+	})
+
+	t.Run("App.ServerHelp", func(t *testing.T) {
 		os.Args = []string{"gopherit", "server"}
 		c := config.NewConfig()
 		SetupConfig(c)
