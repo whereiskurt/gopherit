@@ -21,7 +21,8 @@ WORKDIR /gophercli
 
 RUN go test -v ./...
 
-RUN GOOS=$GOOS go build \
+RUN go build \
+    -tags release \
     --ldflags \
     "-X 00-newapp-template/internal/app/cmd.ReleaseVersion=$VERSION \
      -X 00-newapp-template/internal/app/cmd.GitHash=$HASH" \

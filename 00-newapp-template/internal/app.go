@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -22,8 +23,11 @@ type App struct {
 	RootCmd *cobra.Command
 }
 
+// ApplicationName is referenced for the usage help.
+var ApplicationName = "gophercli"
+
 // CommandList entry[0] becomes default when a 'command' is omitted
-var CommandList = []string{"client", "server", "version", "metrics"}
+var CommandList = []string{"client", "server", "version"}
 
 // NewApp constructs the command line and configuration
 func NewApp(config *config.Config, mmetrics *metrics.Metrics) (a App) {
@@ -102,10 +106,10 @@ func (a *App) InvokeCLI() {
 	// Check if first param & last param if the user wants the Help/Usage
 	// NOTE: the "&&" is short-circuited
 
-	arglen := len(os.Args)
-	wantsHelp := arglen > 1 && ((os.Args[1] == "--help") || (os.Args[1] == "--h") || (os.Args[1] == "help"))
+	argLength := len(os.Args)
+	wantsHelp := argLength > 1 && ((os.Args[1] == "--help") || (os.Args[1] == "--h") || (os.Args[1] == "help"))
 
-	if arglen == 1 || wantsHelp {
+	if argLength == 1 || wantsHelp {
 		usage := a.usageTemplate("GopherCLIUsage", nil)
 		_, _ = fmt.Fprintf(os.Stderr, usage)
 		return
@@ -130,14 +134,24 @@ func (a *App) usageTemplate(name string, data interface{}) (usage string) {
 	var raw bytes.Buffer
 	var err error
 
-	tf := fmt.Sprintf("%scmd/*.tmpl", a.Config.TemplateFolder)
+	var templateFiles []string
+	templateFiles = append(templateFiles, CommandList...)
+	templateFiles = append(templateFiles, ApplicationName)
 
 	t := template.New("")
-	t, err = t.Funcs(
-		template.FuncMap{
-			"Gopher": ui.Gopher,
-		},
-	).ParseGlob(tf)
+	for _,f := range templateFiles {
+		file, err := config.TemplateFolder.Open(fmt.Sprintf("cmd/%s.tmpl", f))
+		content, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		t, err = t.Funcs(
+			template.FuncMap{
+				"Gopher": ui.Gopher,
+			},
+		).Parse(string(content))
+	}
 
 	if err != nil {
 		log.Printf("couldn't load usage templates from: %v", err)

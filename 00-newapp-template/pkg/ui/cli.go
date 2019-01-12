@@ -20,7 +20,7 @@ func NewCLI(c *config.Config) (cli CLI) {
 	return
 }
 
-// DrawGopher outpus a text gopher to stdout
+// DrawGopher outputs a text gopher to stdout
 func (cli *CLI) DrawGopher() {
 	fmt.Println(Gopher())
 	return

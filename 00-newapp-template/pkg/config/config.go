@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+
 // Config holds all parameters for the application and is structured based on the command hierarchy
 type Config struct {
 	Context        context.Context
