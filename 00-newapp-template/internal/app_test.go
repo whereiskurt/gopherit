@@ -28,7 +28,7 @@ func StartServerRunTests(t *testing.T) {
 
 	select {
 	// Give the server 1 seconds to fail on startup, before we start client tests.
-	case <-time.After(1* time.Second):
+	case <-time.After(1 * time.Second):
 		if err != nil {
 			t.Logf("Failed: %+v", err)
 			t.Fail()

@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-
 // Config holds all parameters for the application and is structured based on the command hierarchy
 type Config struct {
 	Context        context.Context
@@ -160,7 +159,7 @@ func (c *Config) UnmarshalViper() {
 func (c *Config) readWithViper() {
 	var err error
 
-	f, err:=TemplateFolder.Open(defaultConfigFilename + "." + defaultConfigType)
+	f, err := TemplateFolder.Open(defaultConfigFilename + "." + defaultConfigType)
 	err = viper.ReadConfig(f)
 	if err != nil {
 		c.Log.Fatalf("fatal: couldn't read in config: %s", err)

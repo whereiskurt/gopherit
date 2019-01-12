@@ -55,7 +55,7 @@ func (cli *CLI) Render(name string, data interface{}) (usage string) {
 	templateFiles = append(templateFiles, "template/client/table.tmpl")
 
 	t := template.New("")
-	for _,f := range templateFiles {
+	for _, f := range templateFiles {
 		file, err := config.TemplateFolder.Open(fmt.Sprintf("%s", f))
 		content, err := ioutil.ReadAll(file)
 		if err != nil {

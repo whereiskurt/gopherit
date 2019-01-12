@@ -15,22 +15,20 @@ import (
 )
 
 func main() {
+	outputFilename := "pkg/config/templates_generate.go"
 
 	// NOTE: If we run from the IDE with a right-click our cwd() is inside of config/templates
 	cwd, _ := os.Getwd()
-
-	filename := "templates_generate.go"
 	templateFolder := "config/"
-	finalFilename := "pkg/config/templates_generate.go"
 
 	// Check if we're running inside the config/template folder, and adjust relative paths.
 	if strings.Contains(cwd, "template/") {
 		templateFolder = "./"
-		finalFilename = "../pkg/config/templates_generate.go"
+		outputFilename = "../" + outputFilename
 	}
 
 	err := vfsgen.Generate(http.Dir(templateFolder), vfsgen.Options{
-		Filename:     filename,
+		Filename:     outputFilename,
 		PackageName:  "config",
 		BuildTags:    "release",
 		VariableName: "TemplateFolder",
@@ -40,9 +38,4 @@ func main() {
 		logrus.Fatalln(err)
 	}
 
-	err = os.Rename(filename, finalFilename)
-
-	if err != nil {
-		logrus.Fatalln(err)
-	}
 }

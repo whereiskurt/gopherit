@@ -11,7 +11,7 @@ var (
 	// ReleaseVersion is set by a --ldflags during a build/release
 	ReleaseVersion = "v1.0.0-development"
 	// GitHash is set by a --ldflags during a build/release
-	GitHash        = "0xhashhash"
+	GitHash = "0xhashhash"
 )
 
 // Version holds the config and CLI references.
