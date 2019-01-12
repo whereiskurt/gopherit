@@ -4,7 +4,7 @@
 // with contents of the templates embedded.  This is done with build tags.
 package main
 
-//go:generate go run -tags=dev vfsgen_templates.go
+//go:generate go run vfsgen_templates.go
 
 import (
 	"github.com/shurcooL/vfsgen"
@@ -19,27 +19,28 @@ func main() {
 	// NOTE: If we run from the IDE with a right-click our cwd() is inside of config/templates
 	cwd, _ := os.Getwd()
 
-	tFolder := "config/template/"
-	oldLocation := "templates_vfsdata.go"
-	newLocation := "pkg/config/templates_generate.go"
+	filename := "templates_generate.go"
+	templateFolder := "config/template/"
+	finalFilename := "pkg/config/templates_generate.go"
 
 	// Check if we're running inside the config/template folder, and adjust relative paths.
 	if strings.Contains(cwd, "config/template") {
-		tFolder = "./"
-		newLocation = "../../pkg/config/templates_generate.go"
+		templateFolder = "./"
+		finalFilename = "../../pkg/config/templates_generate.go"
 	}
 
-	err := vfsgen.Generate(http.Dir(tFolder), vfsgen.Options{
+	err := vfsgen.Generate(http.Dir(templateFolder), vfsgen.Options{
+		Filename:     filename,
 		PackageName:  "config",
 		BuildTags:    "release",
-		VariableName: "Templates",
+		VariableName: "TemplateFolder",
 	})
 
 	if err != nil {
 		logrus.Fatalln(err)
 	}
 
-	err = os.Rename(oldLocation, newLocation)
+	err = os.Rename(filename, finalFilename)
 
 	if err != nil {
 		logrus.Fatalln(err)
