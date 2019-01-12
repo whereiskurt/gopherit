@@ -12,7 +12,7 @@ import (
 
 var m = metrics.NewMetrics()
 
-func TestGopherCLI(t *testing.T) {
+func TestApplicationGopherCLI(t *testing.T) {
 	StartServerRunTests(t)
 }
 

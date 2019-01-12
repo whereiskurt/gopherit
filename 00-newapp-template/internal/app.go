@@ -140,7 +140,8 @@ func (a *App) usageTemplate(name string, data interface{}) (usage string) {
 
 	t := template.New("")
 	for _, f := range templateFiles {
-		file, err := config.TemplateFolder.Open(fmt.Sprintf("template/cmd/%s.tmpl", f))
+		name := fmt.Sprintf("/template/cmd/%s.tmpl", f)
+		file, err := config.TemplateFolder.Open(name)
 		content, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Fatal(err)
