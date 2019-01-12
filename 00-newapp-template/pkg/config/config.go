@@ -160,11 +160,8 @@ func (c *Config) UnmarshalViper() {
 func (c *Config) readWithViper() {
 	var err error
 
-	viper.SetConfigType(defaultConfigType)
-
-	viper.AddConfigPath(c.ConfigFolder)
-	viper.SetConfigName(c.ConfigFilename)
-	err = viper.ReadInConfig()
+	f, err:=TemplateFolder.Open(defaultConfigFilename + "." + defaultConfigType)
+	err = viper.ReadConfig(f)
 	if err != nil {
 		c.Log.Fatalf("fatal: couldn't read in config: %s", err)
 	}

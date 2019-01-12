@@ -4,8 +4,8 @@ import (
 	"00-newapp-template/pkg/config"
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
-	"strings"
 	"text/template"
 )
 
@@ -50,15 +50,24 @@ func (cli *CLI) Render(name string, data interface{}) (usage string) {
 	var raw bytes.Buffer
 	var err error
 
-	templateDir := cli.Config.TemplateFolder
-	templateDir = strings.TrimSuffix(templateDir, "/")
+	// TODO: Replace this with an 'index' concept - needs to be generated. vfsgen types/methods not visible.
+	var templateFiles []string
+	templateFiles = append(templateFiles, "template/client/table.tmpl")
 
 	t := template.New("")
-	t, err = t.Funcs(
-		template.FuncMap{
-			"Gopher": Gopher,
-		},
-	).ParseGlob(fmt.Sprintf("%s/client/*/*.tmpl", templateDir))
+	for _,f := range templateFiles {
+		file, err := config.TemplateFolder.Open(fmt.Sprintf("%s", f))
+		content, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		t, err = t.Funcs(
+			template.FuncMap{
+				"Gopher": Gopher,
+			},
+		).Parse(string(content))
+	}
 
 	if err != nil {
 		log.Fatalf("couldn't load template: %v", err)

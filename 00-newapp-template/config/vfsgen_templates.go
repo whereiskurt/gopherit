@@ -20,13 +20,13 @@ func main() {
 	cwd, _ := os.Getwd()
 
 	filename := "templates_generate.go"
-	templateFolder := "config/template/"
+	templateFolder := "config/"
 	finalFilename := "pkg/config/templates_generate.go"
 
 	// Check if we're running inside the config/template folder, and adjust relative paths.
-	if strings.Contains(cwd, "config/template") {
+	if strings.Contains(cwd, "template/") {
 		templateFolder = "./"
-		finalFilename = "../../pkg/config/templates_generate.go"
+		finalFilename = "../pkg/config/templates_generate.go"
 	}
 
 	err := vfsgen.Generate(http.Dir(templateFolder), vfsgen.Options{
