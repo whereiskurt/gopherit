@@ -68,6 +68,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c.Client.ThingID = ""
 		c.Client.SecretKey = ""
 		c.Client.AccessKey = ""
+		c.Client.CacheKey = "ABCD1234ABCD1234"
 
 		gophers := client.List(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 4 {
