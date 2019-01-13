@@ -13,19 +13,19 @@ This package has four major parts to it:
 
 This code includes:
 - [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/run tags, ldflags, 
-  - The `config\template\*` contain all text output and is compiled into a `templates_generate.go` via [`vfsgen`](https://github.com/shurcooL/vfsgen) for the binary build
-  - [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
 - [x] Uses [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
   - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
+- [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
+    - The `config\template\*` contain all text output and is compiled into a `templates_generate.go` via [`vfsgen`](https://github.com/shurcooL/vfsgen) for the binary build
+- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
+- [x] [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
 - [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
   - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
-- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
 - [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
     - Using `NewStructuredLogger` middleware to decorate each route with log output
     - `ResponseHandler` to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)
     - Custom middlewares (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
-- [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
 - [x] An example Dockerfile and build recipe `(docs/recipe/)` for a docker workflow
   - Use `docker build --tag gophercli:v1 .` to create a full golang image
   - Use `docker run -it --rm gophercli:v1` to work from with the container
