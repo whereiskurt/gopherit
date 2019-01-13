@@ -40,15 +40,16 @@ I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAz
 [![Go Report Card](https://goreportcard.com/badge/github.com/whereiskurt/gopherit)](https://goreportcard.com/report/github.com/whereiskurt/gopherit)
 
 ## Go version 1.11 or greater required!
-A lot has happened in the Go ecosystem in the last year two-years. As a result this project is:
+A lot has happened in the Go ecosystem in the last year two-years:
 - Using go modules proper (ie. `go.mod`, `go.sum`, `vendor` folder) 
   - **Works outside of `$GOPATH`**
 - `go test -v ./...` showing server start / stop, add/update/delete gopher and things (95% file coverage, 78% statements coverage) 
-- `go build -tags release cmd/gophercli.go` builds a self-contained executable with templates embedded in the binary
-    - Hermetic build/run/test with `vendor` folder checked-in
-      - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
+- `go build -tags release cmd/gophercli.go` builds a self-contained executable with text templates and default configuration files embedded in the binary ([`vfsgen`](https://github.com/shurcooL/vfsgen)) 
+    - Hermetic build/run/test with `vendor` folder checked-in:
+      - **NOTE: still need `GOFLAGS="-mod=vendor"` until Go 1.12**
     - Self-contained build with `Dockerfile` 
       - Uses `--ldflags "-X 00-newapp-template/internal/app/cmd.ReleaseVersion=$VERSION`
+- `go generate ./...` to embed text templates into a Go source file of `[]byte` 
 
 # The Story of 00-newapp-template
 There is a vendor named ACME who provides API to access to `Gophers` and `Things`. Because I use the ACME API **all the time** to track `Gophers` and their `Things` and I have decided to create a CLI tool to perform the HTTP API calls needed and output a text table or JSON structure. Ideally using a simple command like:
