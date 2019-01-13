@@ -3,15 +3,18 @@
 # Welcome!
 Do you want to build a modern Go tool with a **C**ommand **L**ine **I**nterface (**CLI**) similar to Docker, Kubernetes, aws-cli, etc.?  ? Start here. :- ) 
 
-This project is a starting set of Go files and directories. Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can be up and running. 
+This project is a starting set of Go files and directories usually needed to build a CLI, that calls a remote service, and needs to interpret/convert the results.
 
+Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can be up and running.
+
+## Overview
 This package has four major parts to it:
-  1) Server - Implementation of all the ACME Services such as `/gophers`, `/gopher/1/things` (built using [`go-chi`](https://github.com/go-chi/chi) ) 
-  2) ACME Services Library (`pkg.acme.Service`) for making the HTTP ACME API service calls to a server (`/gophers`)  
-  3) Client - Uses the service library and converts ACME.Gophers (`pkg.acme.Gopher`) to Client.Gophers (`pkg.client.Gopher`) to produce `pkg.client.GopherThings`
-  4) ... and a CLI invocation and configuration framework laid out with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
+  1) A Server implementation of ACME Services such as `/gophers`, `/gopher/1/things` (built using [`go-chi`](https://github.com/go-chi/chi) ) 
+  2) ACME Services Library (`pkg.acme.Service`) for making the HTTP ACME API service calls against a server   
+  3) Client which uses the service library to call the server and converts the returned ACME Gophers (`pkg.acme.Gopher`) to Client.Gophers (`pkg.client.Gopher`) 
+  4) A CLI invocation and configuration framework with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
 
-This code includes:
+## This code includes:
 - [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/run tags, ldflags, 
 - [x] Uses [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
@@ -19,6 +22,8 @@ This code includes:
 - [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
     - The `config\template\*` contain all text output and is compiled into a `templates_generate.go` via [`vfsgen`](https://github.com/shurcooL/vfsgen) for the binary build
 - [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
+- [x] Cached response folder `.cache` with entries from the Server, Client and Services
+  - The server uses entries in `.cache` instead of making DB calls (when present.)
 - [x] [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
 - [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
   - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
@@ -34,7 +39,7 @@ I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAz
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/whereiskurt/gopherit)](https://goreportcard.com/report/github.com/whereiskurt/gopherit)
 
-# Go version 1.11 or greater required!
+## Go version 1.11 or greater required!
 A lot has happened in the Go ecosystem in the last year two-years. As a result this project is:
 - Using go modules proper (ie. `go.mod`, `go.sum`, `vendor` folder) 
   - Works outside of `$GOPATH`
@@ -71,7 +76,9 @@ The client would make all the necessary calls to the HTTP ACME services, convert
 +------------------------------------------------------------------------------+
 ```
 ## The Challenge: ACME Data Types
-At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. That means given a `Gopher` we don't know their collection of `Things`. Also, given a `Thing` we only have the associated `GopherID` and not the `Gopher` `Name` or `Gopher` `Description`. 
+At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. If we have a `Gopher` we don't know their collection of `Things`. And, if we have a `Thing` we only have the associated `GopherID` (not the `Gopher` `Name` or `Gopher` `Description`.) 
+
+Here is the data structure/JSON from the ACME data type:
 ```
   package acme
   type Gopher struct {
@@ -87,9 +94,11 @@ At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. Th
     Description string      `json:"description"`
   }
 ```
-These JSON structures are defined in `pkg\acme\json.go` and are what the ACME HTTP API return.
+(These JSON structures are defined in `pkg\acme\json.go` and are what the ACME HTTP API return.)
 
-While ACME's data structure and JSON schema is useful for their purposes - it's incomplete for our application's needs. A much more useful structure for our application (listing `Gophers` and their `Things`) looks like this:
+While ACME's data structure and JSON schema is useful for their purposes - it's incomplete for our application's needs. 
+
+A much more useful structure for our application of listing `Gophers` and their `Things` looks like this:
 ```
   package adapter
   type Gopher struct {
@@ -106,7 +115,7 @@ While ACME's data structure and JSON schema is useful for their purposes - it's 
     Description string `json:"description"`
   }
 ```
-Here each `Gopher` has a collection of their `Things` and each `Thing` has a reference to a complete `Gopher` (not just the `Gopher` `ID`.)
+Above, each `Gopher` has a collection of their `Things` and each `Thing` has a reference to a complete `Gopher` (not just the `GopherID`.)
 
 ## The Solution - Build an adapter!
 We will write a client library to make ACME HTTP service calls, unmarshal the JSON, filter and convert it into our Go structures. All of this adapter code is in the `pkg\adapter\` folder. 
