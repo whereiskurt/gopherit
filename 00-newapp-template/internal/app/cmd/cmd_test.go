@@ -27,6 +27,9 @@ func SetupConfig(c *config.Config) {
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 
+	// c.Client.CacheKey = "ABCD1234ABCD1234"
+	// c.Server.CacheKey = "ABCD1234ABCD1234"
+
 	_ = os.RemoveAll(c.Server.CacheFolder)
 	_ = os.RemoveAll(c.Client.CacheFolder)
 
@@ -65,6 +68,7 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c.Client.ThingID = ""
 		c.Client.SecretKey = ""
 		c.Client.AccessKey = ""
+
 		gophers := client.List(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 4 {
 			t.Errorf("Unexpected count of gophers: %d", len(gophers))
@@ -89,6 +93,20 @@ func ClientTests(mm *metrics.Metrics, t *testing.T) {
 		c.Client.AccessKey = "anykeyworks"
 		gophers := client.Delete(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
 		if len(gophers) != 0 { // DELETE should return empty after successful delete.
+			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))
+			t.Fail()
+		}
+	})
+	t.Run("Gopher.Update.WithCreds", func(t *testing.T) {
+		c := config.NewConfig()
+		SetupConfig(c)
+		c.Client.GopherID = "2"
+		c.Client.GopherName = "New Gopher Name"
+		c.Client.GopherDescription = "New Gopher Desc."
+		c.Client.SecretKey = "anykeyworks"
+		c.Client.AccessKey = "anykeyworks"
+		gophers := client.Update(pkgclient.NewAdapter(c, mm), ui.NewCLI(c))
+		if len(gophers) != 1 { // DELETE should return empty after successful delete.
 			t.Errorf("Unexpected count of gophers after DELETE: %d", len(gophers))
 			t.Fail()
 		}
