@@ -6,10 +6,29 @@ Do you want to build a modern Go tool with a **C**ommand **L**ine **I**nterface 
 This project is a starting set of Go files and directories. Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can be up and running. 
 
 This package has four major parts to it:
-  1) CLI invocation and configuration framework laid out with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) 
-  2) A service library for making HTTP ACME API service calls - `pkg.acme.Service`, returning `pkg.acme.Gopher[]`, `pkg.acme.Thing[]` 
-  3) A client library (`internal.pkg.adapter.Adapter`) using the service library (`pkg.acme.Service`) and converting ACME API results to our Go structures (e.g. `internal.pkg.adapter.Gopher`, `internal.pkg.adapter.Thing`) 
-  4) An HTTP server built using [`go-chi`](https://github.com/go-chi/chi) to provide an ACME HTTP API server- `interal.pkg.server.Server`
+  1) Server - Implementation of all the ACME Services such as `/gophers`, `/gopher/1/things` (built using [`go-chi`](https://github.com/go-chi/chi) ) 
+  2) ACME Services Library (`pkg.acme.Service`) for making the HTTP ACME API service calls to a server (`/gophers`)  
+  3) Client - Uses the service library and converts ACME.Gophers (`pkg.acme.Gopher`) to Client.Gophers (`pkg.client.Gopher`) to produce `pkg.client.GopherThings`
+  4) ... and a CLI invocation and configuration framework laid out with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
+
+This code includes:
+- [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/run tags, ldflags, 
+  - The `config\template\*` contain all text output and is compiled into a `templates_generate.go` via [`vfsgen`](https://github.com/shurcooL/vfsgen) for the binary build
+  - [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
+- [x] Uses [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
+  - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
+  - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
+- [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
+  - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
+- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
+- [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
+    - Using `NewStructuredLogger` middleware to decorate each route with log output
+    - `ResponseHandler` to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)
+    - Custom middlewares (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
+- [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
+- [x] An example Dockerfile and build recipe `(docs/recipe/)` for a docker workflow
+  - Use `docker build --tag gophercli:v1 .` to create a full golang image
+  - Use `docker run -it --rm gophercli:v1` to work from with the container
 
 I've [curated a YouTube playlist](https://www.youtube.com/playlist?list=PLa1qVAzg1FHthbIaRRbLyA4sNE4PmLmn6) of videos which help explain how I ended up with this structure and 'why things are the way they are.' I've leveraged 'best practices' I've seen and that have been explicted called out by others. Of course **THERE ARE SOME WRINKLES** and few **PURELY DEMONSTRATION** portions of code. I hope to be able to keep improving on this.
 
@@ -24,33 +43,12 @@ A lot has happened in the Go ecosystem in the last year two-years. As a result t
   - 'Hermetic build/run/test' with `vendor` folder checked-in 
   - **NOTE:** still need `GOFLAGS="-mod=vendor"` until Go 1.12
 
-This code includes:
-- [x] Fundamental Go features like tests, tags, templates, go routines, contexts, channels, OS signals, HTTP routing
-  - The `config\template\*\*.tmpl` contain all text output that aren't log entries
-  - [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
-- [x] Uses [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
-  - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
-  - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
-- [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
-  - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
-- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
-- [X] HTTP serving/routing with middleware from [`go-chi`](https://github.com/go-chi/chi)
-    - Using `NewStructuredLogger` middleware to decorate each route with log output
-    - ResponseHandler to pretty print JSON with [`jq`](https://stedolan.github.io/jq/)
-    - Custom middleware (`GopherCtx`,`ThingCtx`) to handle creating Context from HTTP requests
-- [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
-- [x] An example Dockerfile and build recipe `(docs/recipe/)` for a docker workflow
-  - Use `docker build --tag gophercli:v1 .` to create a full golang image
-  - Use `docker run -it --rm gophercli:v1` to work from with the container
-
-
-
 # The Story of 00-newapp-template
 There is a vendor named ACME who provides API to access to `Gophers` and `Things`. Because I use the ACME API **all the time** to track `Gophers` and their `Things` and I have decided to create a CLI tool to perform the HTTP API calls needed and output a text table or JSON structure. Ideally using a simple command like:
 ```
   ./gophercli list 
 ```
-The client would make all the necessary calls to the HTTP ACME services, convert the JSON responses to Go structures andoutput something like:
+The client would make all the necessary calls to the HTTP ACME services, convert the JSON responses to Go structures and output something like:
 ```
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -73,7 +71,7 @@ The client would make all the necessary calls to the HTTP ACME services, convert
 +------------------------------------------------------------------------------+
 ```
 ## The Challenge: ACME Data Types
-At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. That means given a `Gopher` we don't know their collection of `Things`. Also, given a `Thing` we only have the associated `Gopher` `ID` and not the `Gopher` `Name` or `Gopher` `Description`. 
+At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. That means given a `Gopher` we don't know their collection of `Things`. Also, given a `Thing` we only have the associated `GopherID` and not the `Gopher` `Name` or `Gopher` `Description`. 
 ```
   package acme
   type Gopher struct {
@@ -91,7 +89,7 @@ At ACME each `Thing` has a `Gopher` but each `Gopher` does not have `Things`. Th
 ```
 These JSON structures are defined in `pkg\acme\json.go` and are what the ACME HTTP API return.
 
-While ACME's data structure and JSON schema is useful for their purposes - it's imcompleted for our application's needs. A much more useful structure for our application (listing `Gophers` and their `Things`) looks like this:
+While ACME's data structure and JSON schema is useful for their purposes - it's incomplete for our application's needs. A much more useful structure for our application (listing `Gophers` and their `Things`) looks like this:
 ```
   package adapter
   type Gopher struct {
