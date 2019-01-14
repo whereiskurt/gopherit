@@ -10,9 +10,9 @@ Simply 'Copy & Paste', 'Find & Replace', tweak a few default values and you can 
 ## Overview
 This package has four major parts to it:
   1) A Server implementation of ACME Services such as `/gophers`, `/gopher/1/things` (built using [`go-chi`](https://github.com/go-chi/chi) ) 
-  2) ACME Services Library (`pkg.acme.Service`) for making the HTTP ACME API service calls against a server   
-  3) Client which uses the service library to call the server and converts the returned ACME Gophers (`pkg.acme.Gopher`) to Client.Gophers (`pkg.client.Gopher`) 
-  4) A CLI invocation and configuration framework with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
+  2) A ACME Services Library (`pkg.acme.Service`) for making the HTTP ACME API service calls against a server   
+  3) A Client which uses the ACME Service library to call the Server, converting the returned ACME Gophers (`pkg.acme.Gopher`) to Client Gophers (`pkg.client.Gopher`) 
+  4) A CLI invocation and configuration framework built with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
 
 ## This code includes:
 - [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/run tags, ldflags, 
@@ -21,9 +21,9 @@ This package has four major parts to it:
   - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
 - [x] Using [`vfsgen`](https://github.com/shurcooL/vfsgen) in to embed templates into binary
     - The `config\template\*` contain all text output and is compiled into a `templates_generate.go` via [`vfsgen`](https://github.com/shurcooL/vfsgen) for the binary build
-- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library
-- [x] Cached response folder `.cache` with entries from the Server, Client and Services
-  - The server uses entries in `.cache` instead of making DB calls (when present.)
+- [X] Logging from the [`logrus`](https://github.com/sirupsen/logrus) library and written to `log/`
+- [x] Cached response folder `.cache/` with entries from the Server, Client and Services
+  - The server uses entries in `.cache/` instead of making DB calls (when present.)
 - [x] [Retry](https://github.com/matryer/try) using @matryer's idiomatic `try.Do(..)`
 - [X] Instrumentation with [`prometheus`](https://prometheus.io/) in the server and client library
   - [Tutorials](https://pierrevincent.github.io/2017/12/prometheus-blog-series-part-4-instrumenting-code-in-go-and-java/)
@@ -44,14 +44,14 @@ A lot has happened in the Go ecosystem in the last year two-years:
 - Using go modules proper (ie. `go.mod`, `go.sum`, `vendor` folder) 
   - **Works outside of `$GOPATH`**
 - `go test -v ./...` showing server start / stop, add/update/delete gopher and things (95% file coverage, 78% statements coverage) 
-- `go build -tags release cmd/gophercli.go` builds a self-contained executable with text templates and default configuration files embedded in the binary ([`vfsgen`](https://github.com/shurcooL/vfsgen)) 
-    - Hermetic build/run/test with `vendor` folder checked-in:
-      - **NOTE: still need `GOFLAGS="-mod=vendor"` until Go 1.12**
-    - Self-contained build with `Dockerfile` 
-      - Uses `--ldflags "-X 00-newapp-template/internal/app/cmd.ReleaseVersion=$VERSION`
-- `go generate ./...` to embed text templates into a Go source file of `[]byte` 
+- `go generate ./...` triggers [`vfsgen`](https://github.com/shurcooL/vfsgen) to embed text templates and default configuration into a Go source file of `[]byte` 
+- `go build -tags release cmd/gophercli.go` builds a self-contained executable with text templates and default configuration files embedded in the binary by [`vfsgen`](https://github.com/shurcooL/vfsgen) 
+- Self-contained build example in `Dockerfile` 
+- Hermetic build/run/test with `vendor` folder checked-in:
+  - **NOTE: still need `GOFLAGS="-mod=vendor"` until Go 1.12**
+- Uses `--ldflags "-X 00-newapp-template/internal/app/cmd.ReleaseVersion=$VERSION` to set version during build.
 
-# The Story of 00-newapp-template
+# The Story of 00-newapp-template (fiction!)
 There is a vendor named ACME who provides API to access to `Gophers` and `Things`. Because I use the ACME API **all the time** to track `Gophers` and their `Things` and I have decided to create a CLI tool to perform the HTTP API calls needed and output a text table or JSON structure. Ideally using a simple command like:
 ```
   ./gophercli list 
@@ -193,6 +193,3 @@ Examples:
       $ gophercli version
 
 ```
-
-## Package Relationships
-TODO
