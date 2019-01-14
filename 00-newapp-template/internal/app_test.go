@@ -41,7 +41,7 @@ func StartServerRunTests(t *testing.T) {
 
 func ClientTests(t *testing.T) {
 
-	t.Run("App.ServerHelp", func(t *testing.T) {
+	t.Run("App.VersionHelp", func(t *testing.T) {
 		os.Args = []string{"gopherit", "version"}
 		c := config.NewConfig()
 		SetupConfig(c)
@@ -95,7 +95,6 @@ func ClientTests(t *testing.T) {
 		app.InvokeCLI()
 	})
 
-
 	t.Run("App.Version.DeleteThing", func(t *testing.T) {
 		os.Args = []string{"gopherit", "client", "delete", "t1"}
 		c := config.NewConfig()
@@ -122,6 +121,6 @@ func SetupConfig(c *config.Config) {
 	c.VerboseLevel5 = true
 	c.VerboseLevel = "5"
 	c.ValidateOrFatal()
-	c.Client.AccessKey ="notempty"
-	c.Client.SecretKey ="notempty"
+	c.Client.AccessKey = "notempty"
+	c.Client.SecretKey = "notempty"
 }
