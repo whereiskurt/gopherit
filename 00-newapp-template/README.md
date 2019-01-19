@@ -15,7 +15,7 @@ This package has four major parts to it:
   4) A CLI invocation and configuration framework built with [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper)
 
 ## This code includes:
-- [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/run tags, ldflags, 
+- [x] Fundamental Go features like tests, generate, templates, go routines, contexts, channels, OS signals, HTTP routing, build/tags, constraints, "ldflags", 
 - [x] Uses [`cobra`](https://github.com/spf13/cobra) and [`viper`](https://github.com/spf13/viper) (without func inits!!!)
   - Cleanly separated CLI/configuration invocation from client library calls - by calling `viper.Unmarshal` to transfer our `pkg.Config`
   - **NOTE**: A lot of sample Cobra/Viper code rely on `func init()` making it more difficult to reuse. 
