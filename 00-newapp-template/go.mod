@@ -18,3 +18,5 @@ require (
 	golang.org/x/tools v0.0.0-20190111214448-fc1d57b08d7b // indirect
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 )
+
+go 1.13
