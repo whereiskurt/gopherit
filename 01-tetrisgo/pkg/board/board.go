@@ -12,13 +12,13 @@ type Board struct {
 	Stats
 }
 
-// Stats help determine the layout of
+// Stats help determine the value/cost of the board
 type Stats struct {
 	Marked  int //How many are occupied?
 	Trapped int //The amount of 'unreachable' blocks
 }
 
-// BitState maintains occupied/cost and associated block
+// BitState maintains occupied state and associated block.
 // If the board is 8 wide by 10 tall there will be 80 BlockStates stored
 // in the Board coords
 type BitState struct {
@@ -43,7 +43,7 @@ func (b *Board) String() (s string) {
 			if occupied == false {
 				s += fmt.Sprintf("0")
 			} else {
-				s += fmt.Sprintf("%v", b.Bits[w][h].block.Orientation)
+				s += fmt.Sprintf("%v", b.Bits[w][h].block.Label)
 			}
 		}
 		s += fmt.Sprintf("\n")
@@ -62,7 +62,6 @@ func (b *Board) makeEmpty() {
 
 func (b *Board) copy() *Board {
 	copy := NewBoard(b.Width, b.Height)
-
 	for h := 0; h < b.Height; h++ {
 		for w := 0; w < b.Width; w++ {
 			occupied := b.Bits[w][h].occupied
@@ -72,22 +71,21 @@ func (b *Board) copy() *Board {
 			}
 		}
 	}
-
 	return copy
 }
 
-func (b *Board) set(w int, h int, occupied bool, block TetrisBlock) {
-	b.Bits[w][h].occupied = occupied
+func (b *Board) set(w int, h int, isOccupied bool, block TetrisBlock) {
+	b.Bits[w][h].occupied = isOccupied
 	b.Bits[w][h].block = block
-	if occupied == true {
+	if isOccupied {
 		b.Marked++
 	}
 }
 
-func (b *Board) unset(w int, h int, occupied bool) {
+func (b *Board) unset(w int, h int, isOccupied bool) {
 	b.Bits[w][h].occupied = false
 	b.Bits[w][h].block = TetrisBlock{}
-	if occupied == true {
+	if isOccupied {
 		b.Marked--
 	}
 }

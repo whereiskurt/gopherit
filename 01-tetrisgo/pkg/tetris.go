@@ -5,8 +5,9 @@ type TetrisGame struct {
 	Seed int // Random seed for piece generation
 }
 
-// NewTetrisGame returns a TetrisGame to play
-func NewTetrisGame() TetrisGame {
+// NewClassicTetris provides Tetris board/blocks/gameplay/timer etc. based on classic arcade Tetris.
+func NewClassicTetris(seed int) TetrisGame {
 	tg := TetrisGame{}
+	tg.Seed = seed
 	return tg
 }

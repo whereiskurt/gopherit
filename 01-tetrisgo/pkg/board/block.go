@@ -3,6 +3,7 @@ package board
 // TetrisBlock holds bit pattern and orientation. The pattern and orientation are related.
 type TetrisBlock struct {
 	Label       string
+	Type        BlockType
 	Orientation BlockOrientation
 	Colour      BlockColour
 	Pattern     [][]bool
@@ -20,7 +21,7 @@ const Pipe BlockType = "Pipe"
 // Tee is Tetris block shape
 const Tee BlockType = "Tee"
 
-// Elle is Tetris block shape
+// Elle is Tetris 2x2 block square
 const Elle BlockType = "Elle"
 
 // IElle is Tetris block shape
@@ -28,6 +29,7 @@ const IElle BlockType = "InvertedElle"
 
 func makeBlockPattern(t BlockType, o BlockOrientation) (pattern [][]bool) {
 	//Create a default "UP" and then rotate if not o==Up
+
 	switch t {
 	case Square:
 		pattern = make([][]bool, 2)
@@ -76,11 +78,6 @@ func makeBlockPattern(t BlockType, o BlockOrientation) (pattern [][]bool) {
 		pattern[2][0] = true
 	}
 
-	switch o {
-	case Up:
-		break
-	}
-
 	return pattern
 }
 
@@ -88,16 +85,16 @@ func makeBlockPattern(t BlockType, o BlockOrientation) (pattern [][]bool) {
 type BlockOrientation int
 
 // Up is the default block orientation
-const Up BlockOrientation = 6
+const Up BlockOrientation = 1
 
 // Down is a block orientation
-const Down BlockOrientation = 1
+const Down BlockOrientation = 2
 
 // Left is a block orientation
-const Left BlockOrientation = 2
+const Left BlockOrientation = 3
 
 // Right is a block orientation
-const Right BlockOrientation = 3
+const Right BlockOrientation = 4
 
 // BlockColour describes what colour the block has on the board
 type BlockColour int
@@ -117,41 +114,42 @@ const Orange BlockColour = 4
 // Purple is a block colour
 const Purple BlockColour = 5
 
-// makeTetrisBlock creates a TetrisBlock
-func (b *Board) makeTetrisBlock(label string, t BlockType, colour BlockColour, o BlockOrientation) TetrisBlock {
+// MakeTetrisBlock creates a TetrisBlock
+func (b *Board) MakeTetrisBlock(label string, t BlockType, c BlockColour, o BlockOrientation) TetrisBlock {
 	return TetrisBlock{
 		Label:       label,
+		Type:        t,
 		Orientation: o,
-		Colour:      colour,
+		Colour:      c,
 		Pattern:     makeBlockPattern(t, Up)}
 }
 
-// MakeTee builds a default T Tetris block
-func (b *Board) MakeTee(colour BlockColour, o BlockOrientation) TetrisBlock {
-	block := b.makeTetrisBlock("T", Tee, colour, o)
-	return block
+// TeeShape builds a default T Tetris block
+func (b *Board) TeeShape(c BlockColour) (blk TetrisBlock) {
+	blk = b.MakeTetrisBlock("T", Tee, c, Up)
+	return blk
 }
 
-// MakeElle builds a default L Tetris block
-func (b *Board) MakeElle(colour BlockColour, o BlockOrientation) TetrisBlock {
-	block := b.makeTetrisBlock("L", Elle, colour, o)
-	return block
+// ElleShape builds a default L Tetris block
+func (b *Board) ElleShape(c BlockColour) (blk TetrisBlock) {
+	blk = b.MakeTetrisBlock("L", Elle, c, Up)
+	return blk
 }
 
-// MakeIElle builds a default inverted-L Tetris block
-func (b *Board) MakeIElle(colour BlockColour, o BlockOrientation) TetrisBlock {
-	block := b.makeTetrisBlock("I", IElle, colour, o)
-	return block
+// IElleShape builds a default inverted-L Tetris block
+func (b *Board) IElleShape(c BlockColour) (blk TetrisBlock) {
+	blk = b.MakeTetrisBlock("I", IElle, c, Up)
+	return blk
 }
 
-// MakePipe builds a default | Tetris block
-func (b *Board) MakePipe(colour BlockColour, o BlockOrientation) TetrisBlock {
-	block := b.makeTetrisBlock("P", Pipe, colour, o)
-	return block
+// PipeShape builds a default | Tetris block
+func (b *Board) PipeShape(c BlockColour) (blk TetrisBlock) {
+	blk = b.MakeTetrisBlock("P", Pipe, c, Up)
+	return blk
 }
 
-// MakeSquare builds a default [] Tetris block
-func (b *Board) MakeSquare(colour BlockColour, o BlockOrientation) TetrisBlock {
-	block := b.makeTetrisBlock("B", Square, colour, o)
-	return block
+// SquareShape builds a default [] Tetris block
+func (b *Board) SquareShape(c BlockColour) (blk TetrisBlock) {
+	blk = b.MakeTetrisBlock("B", Square, c, Up)
+	return blk
 }

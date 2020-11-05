@@ -3,6 +3,7 @@ package board
 // PlaceBlock anchors a piece to the board a spot x,y given the blocks pattern
 func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
 	pattern := block.Pattern
+	//Given this block's pattern can we place it on the board?
 	for w := 0; w < len(pattern); w++ {
 		for h := 0; h < len(pattern[w]); h++ {
 			// Out of bounds checking - shape overlaying on the board
@@ -12,7 +13,7 @@ func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
 			if y+h >= len(b.Bits[x+w]) {
 				return false
 			}
-			// If the space is already occupied we cannot Place here
+			// If the space is already occupied we cannot place there
 			if b.Bits[x+w][y+h].occupied == true && pattern[w][h] == true {
 				return false
 			}
@@ -30,43 +31,60 @@ func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
 	return true
 }
 
-// TetrisReduce implements classic Tetris rule of 'all zero rows replace with the row above'
-func (b *Board) TetrisReduce(startrow int) {
-next_row:
-	for h := startrow; h < b.Height; h++ {
-		for w := 0; w < b.Width; w++ {
-			occupied := b.Bits[w][h].occupied
-			// Classic Tetris if any bit is occupied the row cannot reduce
-			if occupied == true {
-				continue next_row
-			}
-		}
+// MoveBlock takes block at x,y and tries to move it to x1,y1
+func (b *Board) MoveBlock(x, y, x1, y1 int) (wasMoved bool) {
 
-		// The h row is all unoccupied and we work to row 0 zero copying rows
-		for s := h; s > 0; s-- {
-			for w := 0; w < b.Width; w++ {
-				b.Bits[w][s] = b.Bits[w][s-1]
-				b.Bits[w][s-1].occupied = false
-				b.Bits[w][s-1].block = TetrisBlock{}
-			}
-
-		}
-	}
-	return
-}
-
-// DropToBottom looksup the block at x,y and tries to 'move it' to the bottom of the board.
-// In Tetris this is when you push the 'down' arrow on the currently moving block.
-func (b *Board) DropToBottom(x, y int) {
+	// 1. Boudary checking for x,y
+	// TODO: Add more boundary checks for x,y >=0 and x1+patwidth<b.width...
 	if y >= b.Height || x >= b.Width {
-		return
+		return false
 	}
 	bit := b.Bits[x][y]
 
 	block := bit.block
 	pattern := block.Pattern
 	if pattern == nil {
-		return
+		return false
+	}
+
+	patwidth := len(pattern)
+	if patwidth == 0 {
+		return false
+	}
+	if x+patwidth >= b.Width {
+		return false
+	}
+
+	patheight := len(pattern[0])
+	if patheight == 0 {
+		return false
+	}
+	if x+patheight >= b.Height {
+		return false
+	}
+
+	// 2. Remove piece and try to place at x1,y1 - otherwise put back at x,y
+	b.RemovePiece(x, y)
+	wasMoved = b.PlaceBlock(x1, y1, block)
+	if !wasMoved {
+		b.PlaceBlock(x, y, block)
+	}
+
+	return wasMoved
+}
+
+// DropToBottom looksup the block at x,y and tries to 'move it' to the bottom of the board.
+// In Tetris this is when you push the 'down' arrow on the currently moving block.
+func (b *Board) DropToBottom(x, y int) (wasMoved bool) {
+	if y >= b.Height || x >= b.Width {
+		return false
+	}
+	bit := b.Bits[x][y]
+
+	block := bit.block
+	pattern := block.Pattern
+	if pattern == nil {
+		return false
 	}
 
 	patwidth := len(pattern)
@@ -86,7 +104,7 @@ func (b *Board) DropToBottom(x, y int) {
 				}
 
 				//The bit below is occupied and our pattern has bit that needs the spot
-				return
+				return false
 			}
 		}
 	}
@@ -104,11 +122,11 @@ func (b *Board) DropToBottom(x, y int) {
 	// RECURSE!! :-)
 	b.DropToBottom(x, y+1)
 
-	return
+	return true
 }
 
-// RotatePiece takes the active piece at x,y and transposes/mirrors as appropriate
-func (b *Board) RotatePiece(x, y int) (rotated bool) {
+// RemovePiece looksup the piece at x,y and unsets each bit of the pattern
+func (b *Board) RemovePiece(x, y int) (delete bool) {
 	if y >= b.Height || x >= b.Width {
 		return false
 	}
@@ -126,12 +144,32 @@ func (b *Board) RotatePiece(x, y int) (rotated bool) {
 	// Remove from board
 	for w := 0; w < patwidth; w++ {
 		for h := 0; h < patheight; h++ {
-			//if pattern[w][h] == true {
 			b.unset(x+w, y+h, pattern[w][h])
-			//}
 		}
 	}
+	return true
+}
 
+// RotatePiece takes the active piece at x,y and rotates to the right Up->Right->Down->Left->Up->Right...
+func (b *Board) RotatePiece(x, y int) (rotated bool) {
+	//1. Boundary checks and block/pattern lookup
+	if y >= b.Height || x >= b.Width {
+		return false
+	}
+	bit := b.Bits[x][y]
+
+	block := bit.block
+	pattern := block.Pattern
+	if pattern == nil {
+		return false
+	}
+
+	// 2. Remove the piece from the board we are rotating
+	b.RemovePiece(x, y)
+
+	// 3. Rotate the pattern for the shape and set orientation
+	patwidth := len(pattern)
+	patheight := len(pattern[0])
 	rpat := make([][]bool, patheight)
 	for h := 0; h < patheight; h++ {
 		rpat[h] = make([]bool, patwidth)
@@ -155,6 +193,7 @@ func (b *Board) RotatePiece(x, y int) (rotated bool) {
 		block.Orientation = Up
 	}
 
+	//4. Place the rotated block back on the board.
 	return b.PlaceBlock(x, y, block)
 }
 
@@ -163,21 +202,48 @@ func (b *Board) TetrisMatch(onTetris func(row int)) {
 next_row:
 	for y := 0; y < b.Height; y++ {
 		for x := 0; x < b.Width; x++ {
-			//If any of the bits on the row aren't set, skip row.
+			//1. If any of the bits on the row aren't 1, then skip row.
 			if b.Bits[x][y].occupied == false {
 				continue next_row
 			}
 		}
+
+		//2. All set, so clear Clear the row of all occupied
+		for x := 0; x < b.Width; x++ {
+			b.unset(x, y, true)
+		}
+
 		// All the bits are occupied, so Tetris!
 		if onTetris != nil {
 			onTetris(y)
 		}
 
-		// Clear the row of all occupied
-		for x := 0; x < b.Width; x++ {
-			b.unset(x, y, true)
-		}
-		b.TetrisReduce(y)
-
 	}
+}
+
+// TetrisReduce implements classic Tetris rule of 'all zero rows replace with the row above'
+func (b *Board) TetrisReduce(startrow int) {
+skiprow:
+	for h := startrow; h < b.Height; h++ {
+		//1. Check each bit in the row
+		for w := 0; w < b.Width; w++ {
+			// If any bit is occupied the row cannot reduce
+			if b.Bits[w][h].occupied == true {
+				continue skiprow
+			}
+		}
+
+		// The h row is all unoccupied and we work to row 0 zero copying rows
+		for s := h; s > 0; s-- {
+			for w := 0; w < b.Width; w++ {
+				//1. Assign current row the bit from the row 'above' (closer to zero)
+				b.Bits[w][s] = b.Bits[w][s-1]
+				//2. Unoccupy the bit and remove block reference
+				b.Bits[w][s-1].occupied = false
+				b.Bits[w][s-1].block = TetrisBlock{}
+			}
+
+		}
+	}
+	return
 }
