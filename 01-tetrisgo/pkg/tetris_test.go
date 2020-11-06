@@ -1,13 +1,23 @@
 package pkg
 
-import "testing"
+import (
+	"os"
+	"strconv"
+	"testing"
+	"time"
+)
 
 func TestClassicTetris(t *testing.T) {
-	tetris := NewClassicTetris(0)
+	seed := time.Now().UnixNano()
 
-	if tetris.Seed == 0 {
-		t.Logf("Tetris seed not set - default zero random() game.")
+	if len(os.Args) > 1 {
+		argseed, _ := strconv.Atoi(os.Args[1])
+		seed = int64(argseed) // Seed will be zero if fails to parse strconv
 	}
+
+	game := NewClassicTetris(8, 5, seed)
+
+	t.Logf("Board:\n%s", game.Board)
 
 	return
 }

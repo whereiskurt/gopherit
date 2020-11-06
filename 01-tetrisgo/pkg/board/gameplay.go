@@ -1,7 +1,7 @@
 package board
 
-// PlaceBlock anchors a piece to the board a spot x,y given the blocks pattern
-func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
+//CanPlace determines if the spot on the board can have a piece
+func (b *Board) CanPlace(x int, y int, block TetrisBlock) (canPlace bool) {
 	pattern := block.Pattern
 	//Given this block's pattern can we place it on the board?
 	for w := 0; w < len(pattern); w++ {
@@ -19,7 +19,16 @@ func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
 			}
 		}
 	}
+	return true
+}
 
+// PlaceBlock anchors a piece to the board a spot x,y given the blocks pattern
+func (b *Board) PlaceBlock(x int, y int, block TetrisBlock) (canFit bool) {
+	if !b.CanPlace(x, y, block) {
+		return false
+	}
+
+	pattern := block.Pattern
 	// If we are with-in boundaries, apply the OccupyPatten to the Board
 	for w := 0; w < len(pattern); w++ {
 		for h := 0; h < len(pattern[w]); h++ {
@@ -167,31 +176,8 @@ func (b *Board) RotatePiece(x, y int) (rotated bool) {
 	// 2. Remove the piece from the board we are rotating
 	b.RemovePiece(x, y)
 
-	// 3. Rotate the pattern for the shape and set orientation
-	patwidth := len(pattern)
-	patheight := len(pattern[0])
-	rpat := make([][]bool, patheight)
-	for h := 0; h < patheight; h++ {
-		rpat[h] = make([]bool, patwidth)
-	}
-
-	for w := 0; w < patwidth; w++ {
-		for h := 0; h < patheight; h++ {
-			rpat[patheight-h-1][w] = pattern[w][h]
-		}
-	}
-	block.Pattern = rpat
-
-	switch block.Orientation {
-	case Up:
-		block.Orientation = Right
-	case Right:
-		block.Orientation = Down
-	case Down:
-		block.Orientation = Left
-	case Left:
-		block.Orientation = Up
-	}
+	// 3. Rotate the block pattern
+	block.Rotate()
 
 	//4. Place the rotated block back on the board.
 	return b.PlaceBlock(x, y, block)

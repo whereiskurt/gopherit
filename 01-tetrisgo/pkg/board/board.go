@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 // Board holds coords for blocks
@@ -10,6 +11,8 @@ type Board struct {
 	Height int
 	Bits   [][]BitState // Each bit of the board, occupied by a potential block.
 	Stats
+	Seed int64
+	Rand *rand.Rand
 }
 
 // Stats help determine the value/cost of the board
@@ -27,16 +30,67 @@ type BitState struct {
 }
 
 // NewBoard constructs a Tetris board state
-func NewBoard(width int, height int) (b *Board) {
+func NewBoard(width int, height int, seed int64) (b *Board) {
 	b = new(Board)
 	b.Height = height
 	b.Width = width
+	b.Seed = seed
+	b.Rand = rand.New(rand.NewSource(seed))
 	b.makeEmpty()
 	return
 }
 
+// RandomBlock will pick random colour, block-type and orientation.
+func (b *Board) RandomBlock() (blk TetrisBlock) {
+	// 1. Generate a random number and pick the matching shape
+	switch b.Rand.Int31() % 5 {
+	case 0:
+		blk = b.ElleShape(Red)
+	case 1:
+		blk = b.IElleShape(Red)
+	case 2:
+		blk = b.PipeShape(Red)
+	case 3:
+		blk = b.SquareShape(Red)
+	case 4:
+		blk = b.TeeShape(Red)
+	}
+
+	// 2. Assigned a random colour to the shape
+	switch b.Rand.Int31() % 5 {
+	case 0:
+		blk.Colour = Red
+	case 1:
+		blk.Colour = Orange
+	case 2:
+		blk.Colour = Green
+	case 3:
+		blk.Colour = Purple
+	case 4:
+		blk.Colour = Blue
+	}
+
+	// 3. Rotate Pattern on block
+	switch b.Rand.Int31() % 4 {
+	case 0:
+		// Already orientated Up
+	case 1:
+		blk.Rotate()
+	case 2:
+		blk.Rotate()
+		blk.Rotate()
+	case 3:
+		blk.Rotate()
+		blk.Rotate()
+		blk.Rotate()
+	}
+
+	return blk
+}
+
 // String outputs basic ASCII board
 func (b *Board) String() (s string) {
+	s += fmt.Sprintf("\n")
 	for h := 0; h < b.Height; h++ {
 		for w := 0; w < b.Width; w++ {
 			occupied := b.Bits[w][h].occupied
@@ -61,7 +115,7 @@ func (b *Board) makeEmpty() {
 }
 
 func (b *Board) copy() *Board {
-	copy := NewBoard(b.Width, b.Height)
+	copy := NewBoard(b.Width, b.Height, b.Seed)
 	for h := 0; h < b.Height; h++ {
 		for w := 0; w < b.Width; w++ {
 			occupied := b.Bits[w][h].occupied

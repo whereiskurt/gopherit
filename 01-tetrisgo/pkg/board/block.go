@@ -27,6 +27,38 @@ const Elle BlockType = "Elle"
 // IElle is Tetris block shape
 const IElle BlockType = "InvertedElle"
 
+// Rotate takes the block right Up->Right->Down->Left->Up...
+func (blk *TetrisBlock) Rotate() {
+	pattern := blk.Pattern
+
+	// 3. Rotate the pattern for the shape and set orientation
+	patwidth := len(pattern)
+	patheight := len(pattern[0])
+	rpat := make([][]bool, patheight)
+	for h := 0; h < patheight; h++ {
+		rpat[h] = make([]bool, patwidth)
+	}
+
+	for w := 0; w < patwidth; w++ {
+		for h := 0; h < patheight; h++ {
+			rpat[patheight-h-1][w] = pattern[w][h]
+		}
+	}
+	blk.Pattern = rpat
+
+	switch blk.Orientation {
+	case Up:
+		blk.Orientation = Right
+	case Right:
+		blk.Orientation = Down
+	case Down:
+		blk.Orientation = Left
+	case Left:
+		blk.Orientation = Up
+	}
+
+}
+
 func makeBlockPattern(t BlockType, o BlockOrientation) (pattern [][]bool) {
 	//Create a default "UP" and then rotate if not o==Up
 
@@ -82,37 +114,37 @@ func makeBlockPattern(t BlockType, o BlockOrientation) (pattern [][]bool) {
 }
 
 // BlockOrientation describes how the block is applied to the board
-type BlockOrientation int
+type BlockOrientation string
 
 // Up is the default block orientation
-const Up BlockOrientation = 1
+const Up BlockOrientation = "Up"
 
 // Down is a block orientation
-const Down BlockOrientation = 2
+const Down BlockOrientation = "Right"
 
 // Left is a block orientation
-const Left BlockOrientation = 3
+const Left BlockOrientation = "Down"
 
 // Right is a block orientation
-const Right BlockOrientation = 4
+const Right BlockOrientation = "Left"
 
 // BlockColour describes what colour the block has on the board
-type BlockColour int
+type BlockColour string
 
 // Red is a block colour
-const Red BlockColour = 1
+const Red BlockColour = "Red"
 
 // Blue is a block colour
-const Blue BlockColour = 2
+const Blue BlockColour = "Blue"
 
 // Green is a block colour
-const Green BlockColour = 3
+const Green BlockColour = "Green"
 
 // Orange is a block colour
-const Orange BlockColour = 4
+const Orange BlockColour = "Orange"
 
 // Purple is a block colour
-const Purple BlockColour = 5
+const Purple BlockColour = "Purple"
 
 // MakeTetrisBlock creates a TetrisBlock
 func (b *Board) MakeTetrisBlock(label string, t BlockType, c BlockColour, o BlockOrientation) TetrisBlock {
